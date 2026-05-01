@@ -32,6 +32,6 @@
 
 開発環境と検証
 
-* Unit Test: Jest + JSDOM.
-* E2E Test: Playwright.
-* Root Cleanliness: 開発用の一時ファイルや不要なログがプロジェクトルートに残らないようにする。
+- Unit Test: Jest + JSDOM.
+- E2E Test: Playwright.
+- Root Cleanliness: 開発用の一時ファイルや不要なログがプロジェクトルートに残らないようにする。
