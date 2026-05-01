@@ -14,7 +14,7 @@ repos:
     hooks:
     -   id: eslint
         files: \.js$
-        args: [--no-eslintrc, --env, browser, --env, webextensions, --env, es2021]
+        args: [--no-eslintrc, --env, browser, --env, webextensions, --env, es2021, --parserOptions, "{sourceType: module, ecmaVersion: 2021}"]
 
 -   repo: https://github.com/igorshubovych/markdownlint-cli
     rev: v0.34.0
