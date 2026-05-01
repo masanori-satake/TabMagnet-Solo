@@ -28,6 +28,7 @@ async function init() {
 
   protectedGroupsInput.value = protectedGroups.join(', ');
   renderTargetList();
+  setupEventListeners();
 }
 
 /**
@@ -56,27 +57,26 @@ function renderTargetList() {
     `;
     targetListEl.appendChild(item);
   });
+}
 
-  // Event listeners for list items
-  document.querySelectorAll('.magnet-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const index = e.target.dataset.index;
+/**
+ * イベントリスナーの設定（イベント委譲を利用）
+ */
+function setupEventListeners() {
+  targetListEl.addEventListener('click', (e) => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+
+    const index = btn.dataset.index;
+    if (index === undefined) return;
+
+    if (btn.classList.contains('magnet-btn')) {
       handleExecuteMagnet(targets[index]);
-    });
-  });
-
-  document.querySelectorAll('.edit-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const index = e.target.dataset.index;
+    } else if (btn.classList.contains('edit-btn')) {
       editTarget(index);
-    });
-  });
-
-  document.querySelectorAll('.delete-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const index = e.target.dataset.index;
+    } else if (btn.classList.contains('delete-btn')) {
       deleteTarget(index);
-    });
+    }
   });
 }
 
@@ -95,7 +95,6 @@ function escapeHtml(str) {
 async function handleExecuteMagnet(target) {
   try {
     await executeMagnet(target, protectedGroups);
-    // UIへのフィードバック（一時的にボタンテキストを変えるなど）
     console.log(`Executed magnet for ${target.name}`);
   } catch (e) {
     console.error('Magnet execution failed:', e);
@@ -194,7 +193,7 @@ saveSettingsBtn.addEventListener('click', async () => {
 });
 
 /**
- * エポート
+ * エクスポート
  */
 exportBtn.addEventListener('click', async () => {
   const data = {
@@ -220,19 +219,28 @@ importBtn.addEventListener('click', async () => {
     const data = JSON.parse(json);
 
     if (!data.targets || !Array.isArray(data.targets)) {
-      throw new Error('Invalid format');
+      throw new Error('無効なデータ形式です。');
+    }
+
+    // 基本的なバリデーション
+    for (const t of data.targets) {
+      if (typeof t.name !== 'string' || typeof t.pattern !== 'string') {
+        throw new Error('ターゲットの形式が正しくありません。');
+      }
     }
 
     if (confirm('現在の設定を上書きしてインポートしますか？')) {
       targets = data.targets;
       protectedGroups = data.protectedGroups || [];
       await chrome.storage.local.set({ targets, protectedGroups });
-      init();
+
+      protectedGroupsInput.value = protectedGroups.join(', ');
+      renderTargetList();
       alert('インポートが完了しました。');
     }
   } catch (e) {
     console.error('Import failed:', e);
-    alert('インポートに失敗しました。クリップボードに有効な設定JSONがあることを確認してください。');
+    alert('インポートに失敗しました。クリップボードに有効な設定JSONがあることを確認してください。\n' + e.message);
   }
 });
 

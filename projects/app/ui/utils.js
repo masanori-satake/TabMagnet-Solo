@@ -17,8 +17,8 @@
 export function matchUrl(url, pattern) {
   if (!url || !pattern) return false;
 
-  // プロトコルを除去して比較しやすくする
-  const normalize = (str) => str.replace(/^https?:\/\//, '');
+  // プロトコルと末尾のスラッシュを除去して比較しやすくする
+  const normalize = (str) => str.replace(/^https?:\/\//, '').replace(/\/$/, '');
   const normalizedUrl = normalize(url);
   const normalizedPattern = normalize(pattern);
 
