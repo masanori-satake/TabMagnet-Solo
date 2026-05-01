@@ -1,5 +1,10 @@
 # TabMagnet-Solo
 
+[![version](https://img.shields.io/badge/version-0.1.0-blue)](projects/app/manifest.json)
+[![Coverage](https://img.shields.io/badge/coverage-29%25-red)](.)
+[![Privacy-Local Only](https://img.shields.io/badge/Privacy-Local%20Only-brightgreen)](AGENTS.md)
+[![Manifest V3](https://img.shields.io/badge/Manifest-V3-orange)](projects/app/manifest.json)
+
 〜特定のタブを磁石のように現在のウィンドウへ一括集約するローカル完結型Chrome拡張機能〜
 
 ## プロジェクト概要
