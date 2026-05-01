@@ -1,0 +1,16 @@
+node_modules/
+releases/*.zip
+playwright-report/
+test-results/
+coverage/
+.DS_Store
+*.log
+__pycache__/
+*.pyc
+.vscode/
+.idea/
+.eslintcache
+.pytest_cache/
+.parcel-cache/
+dist/
+build/

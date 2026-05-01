@@ -1,0 +1,55 @@
+name: "リリース: 拡張機能パッケージの公開 (Release: Publish Extension Packages)"
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Tag name to release (e.g. v0.1.0)'
+        required: true
+        type: string
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install || npm install --legacy-peer-deps
+
+      - name: Install Python Playwright (for icon generation)
+        run: pip install playwright
+
+      - name: Install Playwright Browsers
+        run: python -m playwright install chromium --with-deps
+
+      - name: Build packages
+        run: python scripts/generate_png_icons.py && python scripts/build.py
+
+      - name: Create GitHub Release and Upload Assets
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.tag_name || github.ref_name }}
+          generate_release_notes: true
+          files: releases/*.zip

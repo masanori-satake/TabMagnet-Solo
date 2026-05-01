@@ -1,0 +1,22 @@
+{
+  "name": "tabmagnet-solo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Magnetically aggregate specific tabs into the current window and maintain singleton groups.",
+  "type": "module",
+  "scripts": {
+    "test": "NODE_OPTIONS='--experimental-vm-modules' jest",
+    "test:e2e": "playwright test",
+    "build": "python3 scripts/build.py",
+    "generate-icons": "python3 scripts/generate_png_icons.py",
+    "lint": "markdownlint '**/*.md'"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.1",
+    "glob": "^13.0.6",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^30.3.0",
+    "markdown-it": "^14.1.1",
+    "markdownlint-cli": "^0.48.0"
+  }
+}
