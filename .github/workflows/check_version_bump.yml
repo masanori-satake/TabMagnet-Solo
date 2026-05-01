@@ -1,0 +1,43 @@
+name: "検証: バージョン更新チェック (Verify: Version Bump)"
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'projects/app/**'
+
+jobs:
+  check-bump:
+    name: バージョン更新の有無を確認
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get base version
+        id: base_version
+        run: |
+          git checkout ${{ github.base_ref }}
+          VERSION=$(jq -r .version projects/app/manifest.json)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          git checkout ${{ github.head_ref }}
+
+      - name: Get head version
+        id: head_version
+        run: |
+          VERSION=$(jq -r .version projects/app/manifest.json)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Compare versions
+        run: |
+          BASE=${{ steps.base_version.outputs.version }}
+          HEAD=${{ steps.head_version.outputs.version }}
+          echo "Base version: $BASE"
+          echo "Head version: $HEAD"
+          if [ "$BASE" = "$HEAD" ]; then
+            echo "Error: Extension source files in 'projects/app/' were modified, but version in manifest.json was not bumped."
+            exit 1
+          fi
+          echo "Version bump detected."
