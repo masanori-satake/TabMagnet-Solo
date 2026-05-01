@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <rect width="128" height="128" rx="24" fill="#6750A4"/>
+  <circle cx="64" cy="64" r="50" fill="#EADDFF"/>
+  <!-- U-shaped Magnet -->
+  <path d="M44 44V74C44 85.0457 52.9543 94 64 94C75.0457 94 84 85.0457 84 74V44H74V74C74 79.5228 69.5228 84 64 84C58.4772 84 54 79.5228 54 74V44H44Z" fill="#6750A4"/>
+  <!-- N-pole (Red) -->
+  <rect x="44" y="44" width="10" height="15" fill="#B3261E"/>
+  <!-- S-pole (Blue/Grey) -->
+  <rect x="74" y="44" width="10" height="15" fill="#625B71"/>
+</svg>
