@@ -1,8 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "TabMagnet-Solo",
+  "name": "__MSG_extensionName__",
   "version": "0.1.0",
-  "description": "Magnetically aggregate specific tabs into the current window and maintain singleton groups.",
+  "description": "__MSG_extensionDescription__",
+  "default_locale": "ja",
   "permissions": [
     "tabs",
     "tabGroups",
@@ -10,6 +11,7 @@
     "sidePanel",
     "clipboardRead"
   ],
+  "action": {},
   "background": {
     "service_worker": "background.js"
   },

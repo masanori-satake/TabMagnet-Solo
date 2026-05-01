@@ -18,6 +18,9 @@ chrome.runtime.onStartup.addListener(async () => {
  */
 chrome.runtime.onInstalled.addListener(async () => {
   await performAutoCleanup();
+
+  // アイコンクリック時にサイドパネルを開く設定
+  await chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
 });
 
 /**
