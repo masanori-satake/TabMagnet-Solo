@@ -53,6 +53,9 @@
   "confirmDeleteTitle": {
     "message": "削除の確認"
   },
+  "labelUrlPattern": {
+    "message": "URLパターン"
+  },
   "groupColor": {
     "message": "グループの色"
   },

@@ -53,6 +53,9 @@
   "confirmDeleteTitle": {
     "message": "Confirm Delete"
   },
+  "labelUrlPattern": {
+    "message": "URL Patterns"
+  },
   "groupColor": {
     "message": "Group Color"
   },
