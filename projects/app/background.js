@@ -36,29 +36,27 @@ async function performAutoCleanup() {
 
   const groups = await chrome.tabGroups.query({});
 
+  const SUFFIX_TM = '_TM';
+  const SUFFIX_COLLECTING = '_TM(Now Collecting)';
+
   for (const target of targets) {
     const targetName = target.name;
     // 同一ターゲット名を持つグループを抽出（保護されたグループは除外）
+    // 新仕様では Name_TM または Name_TM(Now Collecting) が対象
     const matchingGroups = groups.filter(g => {
-      return g.title &&
-             g.title.startsWith(`${targetName}_`) &&
-             !protectedGroups.includes(g.title);
+      if (!g.title) return false;
+      const isTargetGroup = (g.title === targetName + SUFFIX_TM || g.title === targetName + SUFFIX_COLLECTING);
+      const isProtected = protectedGroups.includes(g.title);
+      return isTargetGroup && !isProtected;
     });
 
     if (matchingGroups.length <= 1) continue;
 
-    // タイムスタンプ部分でソートして最新以外を解体
-    // 命名規則: Name_YYYYMMDD_HHMMSS
-    matchingGroups.sort((a, b) => {
-      const tsA = a.title.split('_').slice(-2).join('_');
-      const tsB = b.title.split('_').slice(-2).join('_');
-      return tsB.localeCompare(tsA); // 降順
-    });
-
-    // 最新 (index 0) 以外を解体
-    const oldGroups = matchingGroups.slice(1);
-    for (const oldGroup of oldGroups) {
-      const tabs = await chrome.tabs.query({ groupId: oldGroup.id });
+    // 全てを解体対象にする（基本1つのはずだが、複数あれば全て解体して次回のMagnet実行に委ねる）
+    // あるいは、Now Collectingでない方を優先して残すなどのロジックも考えられるが、
+    // 重複が発生している異常系なので、安全に全解除するのがシンプル。
+    for (const group of matchingGroups) {
+      const tabs = await chrome.tabs.query({ groupId: group.id });
       if (tabs.length > 0) {
         await chrome.tabs.ungroup(tabs.map(t => t.id));
       }

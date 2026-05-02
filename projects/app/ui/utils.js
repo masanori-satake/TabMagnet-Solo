@@ -59,33 +59,42 @@ export function getTimestamp() {
 export async function executeMagnet(target, protectedGroups = []) {
   const currentWindow = await chrome.windows.getCurrent();
   const allTabs = await chrome.tabs.query({});
+  const allGroups = await chrome.tabGroups.query({});
+  const groupMap = new Map(allGroups.map(g => [g.id, g]));
+
+  const SUFFIX_TM = '_TM';
+  const SUFFIX_COLLECTING = '_TM(Now Collecting)';
 
   // マッチするタブを抽出（保護されたグループに属するものは除外）
   const matchedTabs = [];
   const groupsToDissolve = new Set();
 
-  // グループ情報の取得
-  const allGroups = await chrome.tabGroups.query({});
-  const groupMap = new Map(allGroups.map(g => [g.id, g]));
-
   for (const tab of allTabs) {
-    if (matchUrl(tab.url, target.pattern)) {
-      // 保護されたグループに属しているか確認
-      if (tab.groupId !== chrome.tabGroups.TAB_GROUP_ID_NONE) {
-        const group = groupMap.get(tab.groupId);
-        if (group && protectedGroups.includes(group.title)) {
-          continue; // 保護されているのでスキップ
-        }
-      }
-      matchedTabs.push(tab);
-    }
+    const isMatched = matchUrl(tab.url, target.pattern);
 
-    // 旧世代グループの特定（解体対象候補）
     if (tab.groupId !== chrome.tabGroups.TAB_GROUP_ID_NONE) {
       const group = groupMap.get(tab.groupId);
-      if (group && group.title && group.title.startsWith(`${target.name}_`)) {
-        groupsToDissolve.add(group.id);
+      if (group && group.title) {
+        // 自動保護: _TM または _TM(Now Collecting) で終わらないグループは保護
+        const hasInternalSuffix = group.title.endsWith(SUFFIX_TM) || group.title.endsWith(SUFFIX_COLLECTING);
+        const isProtectedManually = protectedGroups.includes(group.title);
+        const isProtected = !hasInternalSuffix || isProtectedManually;
+
+        if (isMatched) {
+          if (isProtected) {
+            continue; // 保護されているのでスキップ
+          }
+          matchedTabs.push(tab);
+        }
+
+        // 旧世代グループの特定（解体対象候補）
+        // ターゲット名に合致し、かつ内部用サフィックスを持つ保護されていないグループ
+        if (!isProtected && (group.title === target.name + SUFFIX_TM || group.title === target.name + SUFFIX_COLLECTING)) {
+          groupsToDissolve.add(group.id);
+        }
       }
+    } else if (isMatched) {
+      matchedTabs.push(tab);
     }
   }
 
@@ -105,20 +114,29 @@ export async function executeMagnet(target, protectedGroups = []) {
   }
 
   // 2. 新しいグループを作成（現在のウィンドウ）
-  const timestamp = getTimestamp();
-  const newGroupName = `${target.name}_${timestamp}`;
+  const tempGroupName = target.name + SUFFIX_COLLECTING;
+  const tabIds = matchedTabs.map(t => t.id);
 
   // タブを現在のウィンドウに移動
-  const tabIds = matchedTabs.map(t => t.id);
   await chrome.tabs.move(tabIds, { windowId: currentWindow.id, index: -1 });
 
   // グループ化
   const newGroupId = await chrome.tabs.group({ tabIds });
-  await chrome.tabGroups.update(newGroupId, { title: newGroupName });
+  await chrome.tabGroups.update(newGroupId, { title: tempGroupName });
 
   // 3. 旧世代グループ（新しく作ったもの以外）を解体
   const otherGroupsToDissolve = Array.from(groupsToDissolve).filter(id => id !== newGroupId);
   await dissolveGroups(otherGroupsToDissolve);
+
+  // 4. 収集完了後の名称変更チェック
+  // 他のウィンドウに同名の(Now Collectingでない)グループが存在しないか確認
+  const finalGroupName = target.name + SUFFIX_TM;
+  const existingGroups = await chrome.tabGroups.query({ title: finalGroupName });
+  const otherGroups = existingGroups.filter(g => g.id !== newGroupId);
+
+  if (otherGroups.length === 0) {
+    await chrome.tabGroups.update(newGroupId, { title: finalGroupName });
+  }
 }
 
 /**
