@@ -1,6 +1,7 @@
 const translations = {
   en: {
     title: "TabMagnet-Solo - Local-only tab aggregation tool for Chrome",
+    description: "Aggregates specific tabs like a magnet into the current window using URL patterns. Privacy-focused and works completely offline.",
     usage: "Usage",
     privacy: "Privacy Policy",
     tagline: "〜Aggregates specific tabs like a magnet into the current window〜",
@@ -56,6 +57,7 @@ const translations = {
   },
   ja: {
     title: "TabMagnet-Solo - 特定のタブを現在のウィンドウに集約するローカル完結型ツール",
+    description: "URLパターンに基づいて特定のタブを磁石のように現在のウィンドウへ集約。プライバシー重視で完全にオフラインで動作します。",
     usage: "使い方",
     privacy: "プライバシーポリシー",
     tagline: "〜特定のタブを磁石のように現在のウィンドウへ一括集約〜",
@@ -111,11 +113,18 @@ const translations = {
   },
 };
 
+/**
+ * ページ内のテキストとメタタグを現在の言語設定に合わせて更新する
+ */
 function applyTranslations() {
   const userLang = navigator.language.startsWith("ja") ? "ja" : "en";
   const lang = localStorage.getItem("preferred-lang") || userLang;
   const t = translations[lang];
 
+  // 言語属性の更新
+  document.documentElement.lang = lang;
+
+  // 一般的な要素の更新
   document.querySelectorAll("[data-i18n]").forEach((el) => {
     const key = el.getAttribute("data-i18n");
     if (t[key]) {
@@ -127,13 +136,24 @@ function applyTranslations() {
     }
   });
 
-  document.title = t.title || document.title;
-  const titleEl = document.querySelector('meta[name="title"]');
-  if (titleEl) titleEl.setAttribute("content", t.title);
+  // タイトルとメタディスクリプションの更新
+  const pageKey = document.body.dataset.page;
+  const titleKey = pageKey ? `${pageKey}Title` : "title";
+  const finalTitle = t[titleKey] || t.title;
 
-  // Update language switcher active state if it exists
+  document.title = finalTitle;
+
+  const metaTitle = document.querySelector('meta[name="title"]');
+  if (metaTitle) metaTitle.setAttribute("content", finalTitle);
+
+  const metaDesc = document.querySelector('meta[name="description"]');
+  if (metaDesc && t.description) metaDesc.setAttribute("content", t.description);
+
+  // 言語切り替えボタンの状態更新
   document.querySelectorAll(".lang-switch").forEach((btn) => {
-    btn.classList.toggle("active", btn.dataset.lang === lang);
+    const isActive = btn.dataset.lang === lang;
+    btn.classList.toggle("active", isActive);
+    btn.setAttribute("aria-pressed", isActive);
   });
 }
 
