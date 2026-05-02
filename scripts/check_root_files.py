@@ -52,7 +52,9 @@ def check_directory_cleanliness(path, allowed_files, allowed_dirs):
 
 def check_project_cleanliness():
     root_success = check_directory_cleanliness(
-        ".", ALLOWED_FILES | {".pre-commit-config.yaml"}, ALLOWED_DIRS
+        ".",
+        ALLOWED_FILES | {".pre-commit-config.yaml", ".pre-commit-ci.yaml"},
+        ALLOWED_DIRS,
     )
 
     app_dir = os.path.join("projects", "app")
