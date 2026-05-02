@@ -54,9 +54,8 @@ export function getTimestamp() {
  * 指定されたターゲット設定に基づき、タブを集約（磁石発動）する
  *
  * @param {Object} target ターゲット設定 { name, pattern, color }
- * @param {string[]} protectedGroups 保護対象のグループ名リスト
  */
-export async function executeMagnet(target, protectedGroups = []) {
+export async function executeMagnet(target) {
   const currentWindow = await chrome.windows.getCurrent();
   const allTabs = await chrome.tabs.query({});
   const allGroups = await chrome.tabGroups.query({});
@@ -76,9 +75,7 @@ export async function executeMagnet(target, protectedGroups = []) {
       const group = groupMap.get(tab.groupId);
       if (group && group.title) {
         // 自動保護: _TM または _TM(Now Collecting) で終わらないグループは保護
-        const hasInternalSuffix = group.title.endsWith(SUFFIX_TM) || group.title.endsWith(SUFFIX_COLLECTING);
-        const isProtectedManually = protectedGroups.includes(group.title);
-        const isProtected = !hasInternalSuffix || isProtectedManually;
+        const isProtected = !group.title.endsWith(SUFFIX_TM) && !group.title.endsWith(SUFFIX_COLLECTING);
 
         if (isMatched) {
           if (isProtected) {

@@ -8,9 +8,6 @@
   "addCurrentTabTitle": {
     "message": "現在のタブを登録"
   },
-  "addThisDomain": {
-    "message": "このドメインを追加"
-  },
   "targetListTitle": {
     "message": "ターゲットリスト"
   },
@@ -31,24 +28,6 @@
   },
   "cancel": {
     "message": "キャンセル"
-  },
-  "settingsTitle": {
-    "message": "設定"
-  },
-  "protectedGroupsLabel": {
-    "message": "保護するグループ名（カンマ区切り）"
-  },
-  "placeholderProtectedGroups": {
-    "message": "FixedGroup1, FixedGroup2"
-  },
-  "saveSettings": {
-    "message": "設定を保存"
-  },
-  "export": {
-    "message": "エクスポート"
-  },
-  "import": {
-    "message": "インポート"
   },
   "noTargets": {
     "message": "登録されたターゲットはありません。"
@@ -107,28 +86,4 @@
   "settings": {
     "message": "設定"
   },
-  "settingsSaved": {
-    "message": "設定を保存しました。"
-  },
-  "exportSuccess": {
-    "message": "設定をクリップボードにコピーしました。"
-  },
-  "errorExportFailed": {
-    "message": "エクスポートに失敗しました。"
-  },
-  "errorInvalidFormat": {
-    "message": "無効なデータ形式です。"
-  },
-  "errorInvalidTargetFormat": {
-    "message": "ターゲットの形式が正しくありません。"
-  },
-  "confirmImport": {
-    "message": "現在の設定を上書きしてインポートしますか？"
-  },
-  "importSuccess": {
-    "message": "インポートが完了しました。"
-  },
-  "errorImportFailed": {
-    "message": "インポートに失敗しました。クリップボードに有効な設定JSONがあることを確認してください。\n"
-  }
 }

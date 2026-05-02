@@ -8,9 +8,6 @@
   "addCurrentTabTitle": {
     "message": "Register current tab"
   },
-  "addThisDomain": {
-    "message": "Add this domain"
-  },
   "targetListTitle": {
     "message": "Target List"
   },
@@ -31,24 +28,6 @@
   },
   "cancel": {
     "message": "Cancel"
-  },
-  "settingsTitle": {
-    "message": "Settings"
-  },
-  "protectedGroupsLabel": {
-    "message": "Protected group names (comma separated)"
-  },
-  "placeholderProtectedGroups": {
-    "message": "FixedGroup1, FixedGroup2"
-  },
-  "saveSettings": {
-    "message": "Save settings"
-  },
-  "export": {
-    "message": "Export"
-  },
-  "import": {
-    "message": "Import"
   },
   "noTargets": {
     "message": "No targets registered."
@@ -107,28 +86,4 @@
   "settings": {
     "message": "Settings"
   },
-  "settingsSaved": {
-    "message": "Settings saved."
-  },
-  "exportSuccess": {
-    "message": "Settings copied to clipboard."
-  },
-  "errorExportFailed": {
-    "message": "Export failed."
-  },
-  "errorInvalidFormat": {
-    "message": "Invalid data format."
-  },
-  "errorInvalidTargetFormat": {
-    "message": "Invalid target format."
-  },
-  "confirmImport": {
-    "message": "Overwrite current settings and import?"
-  },
-  "importSuccess": {
-    "message": "Import completed."
-  },
-  "errorImportFailed": {
-    "message": "Import failed. Please ensure a valid settings JSON is in the clipboard.\n"
-  }
 }

@@ -23,7 +23,6 @@ const confirmDeleteOkBtn = document.getElementById('confirm-delete-ok-btn');
 
 // State
 let targets = [];
-let protectedGroups = [];
 let selectedColor = 'grey';
 let currentEditIndex = null;
 let currentDeleteIndex = null;
@@ -54,9 +53,8 @@ function applyI18n() {
  */
 async function init() {
   applyI18n();
-  const data = await chrome.storage.local.get(['targets', 'protectedGroups']);
+  const data = await chrome.storage.local.get(['targets']);
   targets = data.targets || [];
-  protectedGroups = data.protectedGroups || [];
 
   renderTargetList();
   setupEventListeners();
@@ -71,10 +69,6 @@ async function init() {
         targets = nextTargets;
         renderTargetList();
       }
-    }
-
-    if (changes.protectedGroups) {
-      protectedGroups = changes.protectedGroups.newValue || [];
     }
   });
 }
@@ -108,11 +102,11 @@ function renderTargetList() {
       <div class="target-actions">
         <button class="icon-button edit-btn" data-index="${index}">
           <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"/></svg>
-          <span class="tooltip">${escapeHtml(labelEdit)}</span>
+          <span class="tooltip">${labelEdit}</span>
         </button>
         <button class="icon-button execute-btn" data-index="${index}">
           <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v80h-80v-80H200v560h560v-80h80v80q0 33-23.5 56.5T760-120H200Zm480-160-56-56 103-104H360v-80h367L624-624l56-56 200 200-200 200Z"/></svg>
-          <span class="tooltip">${escapeHtml(labelExecute)}</span>
+          <span class="tooltip">${labelExecute}</span>
         </button>
       </div>
     `;
@@ -285,7 +279,7 @@ async function handleConfirmDelete() {
  */
 async function handleExecuteMagnet(target) {
   try {
-    await executeMagnet(target, protectedGroups);
+    await executeMagnet(target);
   } catch (e) {
     console.error('Magnet execution failed:', e);
     alert(chrome.i18n.getMessage('errorExecutionFailed'));
