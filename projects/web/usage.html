@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TabMagnet-Solo</title>
+    <style>
+      :root {
+        --md-sys-color-primary: #0061a4;
+        --md-sys-color-on-primary: #ffffff;
+        --md-sys-color-surface: #fdfbff;
+        --md-sys-color-on-surface: #1a1c1e;
+        --md-sys-color-outline: #73777f;
+      }
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        background-color: var(--md-sys-color-surface);
+        color: var(--md-sys-color-on-surface);
+        line-height: 1.6;
+      }
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 2rem;
+        border-bottom: 1px solid var(--md-sys-color-outline);
+      }
+      .lang-switcher {
+        display: flex;
+        gap: 0.5rem;
+        margin-left: 1.5rem;
+      }
+      .lang-switch {
+        cursor: pointer;
+        background: none;
+        border: 1px solid var(--md-sys-color-outline);
+        border-radius: 4px;
+        padding: 0.2rem 0.5rem;
+        font-size: 0.8rem;
+        color: var(--md-sys-color-on-surface);
+      }
+      .lang-switch.active {
+        background-color: var(--md-sys-color-primary);
+        color: var(--md-sys-color-on-primary);
+        border-color: var(--md-sys-color-primary);
+      }
+      .logo {
+        display: flex;
+        align-items: center;
+        font-weight: bold;
+        font-size: 1.2rem;
+        text-decoration: none;
+        color: var(--md-sys-color-on-surface);
+      }
+      nav a {
+        margin-left: 1.5rem;
+        text-decoration: none;
+        color: var(--md-sys-color-on-surface);
+      }
+      main {
+        max-width: 800px;
+        margin: 4rem auto;
+        padding: 0 2rem;
+      }
+      h1 {
+        color: var(--md-sys-color-primary);
+        border-bottom: 2px solid var(--md-sys-color-primary);
+        padding-bottom: 0.5rem;
+      }
+      h2 {
+        margin-top: 2rem;
+      }
+      footer {
+        text-align: center;
+        padding: 2rem;
+        border-top: 1px solid var(--md-sys-color-outline);
+        color: var(--md-sys-color-outline);
+        margin-top: 4rem;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <a href="index.html" class="logo">TabMagnet-Solo</a>
+      <nav style="display: flex; align-items: center">
+        <a href="index.html" data-i18n="top">トップ</a>
+        <a href="privacy.html" data-i18n="privacy">プライバシーポリシー</a>
+        <div class="lang-switcher">
+          <button class="lang-switch" data-lang="en" data-i18n="langEn">
+            English
+          </button>
+          <button class="lang-switch" data-lang="ja" data-i18n="langJa">
+            日本語
+          </button>
+        </div>
+      </nav>
+    </header>
+
+    <main>
+      <h1 data-i18n="usageGuide">TabMagnet-Solo の使い方</h1>
+
+      <section>
+        <h2 data-i18n="usageHeader1">1. ターゲットの登録</h2>
+        <p data-i18n="usageText1">
+          サイドパネルを開き、「新規作成」をクリックします。名前とURLパターン（例: *google.com）を入力して、集約したいタブの条件を設定します。
+        </p>
+      </section>
+
+      <section>
+        <h2 data-i18n="usageHeader2">2. 集約の実行</h2>
+        <p data-i18n="usageText2">
+          ターゲットの横にある「実行（磁石アイコン）」ボタンをクリックします。別ウィンドウにあるものも含め、条件に一致するすべてのタブが現在のウィンドウに集約され、グループ化されます。
+        </p>
+      </section>
+
+      <section>
+        <h2 data-i18n="usageHeader3">3. グループ管理</h2>
+        <p data-i18n="usageText3">
+          拡張機能は自動的にグループを管理します。再度実行すると、既存のグループを更新し、常に整理されたワークスペースを維持します。
+        </p>
+      </section>
+    </main>
+
+    <footer>
+      <p data-i18n="copyright">&copy; 2026 TabMagnet-Solo. All rights reserved.</p>
+    </footer>
+    <script src="i18n.js"></script>
+  </body>
+</html>

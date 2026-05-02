@@ -6,10 +6,8 @@ We currently provide security updates for the following versions.
 
 | Version | Supported |
 | ------- | --------- |
-| 0.4.x   | ✅        |
-| 0.3.x   | ✅        |
-| 0.1.x   | ✅        |
-| < 0.1.0 | ❌        |
+| 0.6.x   | ✅        |
+| < 0.6.0 | ❌        |
 
 ## Reporting a Vulnerability
 
@@ -57,10 +55,8 @@ For detailed information, please refer to [README.md](README.md) and [LICENSE](L
 
 | バージョン | サポート |
 | ---------- | -------- |
-| 0.4.x      | ✅       |
-| 0.3.x      | ✅       |
-| 0.1.x      | ✅       |
-| < 0.1.0    | ❌       |
+| 0.6.x      | ✅       |
+| < 0.6.0    | ❌       |
 
 ## 脆弱性の報告方法
 
