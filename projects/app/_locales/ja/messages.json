@@ -18,10 +18,10 @@
     "message": "タブのドメインで作成"
   },
   "placeholderGroupName": {
-    "message": "グループ名 (例: Jira)"
+    "message": "グループ名 (例: Google)"
   },
   "placeholderUrlPattern": {
-    "message": "URLパターン (例: jira.example.com/*)"
+    "message": "URLパターン (例: *google.com)"
   },
   "save": {
     "message": "保存"
@@ -88,5 +88,62 @@
   },
   "settings": {
     "message": "設定"
+  },
+  "tabGeneral": {
+    "message": "一般"
+  },
+  "tabAbout": {
+    "message": "About"
+  },
+  "sectionSettingsData": {
+    "message": "設定データ"
+  },
+  "copyExport": {
+    "message": "コピー (Export)"
+  },
+  "pasteImport": {
+    "message": "貼り付け (Import)"
+  },
+  "fileExport": {
+    "message": "ファイル出力"
+  },
+  "fileImport": {
+    "message": "ファイル読込"
+  },
+  "importSettings": {
+    "message": "インポート設定"
+  },
+  "append": {
+    "message": "追記"
+  },
+  "overwrite": {
+    "message": "上書き"
+  },
+  "version": {
+    "message": "バージョン"
+  },
+  "targetCount": {
+    "message": "ターゲット数"
+  },
+  "developer": {
+    "message": "開発者"
+  },
+  "aboutDescription": {
+    "message": "TabMagnet-Solo は、プライバシー重視のタブ集約ツールです。データはブラウザ内に保存され、外部送信は一切行われません。GitHub Actions による依存関係の検証により、高い透明性と安全性を維持しています。"
+  },
+  "materialDesignCredit": {
+    "message": "このプロジェクトでは、Googleによるオープンソースのデザインシステムである Material Design 3 を使用しています。"
+  },
+  "disclaimer": {
+    "message": "【免責事項】 本ソフトウェアは個人開発によるオープンソースプロジェクトであり、無保証です。利用により生じたいかなる損害についても、開発者は一切の責任を負いません。自己責任でご利用ください。"
+  },
+  "copied": {
+    "message": "コピーしました"
+  },
+  "importSuccess": {
+    "message": "インポートしました"
+  },
+  "importError": {
+    "message": "インポートに失敗しました。正しい形式のデータを選択してください。"
   }
 }
