@@ -54,18 +54,30 @@ async function init() {
 
   // ストレージ変更を監視してUIを同期
   chrome.storage.onChanged.addListener((changes, area) => {
-    if (area === 'local') {
-      if (changes.targets) {
-        targets = changes.targets.newValue || [];
+    if (area !== 'local') return;
+
+    if (changes.targets) {
+      const nextTargets = changes.targets.newValue || [];
+      // 内容が実質的に異なる場合のみ更新
+      if (JSON.stringify(nextTargets) !== JSON.stringify(targets)) {
+        targets = nextTargets;
         renderTargetList();
       }
-      if (changes.protectedGroups) {
-        protectedGroups = changes.protectedGroups.newValue || [];
+    }
+
+    if (changes.protectedGroups) {
+      const nextProtected = changes.protectedGroups.newValue || [];
+      // ユーザーが入力中の場合は同期をスキップして入力を妨げない
+      if (document.activeElement !== protectedGroupsInput &&
+          JSON.stringify(nextProtected) !== JSON.stringify(protectedGroups)) {
+        protectedGroups = nextProtected;
         protectedGroupsInput.value = protectedGroups.join(', ');
       }
     }
   });
 }
+
+document.addEventListener('DOMContentLoaded', init);
 
 /**
  * ターゲットリストをレンダリングする
@@ -77,18 +89,23 @@ function renderTargetList() {
     return;
   }
 
+  // ループ内でのgetMessage呼び出しを最小限にするための定数
+  const labelSummon = chrome.i18n.getMessage('summonMagnet');
+  const labelEdit = chrome.i18n.getMessage('edit');
+  const labelDelete = chrome.i18n.getMessage('delete');
+
   targets.forEach((target, index) => {
     const item = document.createElement('div');
     item.className = 'target-item';
     item.innerHTML = `
       <div class="target-header">
         <div class="target-name">${escapeHtml(target.name)}</div>
-        <button class="btn-primary magnet-btn" data-index="${index}">${chrome.i18n.getMessage('summonMagnet')}</button>
+        <button class="btn-primary magnet-btn" data-index="${index}">${labelSummon}</button>
       </div>
       <div class="target-pattern">${escapeHtml(target.pattern)}</div>
       <div class="actions">
-        <button class="btn-text edit-btn" data-index="${index}">${chrome.i18n.getMessage('edit')}</button>
-        <button class="btn-text btn-error delete-btn" data-index="${index}">${chrome.i18n.getMessage('delete')}</button>
+        <button class="btn-text edit-btn" data-index="${index}">${labelEdit}</button>
+        <button class="btn-text btn-error delete-btn" data-index="${index}">${labelDelete}</button>
       </div>
     `;
     targetListEl.appendChild(item);
@@ -279,5 +296,3 @@ importBtn.addEventListener('click', async () => {
     alert(chrome.i18n.getMessage('errorImportFailed') + e.message);
   }
 });
-
-init();
