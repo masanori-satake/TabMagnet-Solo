@@ -4,7 +4,11 @@
  * 役割:
  * 1. 拡張機能起動時のクリーンアップ処理（旧世代グループの解体）
  * 2. ブラウザ起動時の初期化処理
+ * 3. 収集完了待ちグループの自動リネーム
  */
+
+const SUFFIX_TM = '_TM';
+const SUFFIX_COLLECTING = '_TM(Now Collecting)';
 
 /**
  * 拡張機能起動時またはブラウザ起動時に実行
@@ -24,6 +28,18 @@ chrome.runtime.onInstalled.addListener(async () => {
 });
 
 /**
+ * グループの削除またはタイトル変更を監視
+ */
+chrome.tabGroups.onRemoved.addListener(async () => {
+  await checkAndRenameCollectingGroups();
+});
+
+chrome.tabGroups.onUpdated.addListener(async (group) => {
+  // タイトルが変更された場合にチェック（解体や手動変更を想定）
+  await checkAndRenameCollectingGroups();
+});
+
+/**
  * 全ウィンドウを走査し、旧世代のグループをクリーンアップする
  */
 async function performAutoCleanup() {
@@ -35,9 +51,6 @@ async function performAutoCleanup() {
   if (targets.length === 0) return;
 
   const groups = await chrome.tabGroups.query({});
-
-  const SUFFIX_TM = '_TM';
-  const SUFFIX_COLLECTING = '_TM(Now Collecting)';
 
   for (const target of targets) {
     const targetName = target.name;
@@ -63,4 +76,31 @@ async function performAutoCleanup() {
     }
   }
   console.log('Auto-cleanup completed.');
+}
+
+/**
+ * "(Now Collecting)" 状態のグループを、条件を満たしていれば正規名称にリネームする
+ */
+async function checkAndRenameCollectingGroups() {
+  const groups = await chrome.tabGroups.query({});
+  const collectingGroups = groups.filter(g => g.title && g.title.endsWith(SUFFIX_COLLECTING));
+
+  if (collectingGroups.length === 0) return;
+
+  for (const group of collectingGroups) {
+    const baseName = group.title.slice(0, -SUFFIX_COLLECTING.length);
+    const finalName = baseName + SUFFIX_TM;
+
+    // 同一ターゲットの正規グループが他に存在しないか確認
+    const hasConflict = groups.some(g => g.id !== group.id && g.title === finalName);
+
+    if (!hasConflict) {
+      try {
+        await chrome.tabGroups.update(group.id, { title: finalName });
+        console.log(`Auto-finalized group: ${group.title} -> ${finalName}`);
+      } catch (e) {
+        console.error(`Failed to finalize group ${group.id}:`, e);
+      }
+    }
+  }
 }
