@@ -361,12 +361,21 @@
       display: none !important;
     }
 
+    .pattern-list-label {
+      font: var(--md-sys-typescale-label-medium);
+      color: var(--md-sys-color-on-surface-variant);
+      margin-top: 8px;
+    }
+
     .pattern-list-container {
       display: flex;
       flex-direction: column;
       gap: 8px;
-      max-height: 200px;
+      height: 188px; /* Approx 3.5 items * 52px (item height) + gap */
       overflow-y: auto;
+      border: 1px solid var(--md-sys-color-outline-variant);
+      border-radius: 8px;
+      padding: 8px;
     }
 
     .pattern-item {
@@ -376,6 +385,8 @@
       background-color: var(--md-sys-color-surface-container-low);
       border-radius: 8px;
       padding: 4px 8px;
+      height: 44px;
+      box-sizing: border-box;
     }
 
     .pattern-item .drag-handle {
@@ -383,30 +394,32 @@
       color: var(--md-sys-color-on-surface-variant);
       display: flex;
       align-items: center;
+      flex-shrink: 0;
     }
 
     .pattern-item .drag-handle:active {
       cursor: grabbing;
     }
 
-    .pattern-item .text-field {
+    .pattern-item input {
       flex: 1;
-      margin-top: 0;
+      height: 32px;
+      border: 1px solid var(--md-sys-color-outline-variant);
+      border-radius: 4px;
+      padding: 0 8px;
+      background-color: transparent;
+      color: var(--md-sys-color-on-surface);
+      font: var(--md-sys-typescale-body-medium);
+      outline: none;
     }
 
-    .pattern-item .text-field input {
-      height: 40px;
-      padding: 0 12px;
+    .pattern-item input:focus {
+      border-color: var(--md-sys-color-primary);
     }
 
-    .pattern-item .text-field label {
-      top: 10px;
-      background-color: var(--md-sys-color-surface-container-low);
-    }
-
-    .pattern-item .text-field input:focus + label,
-    .pattern-item .text-field input:not(:placeholder-shown) + label {
-      top: -10px;
+    .pattern-item input::placeholder {
+      color: var(--md-sys-color-outline);
+      opacity: 0.7;
     }
 
     /* Color classes */
@@ -465,6 +478,7 @@
           <div class="color-option bg-cyan" data-color="cyan"><svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20"><path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"/></svg></div>
           <div class="color-option bg-orange" data-color="orange"><svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20"><path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"/></svg></div>
         </div>
+        <div class="pattern-list-label">URLパターン</div>
         <div id="pattern-list-container" class="pattern-list-container">
           <!-- Pattern items will be injected here -->
         </div>
