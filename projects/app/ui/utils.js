@@ -68,8 +68,10 @@ export async function executeMagnet(target) {
   const matchedTabs = [];
   const groupsToDissolve = new Set();
 
+  const patterns = Array.isArray(target.pattern) ? target.pattern : [target.pattern];
+
   for (const tab of allTabs) {
-    const isMatched = matchUrl(tab.url, target.pattern);
+    const isMatched = patterns.some(p => matchUrl(tab.url, p));
 
     if (tab.groupId !== chrome.tabGroups.TAB_GROUP_ID_NONE) {
       const group = groupMap.get(tab.groupId);
@@ -104,7 +106,7 @@ export async function executeMagnet(target) {
   // 1. ターゲット外のタブをグループから外す（解体前に実施）
   for (const groupId of groupsToDissolve) {
     const tabsInGroup = await chrome.tabs.query({ groupId });
-    const tabsToUngroup = tabsInGroup.filter(t => !matchUrl(t.url, target.pattern));
+    const tabsToUngroup = tabsInGroup.filter(t => !patterns.some(p => matchUrl(t.url, p)));
     if (tabsToUngroup.length > 0) {
       await chrome.tabs.ungroup(tabsToUngroup.map(t => t.id));
     }

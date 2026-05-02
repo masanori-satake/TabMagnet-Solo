@@ -10,7 +10,8 @@ const settingsBtn = document.getElementById('settings-btn');
 const targetModalScrim = document.getElementById('target-modal-scrim');
 const modalTitleEl = document.getElementById('modal-title');
 const newNameInput = document.getElementById('new-name');
-const newPatternInput = document.getElementById('new-pattern');
+const patternListContainer = document.getElementById('pattern-list-container');
+const addPatternBtn = document.getElementById('add-pattern-btn');
 const colorOptions = document.querySelectorAll('.color-option');
 const deleteTargetBtn = document.getElementById('delete-target-btn');
 const cancelTargetBtn = document.getElementById('cancel-target-btn');
@@ -138,6 +139,7 @@ function setupEventListeners() {
   addFromDomainBtn.addEventListener('click', handleAddFromDomain);
 
   // モーダル内ボタン
+  addPatternBtn.addEventListener('click', () => addPatternInput());
   cancelTargetBtn.addEventListener('click', hideModal);
   saveTargetBtn.addEventListener('click', handleSaveTarget);
   deleteTargetBtn.addEventListener('click', () => {
@@ -155,6 +157,19 @@ function setupEventListeners() {
   confirmDeleteCancelBtn.addEventListener('click', hideDeleteDialog);
   confirmDeleteOkBtn.addEventListener('click', handleConfirmDelete);
 
+  // 外側クリックで閉じる
+  targetModalScrim.addEventListener('click', (e) => {
+    if (e.target === targetModalScrim) {
+      hideModal();
+    }
+  });
+
+  deleteDialogScrim.addEventListener('click', (e) => {
+    if (e.target === deleteDialogScrim) {
+      hideDeleteDialog();
+    }
+  });
+
   // 設定ボタン（将来用）
   settingsBtn.addEventListener('click', () => {
     console.log('Settings button clicked');
@@ -166,22 +181,78 @@ function setupEventListeners() {
  */
 function showModal(index = null) {
   currentEditIndex = index;
+  patternListContainer.innerHTML = '';
+
   if (index !== null) {
     const target = targets[index];
     modalTitleEl.textContent = chrome.i18n.getMessage('edit');
     newNameInput.value = target.name;
-    newPatternInput.value = target.pattern;
+
+    const patterns = Array.isArray(target.pattern) ? target.pattern : [target.pattern];
+    patterns.forEach(p => addPatternInput(p));
+
     selectColor(target.color || 'grey');
     deleteTargetBtn.classList.remove('hidden');
   } else {
     modalTitleEl.textContent = chrome.i18n.getMessage('addNew');
     newNameInput.value = '';
-    newPatternInput.value = '';
+    addPatternInput();
     selectColor('grey');
     deleteTargetBtn.classList.add('hidden');
   }
   targetModalScrim.style.display = 'flex';
 }
+
+/**
+ * パターン入力欄を追加
+ */
+function addPatternInput(value = '') {
+  const item = document.createElement('div');
+  item.className = 'pattern-item';
+  item.draggable = true;
+
+  item.innerHTML = `
+    <div class="drag-handle">
+      <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20" style="fill: currentColor;"><path d="M360-160q-33 0-56.5-23.5T280-240q0-33 23.5-56.5T360-320q33 0 56.5 23.5T440-240q0 33-23.5 56.5T360-160Zm240 0q-33 0-56.5-23.5T520-240q0-33 23.5-56.5T600-320q33 0 56.5 23.5T680-240q0 33-23.5 56.5T600-160ZM360-400q-33 0-56.5-23.5T280-480q0-33 23.5-56.5T360-560q33 0 56.5 23.5T440-480q0 33-23.5 56.5T360-400Zm240 0q-33 0-56.5-23.5T520-480q0-33 23.5-56.5T600-560q33 0 56.5 23.5T680-480q0 33-23.5 56.5T600-400ZM360-640q-33 0-56.5-23.5T280-720q0-33 23.5-56.5T360-800q33 0 56.5 23.5T440-720q0 33-23.5 56.5T360-640Zm240 0q-33 0-56.5-23.5T520-720q0-33 23.5-56.5T600-800q33 0 56.5 23.5T680-720q0 33-23.5 56.5T600-640Z"/></svg>
+    </div>
+    <div class="text-field">
+      <input type="text" class="pattern-input" placeholder=" " value="${escapeHtml(value)}" required>
+      <label data-i18n="placeholderUrlPattern"></label>
+    </div>
+    <button class="icon-button delete-pattern-btn">
+      <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20"><path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/></svg>
+    </button>
+  `;
+
+  // イベント設定
+  item.querySelector('.delete-pattern-btn').addEventListener('click', () => {
+    if (patternListContainer.children.length > 1) {
+      item.remove();
+    } else {
+      item.querySelector('input').value = '';
+    }
+  });
+
+  // ドラッグ＆ドロップ
+  item.addEventListener('dragstart', () => item.classList.add('dragging'));
+  item.addEventListener('dragend', () => item.classList.remove('dragging'));
+
+  patternListContainer.appendChild(item);
+  applyI18n(); // プレースホルダーの翻訳適用
+}
+
+/**
+ * ドラッグ＆ドロップの並べ替え
+ */
+patternListContainer.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  const draggingItem = document.querySelector('.dragging');
+  const siblings = [...patternListContainer.querySelectorAll('.pattern-item:not(.dragging)')];
+  const nextSibling = siblings.find(sibling => {
+    return e.clientY <= sibling.offsetTop + sibling.offsetHeight / 2;
+  });
+  patternListContainer.insertBefore(draggingItem, nextSibling);
+});
 
 function hideModal() {
   targetModalScrim.style.display = 'none';
@@ -207,14 +278,16 @@ function selectColor(color) {
  */
 async function handleSaveTarget() {
   const name = newNameInput.value.trim();
-  const pattern = newPatternInput.value.trim();
+  const patterns = [...patternListContainer.querySelectorAll('.pattern-input')]
+    .map(input => input.value.trim())
+    .filter(val => val !== '');
 
-  if (!name || !pattern) {
+  if (!name || patterns.length === 0) {
     alert(chrome.i18n.getMessage('errorInputRequired'));
     return;
   }
 
-  const targetData = { name, pattern, color: selectedColor };
+  const targetData = { name, pattern: patterns, color: selectedColor };
 
   if (currentEditIndex !== null) {
     targets[currentEditIndex] = targetData;
@@ -242,7 +315,8 @@ async function handleAddFromDomain() {
 
     showModal();
     newNameInput.value = name;
-    newPatternInput.value = pattern;
+    patternListContainer.innerHTML = '';
+    addPatternInput(pattern);
   } catch (e) {
     console.error('Failed to parse current URL:', e);
   }
@@ -290,6 +364,7 @@ async function handleExecuteMagnet(target) {
  * HTMLをエスケープ
  */
 function escapeHtml(str) {
+  if (typeof str !== 'string') return '';
   const div = document.createElement('div');
   div.textContent = str;
   return div.innerHTML;

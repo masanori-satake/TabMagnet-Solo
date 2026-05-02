@@ -1,0 +1,3 @@
+autofix_prs: true
+autofix_commit_msg: "style: auto fixes from pre-commit.ci"
+autoupdate_schedule: weekly
