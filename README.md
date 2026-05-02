@@ -1,6 +1,6 @@
 # TabMagnet-Solo
 
-[![version](https://img.shields.io/badge/version-0.3.0-blue)](projects/app/manifest.json)
+[![version](https://img.shields.io/badge/version-0.4.0-blue)](projects/app/manifest.json)
 [![Coverage](https://img.shields.io/badge/coverage-29%25-red)](.)
 [![Privacy-Local Only](https://img.shields.io/badge/Privacy-Local%20Only-brightgreen)](AGENTS.md)
 [![Manifest V3](https://img.shields.io/badge/Manifest-V3-orange)](projects/app/manifest.json)

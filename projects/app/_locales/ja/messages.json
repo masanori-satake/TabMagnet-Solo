@@ -15,7 +15,10 @@
     "message": "ターゲットリスト"
   },
   "addNew": {
-    "message": "+ 新規追加"
+    "message": "+ 新規作成"
+  },
+  "addFromDomain": {
+    "message": "+ タブのドメインで作成"
   },
   "placeholderGroupName": {
     "message": "グループ名 (例: Jira)"
@@ -51,7 +54,7 @@
     "message": "登録されたターゲットはありません。"
   },
   "summonMagnet": {
-    "message": "磁石（召喚）"
+    "message": "実行"
   },
   "edit": {
     "message": "編集"
@@ -67,6 +70,42 @@
   },
   "confirmDelete": {
     "message": "このターゲットを削除しますか？"
+  },
+  "confirmDeleteTitle": {
+    "message": "削除の確認"
+  },
+  "groupColor": {
+    "message": "グループの色"
+  },
+  "colorGrey": {
+    "message": "グレー"
+  },
+  "colorBlue": {
+    "message": "ブルー"
+  },
+  "colorRed": {
+    "message": "レッド"
+  },
+  "colorYellow": {
+    "message": "イエロー"
+  },
+  "colorGreen": {
+    "message": "グリーン"
+  },
+  "colorPink": {
+    "message": "ピンク"
+  },
+  "colorPurple": {
+    "message": "パープル"
+  },
+  "colorCyan": {
+    "message": "シアン"
+  },
+  "colorOrange": {
+    "message": "オレンジ"
+  },
+  "settings": {
+    "message": "設定"
   },
   "settingsSaved": {
     "message": "設定を保存しました。"
