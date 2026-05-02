@@ -1,0 +1,95 @@
+{
+  "extensionName": {
+    "message": "TabMagnet-Solo"
+  },
+  "extensionDescription": {
+    "message": "特定のタブを現在のウィンドウに磁石のように集約し、重複を防ぐローカル完結型ツール"
+  },
+  "addCurrentTabTitle": {
+    "message": "現在のタブを登録"
+  },
+  "addThisDomain": {
+    "message": "このドメインを追加"
+  },
+  "targetListTitle": {
+    "message": "ターゲットリスト"
+  },
+  "addNew": {
+    "message": "+ 新規追加"
+  },
+  "placeholderGroupName": {
+    "message": "グループ名 (例: Jira)"
+  },
+  "placeholderUrlPattern": {
+    "message": "URLパターン (例: jira.example.com/*)"
+  },
+  "save": {
+    "message": "保存"
+  },
+  "cancel": {
+    "message": "キャンセル"
+  },
+  "settingsTitle": {
+    "message": "設定"
+  },
+  "protectedGroupsLabel": {
+    "message": "保護するグループ名（カンマ区切り）"
+  },
+  "placeholderProtectedGroups": {
+    "message": "FixedGroup1, FixedGroup2"
+  },
+  "saveSettings": {
+    "message": "設定を保存"
+  },
+  "export": {
+    "message": "エクスポート"
+  },
+  "import": {
+    "message": "インポート"
+  },
+  "noTargets": {
+    "message": "登録されたターゲットはありません。"
+  },
+  "summonMagnet": {
+    "message": "磁石（召喚）"
+  },
+  "edit": {
+    "message": "編集"
+  },
+  "delete": {
+    "message": "削除"
+  },
+  "errorExecutionFailed": {
+    "message": "実行に失敗しました。"
+  },
+  "errorInputRequired": {
+    "message": "名前とパターンを入力してください。"
+  },
+  "confirmDelete": {
+    "message": "このターゲットを削除しますか？"
+  },
+  "settingsSaved": {
+    "message": "設定を保存しました。"
+  },
+  "exportSuccess": {
+    "message": "設定をクリップボードにコピーしました。"
+  },
+  "errorExportFailed": {
+    "message": "エクスポートに失敗しました。"
+  },
+  "errorInvalidFormat": {
+    "message": "無効なデータ形式です。"
+  },
+  "errorInvalidTargetFormat": {
+    "message": "ターゲットの形式が正しくありません。"
+  },
+  "confirmImport": {
+    "message": "現在の設定を上書きしてインポートしますか？"
+  },
+  "importSuccess": {
+    "message": "インポートが完了しました。"
+  },
+  "errorImportFailed": {
+    "message": "インポートに失敗しました。クリップボードに有効な設定JSONがあることを確認してください。\n"
+  }
+}

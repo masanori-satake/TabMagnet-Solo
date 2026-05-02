@@ -172,44 +172,37 @@
   </style>
 </head>
 <body>
-  <h1>
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-12.5c-2.48 0-4.5 2.02-4.5 4.5s2.02 4.5 4.5 4.5 4.5-2.02 4.5-4.5-2.02-4.5-4.5-4.5z"/>
-    </svg>
-    TabMagnet-Solo
-  </h1>
-
   <div class="card">
-    <div class="section-title">現在のタブを登録</div>
-    <button id="add-current-tab" class="btn-tonal" style="width: 100%;">このドメインを追加</button>
+    <div class="section-title" data-i18n="addCurrentTabTitle"></div>
+    <button id="add-current-tab" class="btn-tonal" style="width: 100%;" data-i18n="addThisDomain"></button>
   </div>
 
   <div class="card">
-    <div class="section-title">ターゲットリスト</div>
+    <div class="section-title" data-i18n="targetListTitle"></div>
     <div id="target-list">
       <!-- ターゲットがここに表示される -->
     </div>
-    <button id="show-add-form" class="btn-text">+ 新規追加</button>
+    <button id="show-add-form" class="btn-text" data-i18n="addNew"></button>
 
     <div id="add-form">
-      <input type="text" id="new-name" placeholder="グループ名 (例: Jira)">
-      <input type="text" id="new-pattern" placeholder="URLパターン (例: jira.example.com/*)">
+      <input type="text" id="new-name" data-i18n-placeholder="placeholderGroupName">
+      <input type="text" id="new-pattern" data-i18n-placeholder="placeholderUrlPattern">
       <div class="actions">
-        <button id="save-target" class="btn-primary">保存</button>
-        <button id="cancel-add" class="btn-outline">キャンセル</button>
+        <button id="save-target" class="btn-primary" data-i18n="save"></button>
+        <button id="cancel-add" class="btn-outline" data-i18n="cancel"></button>
       </div>
     </div>
   </div>
 
   <div class="card">
-    <div class="section-title">設定</div>
-    <div class="section-subtitle" style="font: var(--md-sys-typescale-body-medium); margin-bottom: 8px;">保護するグループ名（カンマ区切り）</div>
-    <input type="text" id="protected-groups" placeholder="FixedGroup1, FixedGroup2">
-    <button id="save-settings" class="btn-tonal" style="width: 100%; margin-top: 8px;">設定を保存</button>
+    <div class="section-title" data-i18n="settingsTitle"></div>
+    <div class="section-subtitle" style="font: var(--md-sys-typescale-body-medium); margin-bottom: 8px;" data-i18n="protectedGroupsLabel"></div>
+    <input type="text" id="protected-groups" data-i18n-placeholder="placeholderProtectedGroups">
+    <button id="save-settings" class="btn-tonal" style="width: 100%; margin-top: 8px;" data-i18n="saveSettings"></button>
 
     <div class="import-export">
-      <button id="export-btn" class="btn-outline" style="flex: 1;">エクスポート</button>
-      <button id="import-btn" class="btn-outline" style="flex: 1;">インポート</button>
+      <button id="export-btn" class="btn-outline" style="flex: 1;" data-i18n="export"></button>
+      <button id="import-btn" class="btn-outline" style="flex: 1;" data-i18n="import"></button>
     </div>
   </div>
 

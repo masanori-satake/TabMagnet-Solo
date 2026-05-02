@@ -19,9 +19,31 @@ let targets = [];
 let protectedGroups = [];
 
 /**
+ * HTMLの要素を翻訳する
+ */
+function applyI18n() {
+  // テキストコンテンツの翻訳
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const message = chrome.i18n.getMessage(el.dataset.i18n);
+    if (message) {
+      el.textContent = message;
+    }
+  });
+
+  // プレースホルダーの翻訳
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const message = chrome.i18n.getMessage(el.dataset.i18nPlaceholder);
+    if (message) {
+      el.placeholder = message;
+    }
+  });
+}
+
+/**
  * 初期化処理
  */
 async function init() {
+  applyI18n();
   const data = await chrome.storage.local.get(['targets', 'protectedGroups']);
   targets = data.targets || [];
   protectedGroups = data.protectedGroups || [];
@@ -29,7 +51,33 @@ async function init() {
   protectedGroupsInput.value = protectedGroups.join(', ');
   renderTargetList();
   setupEventListeners();
+
+  // ストレージ変更を監視してUIを同期
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area !== 'local') return;
+
+    if (changes.targets) {
+      const nextTargets = changes.targets.newValue || [];
+      // 内容が実質的に異なる場合のみ更新
+      if (JSON.stringify(nextTargets) !== JSON.stringify(targets)) {
+        targets = nextTargets;
+        renderTargetList();
+      }
+    }
+
+    if (changes.protectedGroups) {
+      const nextProtected = changes.protectedGroups.newValue || [];
+      // ユーザーが入力中の場合は同期をスキップして入力を妨げない
+      if (document.activeElement !== protectedGroupsInput &&
+          JSON.stringify(nextProtected) !== JSON.stringify(protectedGroups)) {
+        protectedGroups = nextProtected;
+        protectedGroupsInput.value = protectedGroups.join(', ');
+      }
+    }
+  });
 }
+
+document.addEventListener('DOMContentLoaded', init);
 
 /**
  * ターゲットリストをレンダリングする
@@ -37,9 +85,14 @@ async function init() {
 function renderTargetList() {
   targetListEl.innerHTML = '';
   if (targets.length === 0) {
-    targetListEl.innerHTML = '<div style="padding: 16px; text-align: center; color: var(--md-sys-color-on-surface-variant);">登録されたターゲットはありません。</div>';
+    targetListEl.innerHTML = `<div style="padding: 16px; text-align: center; color: var(--md-sys-color-on-surface-variant);">${chrome.i18n.getMessage('noTargets')}</div>`;
     return;
   }
+
+  // ループ内でのgetMessage呼び出しを最小限にするための定数
+  const labelSummon = chrome.i18n.getMessage('summonMagnet');
+  const labelEdit = chrome.i18n.getMessage('edit');
+  const labelDelete = chrome.i18n.getMessage('delete');
 
   targets.forEach((target, index) => {
     const item = document.createElement('div');
@@ -47,12 +100,12 @@ function renderTargetList() {
     item.innerHTML = `
       <div class="target-header">
         <div class="target-name">${escapeHtml(target.name)}</div>
-        <button class="btn-primary magnet-btn" data-index="${index}">磁石（召喚）</button>
+        <button class="btn-primary magnet-btn" data-index="${index}">${labelSummon}</button>
       </div>
       <div class="target-pattern">${escapeHtml(target.pattern)}</div>
       <div class="actions">
-        <button class="btn-text edit-btn" data-index="${index}">編集</button>
-        <button class="btn-text btn-error delete-btn" data-index="${index}">削除</button>
+        <button class="btn-text edit-btn" data-index="${index}">${labelEdit}</button>
+        <button class="btn-text btn-error delete-btn" data-index="${index}">${labelDelete}</button>
       </div>
     `;
     targetListEl.appendChild(item);
@@ -98,7 +151,7 @@ async function handleExecuteMagnet(target) {
     console.log(`Executed magnet for ${target.name}`);
   } catch (e) {
     console.error('Magnet execution failed:', e);
-    alert('実行に失敗しました。');
+    alert(chrome.i18n.getMessage('errorExecutionFailed'));
   }
 }
 
@@ -146,7 +199,7 @@ saveTargetBtn.addEventListener('click', async () => {
   const pattern = newPatternInput.value.trim();
 
   if (!name || !pattern) {
-    alert('名前とパターンを入力してください。');
+    alert(chrome.i18n.getMessage('errorInputRequired'));
     return;
   }
 
@@ -177,7 +230,7 @@ function editTarget(index) {
  * ターゲットを削除する
  */
 async function deleteTarget(index) {
-  if (!confirm('このターゲットを削除しますか？')) return;
+  if (!confirm(chrome.i18n.getMessage('confirmDelete'))) return;
   targets.splice(index, 1);
   await chrome.storage.local.set({ targets });
   renderTargetList();
@@ -189,7 +242,7 @@ async function deleteTarget(index) {
 saveSettingsBtn.addEventListener('click', async () => {
   protectedGroups = protectedGroupsInput.value.split(',').map(s => s.trim()).filter(s => s);
   await chrome.storage.local.set({ protectedGroups });
-  alert('設定を保存しました。');
+  alert(chrome.i18n.getMessage('settingsSaved'));
 });
 
 /**
@@ -203,10 +256,10 @@ exportBtn.addEventListener('click', async () => {
   const json = JSON.stringify(data, null, 2);
   try {
     await navigator.clipboard.writeText(json);
-    alert('設定をクリップボードにコピーしました。');
+    alert(chrome.i18n.getMessage('exportSuccess'));
   } catch (e) {
     console.error('Export failed:', e);
-    alert('エクスポートに失敗しました。');
+    alert(chrome.i18n.getMessage('errorExportFailed'));
   }
 });
 
@@ -219,29 +272,27 @@ importBtn.addEventListener('click', async () => {
     const data = JSON.parse(json);
 
     if (!data.targets || !Array.isArray(data.targets)) {
-      throw new Error('無効なデータ形式です。');
+      throw new Error(chrome.i18n.getMessage('errorInvalidFormat'));
     }
 
     // 基本的なバリデーション
     for (const t of data.targets) {
       if (typeof t.name !== 'string' || typeof t.pattern !== 'string') {
-        throw new Error('ターゲットの形式が正しくありません。');
+        throw new Error(chrome.i18n.getMessage('errorInvalidTargetFormat'));
       }
     }
 
-    if (confirm('現在の設定を上書きしてインポートしますか？')) {
+    if (confirm(chrome.i18n.getMessage('confirmImport'))) {
       targets = data.targets;
       protectedGroups = data.protectedGroups || [];
       await chrome.storage.local.set({ targets, protectedGroups });
 
       protectedGroupsInput.value = protectedGroups.join(', ');
       renderTargetList();
-      alert('インポートが完了しました。');
+      alert(chrome.i18n.getMessage('importSuccess'));
     }
   } catch (e) {
     console.error('Import failed:', e);
-    alert('インポートに失敗しました。クリップボードに有効な設定JSONがあることを確認してください。\n' + e.message);
+    alert(chrome.i18n.getMessage('errorImportFailed') + e.message);
   }
 });
-
-init();

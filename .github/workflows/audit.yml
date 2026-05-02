@@ -37,6 +37,12 @@ jobs:
       with:
         python-version: '3.12'
 
+    - name: Install pre-commit
+      run: pip install pre-commit
+
+    - name: 0. Pre-commit Lint
+      run: npm run pre-commit
+
     - name: 1. ルートディレクトリのクリーンネス確認 (Root Directory Cleanliness)
       run: python scripts/check_root_files.py
 

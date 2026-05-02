@@ -1,6 +1,6 @@
 {
   "name": "tabmagnet-solo",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "Magnetically aggregate specific tabs into the current window and maintain singleton groups.",
   "type": "module",
@@ -9,7 +9,8 @@
     "test:e2e": "playwright test",
     "build": "python3 scripts/build.py",
     "generate-icons": "python3 scripts/generate_png_icons.py",
-    "lint": "markdownlint '**/*.md'"
+    "lint": "markdownlint '**/*.md'",
+    "pre-commit": "pre-commit run --all-files"
   },
   "devDependencies": {
     "@playwright/test": "^1.49.1",

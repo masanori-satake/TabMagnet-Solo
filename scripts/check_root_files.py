@@ -63,7 +63,7 @@ def check_project_cleanliness():
         "sidepanel.js",
         "LICENSE",
     }
-    app_allowed_dirs = {"icons", "ui", "assets"}
+    app_allowed_dirs = {"icons", "ui", "assets", "_locales"}
     app_success = check_directory_cleanliness(
         app_dir, app_allowed_files, app_allowed_dirs
     )
