@@ -110,24 +110,40 @@
       display: block;
     }
 
-    /* List Area (Green Area) */
+    /* List Area */
     main {
       flex: 1;
       overflow-y: auto;
       padding: 0 16px;
-      /* border: 2px solid green; /* User's green area */
     }
 
     .target-list-item {
       height: 56px;
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 12px;
       border-bottom: 1px solid var(--md-sys-color-outline-variant);
+      cursor: pointer;
     }
 
     .target-list-item:last-child {
       border-bottom: none;
+    }
+
+    .target-list-item.dragging {
+      opacity: 0.5;
+    }
+
+    .drag-handle {
+      cursor: grab;
+      color: var(--md-sys-color-on-surface-variant);
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .drag-handle:active {
+      cursor: grabbing;
     }
 
     .target-info {
@@ -157,7 +173,7 @@
       gap: 4px;
     }
 
-    /* Footer (Red/Purple Area) */
+    /* Footer */
     footer {
       padding: 16px;
       display: flex;
@@ -257,7 +273,7 @@
 
     .text-field input:focus {
       border: 2px solid var(--md-sys-color-primary);
-      padding: 0 15px; /* Adjust for 2px border */
+      padding: 0 15px;
     }
 
     .text-field input:focus + label,
@@ -312,14 +328,14 @@
 
     .text-button {
       height: 40px;
-      padding: 0 12px;
+      padding: 0 16px;
       border-radius: 20px;
       display: flex;
       align-items: center;
       justify-content: center;
       font: var(--md-sys-typescale-label-large);
       cursor: pointer;
-      border: none;
+      border: 1px solid var(--md-sys-color-outline);
       background: transparent;
       color: var(--md-sys-color-primary);
     }
@@ -330,13 +346,180 @@
 
     .text-button.error {
       color: var(--md-sys-color-error);
+      border-color: var(--md-sys-color-outline);
     }
 
     .text-button.error:hover {
       background-color: rgba(179, 38, 30, 0.08);
     }
 
-    /* Dialog (Delete Confirmation) */
+    /* Tabs in Settings */
+    .modal-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--md-sys-color-outline-variant);
+      margin-bottom: 8px;
+    }
+
+    .tab-item {
+      flex: 1;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+      color: var(--md-sys-color-on-surface-variant);
+    }
+
+    .tab-item.active {
+      color: var(--md-sys-color-primary);
+    }
+
+    .tab-item.active::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 20%;
+      right: 20%;
+      height: 3px;
+      background-color: var(--md-sys-color-primary);
+      border-radius: 3px 3px 0 0;
+    }
+
+    /* Settings Sections */
+    .settings-section-title {
+      font: var(--md-sys-typescale-title-small);
+      color: var(--md-sys-color-primary);
+      margin-bottom: 8px;
+      border-bottom: 1px solid var(--md-sys-color-outline-variant);
+      padding-bottom: 4px;
+    }
+
+    .settings-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .outlined-button {
+      height: 40px;
+      border-radius: 20px;
+      border: 1px solid var(--md-sys-color-outline);
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font: var(--md-sys-typescale-label-large);
+      color: var(--md-sys-color-on-surface);
+      cursor: pointer;
+      padding: 0 12px;
+    }
+
+    .outlined-button:hover {
+      background-color: rgba(0, 0, 0, 0.04);
+    }
+
+    .outlined-button svg {
+      fill: currentColor;
+    }
+
+    .radio-group {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-top: 8px;
+    }
+
+    .radio-option {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font: var(--md-sys-typescale-body-medium);
+      cursor: pointer;
+    }
+
+    /* About Tab Content */
+    .about-stats {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .stat-label {
+      font: var(--md-sys-typescale-label-small);
+      color: var(--md-sys-color-on-surface-variant);
+    }
+
+    .stat-value {
+      font: var(--md-sys-typescale-title-medium);
+      color: var(--md-sys-color-on-surface);
+    }
+
+    .about-text {
+      font: var(--md-sys-typescale-body-small);
+      color: var(--md-sys-color-on-surface);
+      line-height: 1.5;
+    }
+
+    .about-footer {
+      font: var(--md-sys-typescale-body-small);
+      color: var(--md-sys-color-on-surface-variant);
+      font-style: italic;
+      margin-top: 8px;
+    }
+
+    /* Pattern List */
+    .pattern-list-label {
+      font: var(--md-sys-typescale-label-medium);
+      color: var(--md-sys-color-on-surface-variant);
+      margin-top: 8px;
+    }
+
+    .pattern-list-container {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 188px;
+      overflow-y: auto;
+      border: 1px solid var(--md-sys-color-outline-variant);
+      border-radius: 8px;
+      padding: 8px;
+    }
+
+    .pattern-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background-color: var(--md-sys-color-surface-container-low);
+      border-radius: 8px;
+      padding: 4px 8px;
+      height: 44px;
+      box-sizing: border-box;
+    }
+
+    .pattern-item input {
+      flex: 1;
+      height: 32px;
+      border: 1px solid var(--md-sys-color-outline-variant);
+      border-radius: 4px;
+      padding: 0 8px;
+      background-color: transparent;
+      color: var(--md-sys-color-on-surface);
+      font: var(--md-sys-typescale-body-medium);
+      outline: none;
+    }
+
+    .pattern-item input:focus {
+      border-color: var(--md-sys-color-primary);
+    }
+
+    /* Dialog */
     .dialog {
       background-color: var(--md-sys-color-surface-container-highest);
       border-radius: 28px;
@@ -359,67 +542,6 @@
 
     .hidden {
       display: none !important;
-    }
-
-    .pattern-list-label {
-      font: var(--md-sys-typescale-label-medium);
-      color: var(--md-sys-color-on-surface-variant);
-      margin-top: 8px;
-    }
-
-    .pattern-list-container {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      height: 188px; /* Approx 3.5 items * 52px (item height) + gap */
-      overflow-y: auto;
-      border: 1px solid var(--md-sys-color-outline-variant);
-      border-radius: 8px;
-      padding: 8px;
-    }
-
-    .pattern-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background-color: var(--md-sys-color-surface-container-low);
-      border-radius: 8px;
-      padding: 4px 8px;
-      height: 44px;
-      box-sizing: border-box;
-    }
-
-    .pattern-item .drag-handle {
-      cursor: grab;
-      color: var(--md-sys-color-on-surface-variant);
-      display: flex;
-      align-items: center;
-      flex-shrink: 0;
-    }
-
-    .pattern-item .drag-handle:active {
-      cursor: grabbing;
-    }
-
-    .pattern-item input {
-      flex: 1;
-      height: 32px;
-      border: 1px solid var(--md-sys-color-outline-variant);
-      border-radius: 4px;
-      padding: 0 8px;
-      background-color: transparent;
-      color: var(--md-sys-color-on-surface);
-      font: var(--md-sys-typescale-body-medium);
-      outline: none;
-    }
-
-    .pattern-item input:focus {
-      border-color: var(--md-sys-color-primary);
-    }
-
-    .pattern-item input::placeholder {
-      color: var(--md-sys-color-outline);
-      opacity: 0.7;
     }
 
     /* Color classes */
@@ -458,7 +580,7 @@
     </button>
   </footer>
 
-  <!-- Target Modal -->
+  <!-- Target Modal (Add/Edit) -->
   <div id="target-modal-scrim" class="scrim">
     <div class="modal">
       <div id="modal-title" class="modal-title">新規作成</div>
@@ -482,7 +604,7 @@
         <div id="pattern-list-container" class="pattern-list-container">
           <!-- Pattern items will be injected here -->
         </div>
-        <button id="add-pattern-btn" class="text-button" style="justify-content: flex-start; padding: 0;">
+        <button id="add-pattern-btn" class="text-button" style="justify-content: flex-start; padding: 0 8px; border: none;">
           <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20" style="fill: currentColor;"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/></svg>
           <span data-i18n="addNew"></span>
         </button>
@@ -491,7 +613,89 @@
         <button id="delete-target-btn" class="text-button error hidden" data-i18n="delete"></button>
         <div style="flex: 1;"></div>
         <button id="cancel-target-btn" class="text-button" data-i18n="cancel"></button>
-        <button id="save-target-btn" class="text-button" data-i18n="save"></button>
+        <button id="save-target-btn" class="text-button" data-i18n="save" style="background-color: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container);"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="settings-modal-scrim" class="scrim">
+    <div class="modal" style="width: 320px; padding: 16px 24px 24px 24px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+        <div class="modal-title" data-i18n="settings"></div>
+        <button id="close-settings-btn" class="icon-button">
+          <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg>
+        </button>
+      </div>
+
+      <div class="modal-tabs">
+        <div class="tab-item active" data-tab="general">
+          <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" fill="currentColor"><path d="m370-80-16-128q-13-5-24.5-12T307-235l-119 50L78-375l103-78q-1-7-1-13.5v-27q0-6.5 1-13.5L78-585l110-190 119 50q11-8 23-15t24-12l16-128h220l16 128q13 5 24.5 12t22.5 15l119-50 110 190-103 78q1 7 1 13.5v27q0 6.5-2 13.5l103 78-110 190-118-50q-11 8-23 15t-24 12L590-80H370Zm42-280q58 0 99-41t41-99q0-58-41-99t-99-41q-59 0-99.5 41T342-480q0 58 40.5 99t99.5 41Z"/></svg>
+          <span class="tooltip" data-i18n="tabGeneral"></span>
+        </div>
+        <div class="tab-item" data-tab="about">
+          <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" fill="currentColor"><path d="M440-280h80v-240h-80v240Zm40-320q17 0 28.5-11.5T520-640q0-17-11.5-28.5T480-680q-17 0-28.5 11.5T440-640q0 17 11.5 28.5T480-600Zm0 520q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/></svg>
+          <span class="tooltip" data-i18n="tabAbout"></span>
+        </div>
+      </div>
+
+      <div id="settings-content">
+        <!-- General Tab Content -->
+        <div id="tab-content-general" class="tab-pane">
+          <div class="settings-section-title" data-i18n="sectionSettingsData"></div>
+          <div class="settings-grid">
+            <button id="copy-export-btn" class="outlined-button">
+              <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20"><path d="M360-240q-33 0-56.5-23.5T280-320v-480q0-33 23.5-56.5T360-880h360q33 0 56.5 23.5T800-800v480q0 33-23.5 56.5T720-240H360Zm0-80h360v-480H360v480ZM200-80q-33 0-56.5-23.5T120-160v-560h80v560h440v80H200Zm160-240v-480 480Z"/></svg>
+              <span data-i18n="copyExport"></span>
+            </button>
+            <button id="paste-import-btn" class="outlined-button">
+              <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20"><path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h167q11-35 43-57.5t70-22.5q38 0 70 22.5t43 57.5h167q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Zm280-590q13 0 21.5-8.5T510-820q0-13-8.5-21.5T480-850q-13 0-21.5 8.5T450-820q0 13 8.5 21.5T480-790ZM200-200v-560 560Z"/></svg>
+              <span data-i18n="pasteImport"></span>
+            </button>
+            <button id="file-export-btn" class="outlined-button">
+              <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20"><path d="M480-320 280-520l56-58 104 104v-326h80v326l104-104 56 58-200 200ZM240-160q-33 0-56.5-23.5T160-240v-120h80v120h480v-120h80v120q0 33-23.5 56.5T720-160H240Z"/></svg>
+              <span data-i18n="fileExport"></span>
+            </button>
+            <button id="file-import-btn" class="outlined-button">
+              <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20"><path d="M440-200v-326L336-422l-56-58 200-200 200 200-56 58-104-104v326h-80ZM160-600v-120q0-33 23.5-56.5T240-800h480q33 0 56.5 23.5T800-720v120h-80v-120H240v120h-80Z"/></svg>
+              <span data-i18n="fileImport"></span>
+            </button>
+          </div>
+          <div style="margin-top: 16px;">
+            <div style="font: var(--md-sys-typescale-label-medium); color: var(--md-sys-color-on-surface-variant);" data-i18n="importSettings"></div>
+            <div class="radio-group">
+              <label class="radio-option">
+                <input type="radio" name="import-mode" value="append" checked>
+                <span data-i18n="append"></span>
+              </label>
+              <label class="radio-option">
+                <input type="radio" name="import-mode" value="overwrite">
+                <span data-i18n="overwrite"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- About Tab Content -->
+        <div id="tab-content-about" class="tab-pane hidden">
+          <div class="stat-item" style="margin-bottom: 8px;">
+            <div class="stat-label" data-i18n="version"></div>
+            <div id="about-version" class="stat-value">v0.5.0</div>
+          </div>
+          <div class="about-stats">
+            <div class="stat-item">
+              <div class="stat-label" data-i18n="targetCount"></div>
+              <div id="about-target-count" class="stat-value">0</div>
+            </div>
+          </div>
+          <div class="stat-item" style="margin-bottom: 12px;">
+            <div class="stat-label" data-i18n="developer"></div>
+            <div class="stat-value">Masanori SATAKE</div>
+          </div>
+          <div class="about-text" data-i18n="aboutDescription"></div>
+          <div class="about-text" style="margin-top: 12px;" data-i18n="materialDesignCredit"></div>
+          <div class="about-footer" data-i18n="disclaimer"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -503,11 +707,12 @@
       <div class="dialog-text" data-i18n="confirmDelete"></div>
       <div class="modal-actions">
         <button id="confirm-delete-cancel-btn" class="text-button" data-i18n="cancel"></button>
-        <button id="confirm-delete-ok-btn" class="text-button" data-i18n="delete"></button>
+        <button id="confirm-delete-ok-btn" class="text-button error" data-i18n="delete"></button>
       </div>
     </div>
   </div>
 
+  <input type="file" id="file-input" class="hidden" accept=".json">
   <script type="module" src="sidepanel.js"></script>
 </body>
 </html>

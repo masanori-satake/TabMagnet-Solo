@@ -18,10 +18,10 @@
     "message": "From Tab Domain"
   },
   "placeholderGroupName": {
-    "message": "Group name (e.g. Jira)"
+    "message": "Group name (e.g. Google)"
   },
   "placeholderUrlPattern": {
-    "message": "URL pattern (e.g. jira.example.com/*)"
+    "message": "URL pattern (e.g. *google.com)"
   },
   "save": {
     "message": "Save"
@@ -88,5 +88,62 @@
   },
   "settings": {
     "message": "Settings"
+  },
+  "tabGeneral": {
+    "message": "General"
+  },
+  "tabAbout": {
+    "message": "About"
+  },
+  "sectionSettingsData": {
+    "message": "Settings Data"
+  },
+  "copyExport": {
+    "message": "Copy (Export)"
+  },
+  "pasteImport": {
+    "message": "Paste (Import)"
+  },
+  "fileExport": {
+    "message": "File Export"
+  },
+  "fileImport": {
+    "message": "File Import"
+  },
+  "importSettings": {
+    "message": "Import Settings"
+  },
+  "append": {
+    "message": "Append"
+  },
+  "overwrite": {
+    "message": "Overwrite"
+  },
+  "version": {
+    "message": "Version"
+  },
+  "targetCount": {
+    "message": "Target Count"
+  },
+  "developer": {
+    "message": "Developer"
+  },
+  "aboutDescription": {
+    "message": "TabMagnet-Solo is a privacy-focused tab aggregation tool. Data is stored within the browser, and no external transmission is performed. Transparency and security are maintained through dependency verification by GitHub Actions."
+  },
+  "materialDesignCredit": {
+    "message": "This project uses Material Design 3, an open-source design system by Google."
+  },
+  "disclaimer": {
+    "message": "[Disclaimer] This software is an open-source project by an individual developer and is provided without warranty. The developer assumes no responsibility for any damages arising from its use. Please use it at your own risk."
+  },
+  "copied": {
+    "message": "Copied"
+  },
+  "importSuccess": {
+    "message": "Imported"
+  },
+  "importError": {
+    "message": "Import failed. Please select data in the correct format."
   }
 }

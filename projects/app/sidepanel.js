@@ -6,7 +6,7 @@ const addNewBtn = document.getElementById('add-new-btn');
 const addFromDomainBtn = document.getElementById('add-from-domain-btn');
 const settingsBtn = document.getElementById('settings-btn');
 
-// Modal elements
+// Target Modal elements
 const targetModalScrim = document.getElementById('target-modal-scrim');
 const modalTitleEl = document.getElementById('modal-title');
 const newNameInput = document.getElementById('new-name');
@@ -16,6 +16,19 @@ const colorOptions = document.querySelectorAll('.color-option');
 const deleteTargetBtn = document.getElementById('delete-target-btn');
 const cancelTargetBtn = document.getElementById('cancel-target-btn');
 const saveTargetBtn = document.getElementById('save-target-btn');
+
+// Settings Modal elements
+const settingsModalScrim = document.getElementById('settings-modal-scrim');
+const closeSettingsBtn = document.getElementById('close-settings-btn');
+const tabItems = document.querySelectorAll('.tab-item');
+const tabPanes = document.querySelectorAll('.tab-pane');
+const copyExportBtn = document.getElementById('copy-export-btn');
+const pasteImportBtn = document.getElementById('paste-import-btn');
+const fileExportBtn = document.getElementById('file-export-btn');
+const fileImportBtn = document.getElementById('file-import-btn');
+const fileInput = document.getElementById('file-input');
+const aboutVersionEl = document.getElementById('about-version');
+const aboutTargetCountEl = document.getElementById('about-target-count');
 
 // Delete Dialog elements
 const deleteDialogScrim = document.getElementById('delete-dialog-scrim');
@@ -32,7 +45,6 @@ let currentDeleteIndex = null;
  * HTMLの要素を翻訳する
  */
 function applyI18n() {
-  // テキストコンテンツの翻訳
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const message = chrome.i18n.getMessage(el.dataset.i18n);
     if (message) {
@@ -40,7 +52,6 @@ function applyI18n() {
     }
   });
 
-  // プレースホルダーの翻訳
   document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
     const message = chrome.i18n.getMessage(el.dataset.i18nPlaceholder);
     if (message) {
@@ -60,15 +71,17 @@ async function init() {
   renderTargetList();
   setupEventListeners();
 
-  // ストレージ変更を監視してUIを同期
+  // Aboutタブの情報を更新
+  updateAboutInfo();
+
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area !== 'local') return;
-
     if (changes.targets) {
       const nextTargets = changes.targets.newValue || [];
       if (JSON.stringify(nextTargets) !== JSON.stringify(targets)) {
         targets = nextTargets;
         renderTargetList();
+        updateAboutInfo();
       }
     }
   });
@@ -87,97 +100,140 @@ function renderTargetList() {
   }
 
   const labelExecute = chrome.i18n.getMessage('summonMagnet');
-  const labelEdit = chrome.i18n.getMessage('edit');
 
   targets.forEach((target, index) => {
     const item = document.createElement('div');
     item.className = 'target-list-item';
+    item.draggable = true;
+    item.dataset.index = index;
 
     const colorClass = `bg-${target.color || 'grey'}`;
 
     item.innerHTML = `
+      <div class="drag-handle">
+        <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" style="fill: currentColor;"><path d="M360-160q-33 0-56.5-23.5T280-240q0-33 23.5-56.5T360-320q33 0 56.5 23.5T440-240q0 33-23.5 56.5T360-160Zm240 0q-33 0-56.5-23.5T520-240q0-33 23.5-56.5T600-320q33 0 56.5 23.5T680-240q0 33-23.5 56.5T600-160ZM360-400q-33 0-56.5-23.5T280-480q0-33 23.5-56.5T360-560q33 0 56.5 23.5T440-480q0 33-23.5 56.5T360-400Zm240 0q-33 0-56.5-23.5T520-480q0-33 23.5-56.5T600-560q33 0 56.5 23.5T680-480q0 33-23.5 56.5T600-400ZM360-640q-33 0-56.5-23.5T280-720q0-33 23.5-56.5T360-800q33 0 56.5 23.5T440-720q0 33-23.5 56.5T360-640Zm240 0q-33 0-56.5-23.5T520-720q0-33 23.5-56.5T600-800q33 0 56.5 23.5T680-720q0 33-23.5 56.5T600-640Z"/></svg>
+      </div>
       <div class="target-info">
         <div class="target-color-chip ${colorClass}"></div>
         <div class="target-name">${escapeHtml(target.name)}</div>
       </div>
       <div class="target-actions">
-        <button class="icon-button edit-btn" data-index="${index}">
-          <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"/></svg>
-          <span class="tooltip">${labelEdit}</span>
-        </button>
         <button class="icon-button execute-btn" data-index="${index}">
-          <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v80h-80v-80H200v560h560v-80h80v80q0 33-23.5 56.5T760-120H200Zm480-160-56-56 103-104H360v-80h367L624-624l56-56 200 200-200 200Z"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M480-120q-75 0-127.5-52.5T300-300v-360q0-50 35-85t85-35q50 0 85 35t35 85v360q0 25-17.5 42.5T480-240q-25 0-42.5-17.5T420-300v-360h60v360q0 1-1 1t-1-1q-25 0-42.5-17.5T420-360v-300q0-25 17.5-42.5T480-720q25 0 42.5 17.5T540-660v360q0 50-35 85t-85 35q-50 0-85-35t-35-85v-360q0-75 52.5-127.5T480-840q75 0 127.5 52.5T660-660v360q0 75-52.5 127.5T480-120Z"/></svg>
           <span class="tooltip">${labelExecute}</span>
         </button>
       </div>
     `;
+
+    // ドラッグ＆ドロップイベント
+    item.addEventListener('dragstart', () => item.classList.add('dragging'));
+    item.addEventListener('dragend', () => item.classList.remove('dragging'));
+
+    // 項目クリック（編集）
+    item.addEventListener('click', (e) => {
+      if (e.target.closest('.drag-handle') || e.target.closest('.execute-btn')) return;
+      showModal(index);
+    });
+
     targetListEl.appendChild(item);
   });
 }
 
 /**
+ * リストの並べ替え（メインリスト）
+ */
+targetListEl.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  const draggingItem = document.querySelector('.target-list-item.dragging');
+  if (!draggingItem) return;
+
+  const siblings = [...targetListEl.querySelectorAll('.target-list-item:not(.dragging)')];
+  const nextSibling = siblings.find(sibling => {
+    return e.clientY <= sibling.offsetTop + sibling.offsetHeight / 2;
+  });
+  targetListEl.insertBefore(draggingItem, nextSibling);
+});
+
+targetListEl.addEventListener('drop', async (e) => {
+  e.preventDefault();
+  const items = [...targetListEl.querySelectorAll('.target-list-item')];
+  const newTargets = items.map(item => targets[parseInt(item.dataset.index)]);
+  targets = newTargets;
+  await chrome.storage.local.set({ targets });
+  renderTargetList();
+});
+
+/**
  * イベントリスナーの設定
  */
 function setupEventListeners() {
-  // リスト内ボタンのイベント委譲
+  // 実行ボタン
   targetListEl.addEventListener('click', (e) => {
-    const btn = e.target.closest('.icon-button');
+    const btn = e.target.closest('.execute-btn');
     if (!btn) return;
-
     const index = parseInt(btn.dataset.index);
-    if (isNaN(index)) return;
-
-    if (btn.classList.contains('execute-btn')) {
-      handleExecuteMagnet(targets[index]);
-    } else if (btn.classList.contains('edit-btn')) {
-      showModal(index);
-    }
+    handleExecuteMagnet(targets[index]);
   });
 
   // フッターボタン
   addNewBtn.addEventListener('click', () => showModal());
   addFromDomainBtn.addEventListener('click', handleAddFromDomain);
 
-  // モーダル内ボタン
+  // ターゲットモーダル
   addPatternBtn.addEventListener('click', () => addPatternInput());
   cancelTargetBtn.addEventListener('click', hideModal);
   saveTargetBtn.addEventListener('click', handleSaveTarget);
-  deleteTargetBtn.addEventListener('click', () => {
-    showDeleteDialog(currentEditIndex);
+  deleteTargetBtn.addEventListener('click', () => showDeleteDialog(currentEditIndex));
+
+  colorOptions.forEach(opt => {
+    opt.addEventListener('click', () => selectColor(opt.dataset.color));
   });
 
-  // カラー選択
-  colorOptions.forEach(opt => {
-    opt.addEventListener('click', () => {
-      selectColor(opt.dataset.color);
+  // 設定モーダル
+  settingsBtn.addEventListener('click', showSettingsModal);
+  closeSettingsBtn.addEventListener('click', hideSettingsModal);
+
+  tabItems.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const targetTab = tab.dataset.tab;
+      tabItems.forEach(t => t.classList.toggle('active', t.dataset.tab === targetTab));
+      tabPanes.forEach(p => p.classList.toggle('hidden', p.id !== `tab-content-${targetTab}`));
     });
   });
 
-  // 削除ダイアログボタン
+  copyExportBtn.addEventListener('click', handleCopyExport);
+  pasteImportBtn.addEventListener('click', handlePasteImport);
+  fileExportBtn.addEventListener('click', handleFileExport);
+  fileImportBtn.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', handleFileImport);
+
+  // 削除ダイアログ
   confirmDeleteCancelBtn.addEventListener('click', hideDeleteDialog);
   confirmDeleteOkBtn.addEventListener('click', handleConfirmDelete);
 
   // 外側クリックで閉じる
-  targetModalScrim.addEventListener('click', (e) => {
-    if (e.target === targetModalScrim) {
-      hideModal();
-    }
-  });
-
-  deleteDialogScrim.addEventListener('click', (e) => {
-    if (e.target === deleteDialogScrim) {
-      hideDeleteDialog();
-    }
-  });
-
-  // 設定ボタン（将来用）
-  settingsBtn.addEventListener('click', () => {
-    console.log('Settings button clicked');
+  [targetModalScrim, settingsModalScrim, deleteDialogScrim].forEach(scrim => {
+    scrim.addEventListener('click', (e) => {
+      if (e.target === scrim) {
+        if (scrim === targetModalScrim) hideModal();
+        if (scrim === settingsModalScrim) hideSettingsModal();
+        if (scrim === deleteDialogScrim) hideDeleteDialog();
+      }
+    });
   });
 }
 
 /**
- * モーダルを表示
+ * About情報を更新
+ */
+function updateAboutInfo() {
+  const manifest = chrome.runtime.getManifest();
+  aboutVersionEl.textContent = `v${manifest.version}`;
+  aboutTargetCountEl.textContent = targets.length;
+}
+
+/**
+ * ターゲットモーダルを表示
  */
 function showModal(index = null) {
   currentEditIndex = index;
@@ -187,10 +243,8 @@ function showModal(index = null) {
     const target = targets[index];
     modalTitleEl.textContent = chrome.i18n.getMessage('edit');
     newNameInput.value = target.name;
-
     const patterns = Array.isArray(target.pattern) ? target.pattern : [target.pattern];
     patterns.forEach(p => addPatternInput(p));
-
     selectColor(target.color || 'grey');
     deleteTargetBtn.classList.remove('hidden');
   } else {
@@ -201,6 +255,11 @@ function showModal(index = null) {
     deleteTargetBtn.classList.add('hidden');
   }
   targetModalScrim.style.display = 'flex';
+}
+
+function hideModal() {
+  targetModalScrim.style.display = 'none';
+  currentEditIndex = null;
 }
 
 /**
@@ -222,7 +281,6 @@ function addPatternInput(value = '') {
     </button>
   `;
 
-  // イベント設定
   item.querySelector('.delete-pattern-btn').addEventListener('click', () => {
     if (patternListContainer.children.length > 1) {
       item.remove();
@@ -231,20 +289,20 @@ function addPatternInput(value = '') {
     }
   });
 
-  // ドラッグ＆ドロップ
   item.addEventListener('dragstart', () => item.classList.add('dragging'));
   item.addEventListener('dragend', () => item.classList.remove('dragging'));
 
   patternListContainer.appendChild(item);
-  applyI18n(); // プレースホルダーの翻訳適用
+  applyI18n();
 }
 
 /**
- * ドラッグ＆ドロップの並べ替え
+ * パターンの並べ替え
  */
 patternListContainer.addEventListener('dragover', (e) => {
   e.preventDefault();
-  const draggingItem = document.querySelector('.dragging');
+  const draggingItem = patternListContainer.querySelector('.dragging');
+  if (!draggingItem) return;
   const siblings = [...patternListContainer.querySelectorAll('.pattern-item:not(.dragging)')];
   const nextSibling = siblings.find(sibling => {
     return e.clientY <= sibling.offsetTop + sibling.offsetHeight / 2;
@@ -252,27 +310,18 @@ patternListContainer.addEventListener('dragover', (e) => {
   patternListContainer.insertBefore(draggingItem, nextSibling);
 });
 
-function hideModal() {
-  targetModalScrim.style.display = 'none';
-  currentEditIndex = null;
-}
-
 /**
- * カラーを選択
+ * カラー選択
  */
 function selectColor(color) {
   selectedColor = color;
   colorOptions.forEach(opt => {
-    if (opt.dataset.color === color) {
-      opt.classList.add('selected');
-    } else {
-      opt.classList.remove('selected');
-    }
+    opt.classList.toggle('selected', opt.dataset.color === color);
   });
 }
 
 /**
- * 保存処理
+ * ターゲット保存
  */
 async function handleSaveTarget() {
   const name = newNameInput.value.trim();
@@ -286,7 +335,6 @@ async function handleSaveTarget() {
   }
 
   const targetData = { name, pattern: patterns, color: selectedColor };
-
   if (currentEditIndex !== null) {
     targets[currentEditIndex] = targetData;
   } else {
@@ -299,18 +347,16 @@ async function handleSaveTarget() {
 }
 
 /**
- * 現在のタブドメインから作成
+ * ドメインから追加
  */
 async function handleAddFromDomain() {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!tab || !tab.url) return;
-
   try {
     const url = new URL(tab.url);
     const domain = url.hostname;
     const name = domain.split('.')[0].charAt(0).toUpperCase() + domain.split('.')[0].slice(1);
     const pattern = domain + '/*';
-
     showModal();
     newNameInput.value = name;
     patternListContainer.innerHTML = '';
@@ -321,7 +367,101 @@ async function handleAddFromDomain() {
 }
 
 /**
- * 削除確認ダイアログを表示
+ * 設定モーダル
+ */
+function showSettingsModal() {
+  settingsModalScrim.style.display = 'flex';
+  updateAboutInfo();
+}
+
+function hideSettingsModal() {
+  settingsModalScrim.style.display = 'none';
+}
+
+/**
+ * エクスポート（コピー）
+ */
+async function handleCopyExport() {
+  try {
+    const json = JSON.stringify(targets, null, 2);
+    await navigator.clipboard.writeText(json);
+    alert(chrome.i18n.getMessage('copied'));
+  } catch (err) {
+    console.error('Failed to copy targets:', err);
+  }
+}
+
+/**
+ * インポート（貼り付け）
+ */
+async function handlePasteImport() {
+  try {
+    const text = await navigator.clipboard.readText();
+    const data = JSON.parse(text);
+    if (Array.isArray(data)) {
+      await importData(data);
+    } else {
+      throw new Error('Invalid format');
+    }
+  } catch (err) {
+    alert(chrome.i18n.getMessage('importError'));
+  }
+}
+
+/**
+ * エクスポート（ファイル）
+ */
+function handleFileExport() {
+  const json = JSON.stringify(targets, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `tabmagnet_targets_${new Date().getTime()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+/**
+ * インポート（ファイル）
+ */
+function handleFileImport(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async (event) => {
+    try {
+      const data = JSON.parse(event.target.result);
+      if (Array.isArray(data)) {
+        await importData(data);
+      } else {
+        throw new Error('Invalid format');
+      }
+    } catch (err) {
+      alert(chrome.i18n.getMessage('importError'));
+    }
+    fileInput.value = '';
+  };
+  reader.readAsText(file);
+}
+
+/**
+ * データのインポート
+ */
+async function importData(newData) {
+  const mode = document.querySelector('input[name="import-mode"]:checked').value;
+  if (mode === 'append') {
+    targets = [...targets, ...newData];
+  } else {
+    targets = newData;
+  }
+  await chrome.storage.local.set({ targets });
+  renderTargetList();
+  alert(chrome.i18n.getMessage('importSuccess'));
+}
+
+/**
+ * 削除確認
  */
 function showDeleteDialog(index) {
   currentDeleteIndex = index;
@@ -333,9 +473,6 @@ function hideDeleteDialog() {
   currentDeleteIndex = null;
 }
 
-/**
- * 削除確定処理
- */
 async function handleConfirmDelete() {
   if (currentDeleteIndex !== null) {
     targets.splice(currentDeleteIndex, 1);
@@ -347,7 +484,7 @@ async function handleConfirmDelete() {
 }
 
 /**
- * 磁石を実行
+ * 磁石実行
  */
 async function handleExecuteMagnet(target) {
   try {
@@ -358,9 +495,6 @@ async function handleExecuteMagnet(target) {
   }
 }
 
-/**
- * HTMLをエスケープ
- */
 function escapeHtml(str) {
   if (typeof str !== 'string') return '';
   const div = document.createElement('div');
