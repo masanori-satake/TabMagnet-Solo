@@ -120,7 +120,9 @@ function renderTargetList() {
       </div>
       <div class="target-actions">
         <button class="icon-button execute-btn" data-index="${index}">
-          <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M480-120q-75 0-127.5-52.5T300-300v-360q0-50 35-85t85-35q50 0 85 35t35 85v360q0 25-17.5 42.5T480-240q-25 0-42.5-17.5T420-300v-360h60v360q0 1-1 1t-1-1q-25 0-42.5-17.5T420-360v-300q0-25 17.5-42.5T480-720q25 0 42.5 17.5T540-660v360q0 50-35 85t-85 35q-50 0-85-35t-35-85v-360q0-75 52.5-127.5T480-840q75 0 127.5 52.5T660-660v360q0 75-52.5 127.5T480-120Z"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24" fill="currentColor">
+            <path d="M5 2h4v3H5V2zm10 0h4v3h-4V2zM5 6v8c0 3.87 3.13 7 7 7s7-3.13 7-7V6h-4v8c0 1.66-1.34 3-3 3s-3-1.34-3-3V6H5z"/>
+          </svg>
           <span class="tooltip">${labelExecute}</span>
         </button>
       </div>
