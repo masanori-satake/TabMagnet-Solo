@@ -8,14 +8,14 @@
   "addCurrentTabTitle": {
     "message": "Register current tab"
   },
-  "addThisDomain": {
-    "message": "Add this domain"
-  },
   "targetListTitle": {
     "message": "Target List"
   },
   "addNew": {
-    "message": "+ Add new"
+    "message": "+ New Target"
+  },
+  "addFromDomain": {
+    "message": "+ From Tab Domain"
   },
   "placeholderGroupName": {
     "message": "Group name (e.g. Jira)"
@@ -29,29 +29,11 @@
   "cancel": {
     "message": "Cancel"
   },
-  "settingsTitle": {
-    "message": "Settings"
-  },
-  "protectedGroupsLabel": {
-    "message": "Protected group names (comma separated)"
-  },
-  "placeholderProtectedGroups": {
-    "message": "FixedGroup1, FixedGroup2"
-  },
-  "saveSettings": {
-    "message": "Save settings"
-  },
-  "export": {
-    "message": "Export"
-  },
-  "import": {
-    "message": "Import"
-  },
   "noTargets": {
     "message": "No targets registered."
   },
   "summonMagnet": {
-    "message": "Magnet (Summon)"
+    "message": "Execute"
   },
   "edit": {
     "message": "Edit"
@@ -68,28 +50,40 @@
   "confirmDelete": {
     "message": "Do you want to delete this target?"
   },
-  "settingsSaved": {
-    "message": "Settings saved."
+  "confirmDeleteTitle": {
+    "message": "Confirm Delete"
   },
-  "exportSuccess": {
-    "message": "Settings copied to clipboard."
+  "groupColor": {
+    "message": "Group Color"
   },
-  "errorExportFailed": {
-    "message": "Export failed."
+  "colorGrey": {
+    "message": "Grey"
   },
-  "errorInvalidFormat": {
-    "message": "Invalid data format."
+  "colorBlue": {
+    "message": "Blue"
   },
-  "errorInvalidTargetFormat": {
-    "message": "Invalid target format."
+  "colorRed": {
+    "message": "Red"
   },
-  "confirmImport": {
-    "message": "Overwrite current settings and import?"
+  "colorYellow": {
+    "message": "Yellow"
   },
-  "importSuccess": {
-    "message": "Import completed."
+  "colorGreen": {
+    "message": "Green"
   },
-  "errorImportFailed": {
-    "message": "Import failed. Please ensure a valid settings JSON is in the clipboard.\n"
+  "colorPink": {
+    "message": "Pink"
+  },
+  "colorPurple": {
+    "message": "Purple"
+  },
+  "colorCyan": {
+    "message": "Cyan"
+  },
+  "colorOrange": {
+    "message": "Orange"
+  },
+  "settings": {
+    "message": "Settings"
   }
 }

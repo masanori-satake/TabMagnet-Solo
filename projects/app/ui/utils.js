@@ -53,10 +53,9 @@ export function getTimestamp() {
 /**
  * 指定されたターゲット設定に基づき、タブを集約（磁石発動）する
  *
- * @param {Object} target ターゲット設定 { name, pattern }
- * @param {string[]} protectedGroups 保護対象のグループ名リスト
+ * @param {Object} target ターゲット設定 { name, pattern, color }
  */
-export async function executeMagnet(target, protectedGroups = []) {
+export async function executeMagnet(target) {
   const currentWindow = await chrome.windows.getCurrent();
   const allTabs = await chrome.tabs.query({});
   const allGroups = await chrome.tabGroups.query({});
@@ -76,9 +75,7 @@ export async function executeMagnet(target, protectedGroups = []) {
       const group = groupMap.get(tab.groupId);
       if (group && group.title) {
         // 自動保護: _TM または _TM(Now Collecting) で終わらないグループは保護
-        const hasInternalSuffix = group.title.endsWith(SUFFIX_TM) || group.title.endsWith(SUFFIX_COLLECTING);
-        const isProtectedManually = protectedGroups.includes(group.title);
-        const isProtected = !hasInternalSuffix || isProtectedManually;
+        const isProtected = !group.title.endsWith(SUFFIX_TM) && !group.title.endsWith(SUFFIX_COLLECTING);
 
         if (isMatched) {
           if (isProtected) {
@@ -122,7 +119,11 @@ export async function executeMagnet(target, protectedGroups = []) {
 
   // グループ化
   const newGroupId = await chrome.tabs.group({ tabIds });
-  await chrome.tabGroups.update(newGroupId, { title: tempGroupName });
+  const updateData = { title: tempGroupName };
+  if (target.color) {
+    updateData.color = target.color;
+  }
+  await chrome.tabGroups.update(newGroupId, updateData);
 
   // 3. 旧世代グループ（新しく作ったもの以外）を解体
   const otherGroupsToDissolve = Array.from(groupsToDissolve).filter(id => id !== newGroupId);

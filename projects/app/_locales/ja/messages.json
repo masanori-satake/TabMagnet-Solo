@@ -8,14 +8,14 @@
   "addCurrentTabTitle": {
     "message": "現在のタブを登録"
   },
-  "addThisDomain": {
-    "message": "このドメインを追加"
-  },
   "targetListTitle": {
     "message": "ターゲットリスト"
   },
   "addNew": {
-    "message": "+ 新規追加"
+    "message": "+ 新規作成"
+  },
+  "addFromDomain": {
+    "message": "+ タブのドメインで作成"
   },
   "placeholderGroupName": {
     "message": "グループ名 (例: Jira)"
@@ -29,29 +29,11 @@
   "cancel": {
     "message": "キャンセル"
   },
-  "settingsTitle": {
-    "message": "設定"
-  },
-  "protectedGroupsLabel": {
-    "message": "保護するグループ名（カンマ区切り）"
-  },
-  "placeholderProtectedGroups": {
-    "message": "FixedGroup1, FixedGroup2"
-  },
-  "saveSettings": {
-    "message": "設定を保存"
-  },
-  "export": {
-    "message": "エクスポート"
-  },
-  "import": {
-    "message": "インポート"
-  },
   "noTargets": {
     "message": "登録されたターゲットはありません。"
   },
   "summonMagnet": {
-    "message": "磁石（召喚）"
+    "message": "実行"
   },
   "edit": {
     "message": "編集"
@@ -68,28 +50,40 @@
   "confirmDelete": {
     "message": "このターゲットを削除しますか？"
   },
-  "settingsSaved": {
-    "message": "設定を保存しました。"
+  "confirmDeleteTitle": {
+    "message": "削除の確認"
   },
-  "exportSuccess": {
-    "message": "設定をクリップボードにコピーしました。"
+  "groupColor": {
+    "message": "グループの色"
   },
-  "errorExportFailed": {
-    "message": "エクスポートに失敗しました。"
+  "colorGrey": {
+    "message": "グレー"
   },
-  "errorInvalidFormat": {
-    "message": "無効なデータ形式です。"
+  "colorBlue": {
+    "message": "ブルー"
   },
-  "errorInvalidTargetFormat": {
-    "message": "ターゲットの形式が正しくありません。"
+  "colorRed": {
+    "message": "レッド"
   },
-  "confirmImport": {
-    "message": "現在の設定を上書きしてインポートしますか？"
+  "colorYellow": {
+    "message": "イエロー"
   },
-  "importSuccess": {
-    "message": "インポートが完了しました。"
+  "colorGreen": {
+    "message": "グリーン"
   },
-  "errorImportFailed": {
-    "message": "インポートに失敗しました。クリップボードに有効な設定JSONがあることを確認してください。\n"
+  "colorPink": {
+    "message": "ピンク"
+  },
+  "colorPurple": {
+    "message": "パープル"
+  },
+  "colorCyan": {
+    "message": "シアン"
+  },
+  "colorOrange": {
+    "message": "オレンジ"
+  },
+  "settings": {
+    "message": "設定"
   }
 }

@@ -18,191 +18,411 @@
       --md-sys-color-surface-variant: #E7E0EB;
       --md-sys-color-on-surface-variant: #49454F;
       --md-sys-color-outline: #79747E;
+      --md-sys-color-outline-variant: #C9C4D0;
       --md-sys-color-error: #B3261E;
+      --md-sys-color-on-error: #FFFFFF;
+      --md-sys-color-error-container: #F9DEDC;
+      --md-sys-color-on-error-container: #410E0B;
+      --md-sys-color-surface-container-highest: #E6E0E9;
+      --md-sys-color-surface-container-low: #F7F2FA;
 
+      --md-sys-typescale-label-small: 500 11px/16px Roboto, sans-serif;
+      --md-sys-typescale-label-medium: 500 12px/16px Roboto, sans-serif;
       --md-sys-typescale-label-large: 500 14px/20px Roboto, sans-serif;
+      --md-sys-typescale-body-small: 400 12px/16px Roboto, sans-serif;
       --md-sys-typescale-body-medium: 400 14px/20px Roboto, sans-serif;
+      --md-sys-typescale-title-small: 500 14px/20px Roboto, sans-serif;
       --md-sys-typescale-title-medium: 500 16px/24px Roboto, sans-serif;
+      --md-sys-typescale-headline-small: 400 24px/32px Roboto, sans-serif;
+
+      /* Chrome Tab Group Colors */
+      --tg-color-grey: #5F6368;
+      --tg-color-blue: #1A73E8;
+      --tg-color-red: #D93025;
+      --tg-color-yellow: #E37400;
+      --tg-color-green: #188038;
+      --tg-color-pink: #D01884;
+      --tg-color-purple: #9334E6;
+      --tg-color-cyan: #007B83;
+      --tg-color-orange: #E8710A;
     }
 
     body {
       margin: 0;
-      padding: 16px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
       background-color: var(--md-sys-color-surface);
       color: var(--md-sys-color-on-surface);
       font-family: Roboto, sans-serif;
+      overflow: hidden;
     }
 
-    h1 {
-      font: var(--md-sys-typescale-title-medium);
-      margin-bottom: 16px;
+    /* Header */
+    header {
+      height: 64px;
+      padding: 0 16px;
       display: flex;
       align-items: center;
-      gap: 8px;
+      justify-content: space-between;
+      flex-shrink: 0;
     }
 
-    .card {
-      background-color: var(--md-sys-color-surface);
-      border: 1px solid var(--md-sys-color-outline);
-      border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 16px;
-    }
-
-    .section-title {
-      font: var(--md-sys-typescale-label-large);
-      color: var(--md-sys-color-primary);
-      margin-bottom: 12px;
-    }
-
-    .target-item {
+    .app-title {
+      font: var(--md-sys-typescale-title-medium);
       display: flex;
-      flex-direction: column;
-      gap: 4px;
-      padding: 12px;
-      border-bottom: 1px solid var(--md-sys-color-surface-variant);
+      align-items: center;
+      gap: 12px;
+      color: var(--md-sys-color-primary);
     }
 
-    .target-item:last-child {
+    .icon-button {
+      width: 40px;
+      height: 40px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      color: var(--md-sys-color-on-surface-variant);
+      position: relative;
+    }
+
+    .icon-button:hover {
+      background-color: rgba(0, 0, 0, 0.08);
+    }
+
+    .icon-button svg {
+      fill: currentColor;
+    }
+
+    /* Tooltip */
+    .tooltip {
+      position: absolute;
+      bottom: -32px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: var(--md-sys-color-on-surface-variant);
+      color: var(--md-sys-color-surface);
+      padding: 4px 8px;
+      border-radius: 4px;
+      font: var(--md-sys-typescale-label-small);
+      white-space: nowrap;
+      display: none;
+      z-index: 1000;
+    }
+
+    .icon-button:hover .tooltip {
+      display: block;
+    }
+
+    /* List Area (Green Area) */
+    main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 16px;
+      /* border: 2px solid green; /* User's green area */
+    }
+
+    .target-list-item {
+      height: 56px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    }
+
+    .target-list-item:last-child {
       border-bottom: none;
     }
 
-    .target-header {
+    .target-info {
+      flex: 1;
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      gap: 12px;
+      overflow: hidden;
+    }
+
+    .target-color-chip {
+      width: 12px;
+      height: 12px;
+      border-radius: 6px;
+      flex-shrink: 0;
     }
 
     .target-name {
-      font: var(--md-sys-typescale-label-large);
-    }
-
-    .target-pattern {
       font: var(--md-sys-typescale-body-medium);
-      color: var(--md-sys-color-on-surface-variant);
-      word-break: break-all;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    .actions {
+    .target-actions {
       display: flex;
+      gap: 4px;
+    }
+
+    /* Footer (Red/Purple Area) */
+    footer {
+      padding: 16px;
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+      background-color: var(--md-sys-color-surface);
+    }
+
+    .footer-button {
+      flex: 1;
+      height: 40px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      font: var(--md-sys-typescale-label-medium);
+      cursor: pointer;
+      border: 1px solid var(--md-sys-color-outline);
+      background: transparent;
+      color: var(--md-sys-color-primary);
+      padding: 0 8px;
+    }
+
+    .footer-button:hover {
+      background-color: rgba(103, 80, 164, 0.08);
+    }
+
+    .footer-button svg {
+      fill: currentColor;
+    }
+
+    /* Modal / Dialog */
+    .scrim {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.32);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+    }
+
+    .modal {
+      background-color: var(--md-sys-color-surface-container-highest);
+      border-radius: 28px;
+      width: 312px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .modal-title {
+      font: var(--md-sys-typescale-headline-small);
+      color: var(--md-sys-color-on-surface);
+    }
+
+    .modal-content {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .text-field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .text-field label {
+      font: var(--md-sys-typescale-label-medium);
+      color: var(--md-sys-color-on-surface-variant);
+      padding-left: 16px;
+    }
+
+    .text-field input {
+      height: 56px;
+      border: 1px solid var(--md-sys-color-outline);
+      border-radius: 4px;
+      padding: 0 16px;
+      background-color: transparent;
+      color: var(--md-sys-color-on-surface);
+      font: var(--md-sys-typescale-body-medium);
+      box-sizing: border-box;
+      width: 100%;
+    }
+
+    .text-field input:focus {
+      outline: 2px solid var(--md-sys-color-primary);
+      border-color: transparent;
+    }
+
+    .color-selection {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+    }
+
+    .color-option {
+      width: 32px;
+      height: 32px;
+      border-radius: 16px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .color-option.selected {
+      border-color: var(--md-sys-color-primary);
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
       gap: 8px;
       margin-top: 8px;
     }
 
-    button {
-      border: none;
+    .text-button {
+      height: 40px;
+      padding: 0 12px;
       border-radius: 20px;
-      padding: 8px 16px;
-      font: var(--md-sys-typescale-label-large);
-      cursor: pointer;
-      transition: background-color 0.2s;
-    }
-
-    .btn-primary {
-      background-color: var(--md-sys-color-primary);
-      color: var(--md-sys-color-on-primary);
-    }
-
-    .btn-primary:hover {
-      background-color: #5a4591;
-    }
-
-    .btn-tonal {
-      background-color: var(--md-sys-color-primary-container);
-      color: var(--md-sys-color-on-primary-container);
-    }
-
-    .btn-outline {
-      background-color: transparent;
-      border: 1px solid var(--md-sys-color-outline);
-      color: var(--md-sys-color-primary);
-    }
-
-    .btn-text {
-      background-color: transparent;
-      color: var(--md-sys-color-primary);
-      padding: 8px;
-    }
-
-    .btn-error {
-      color: var(--md-sys-color-error);
-    }
-
-    input[type="text"] {
-      width: 100%;
-      padding: 8px 12px;
-      border: 1px solid var(--md-sys-color-outline);
-      border-radius: 4px;
-      box-sizing: border-box;
-      margin-bottom: 8px;
-      background-color: transparent;
-      color: var(--md-sys-color-on-surface);
-    }
-
-    .fab {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      width: 56px;
-      height: 56px;
-      border-radius: 16px;
-      background-color: var(--md-sys-color-primary-container);
-      color: var(--md-sys-color-on-primary-container);
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-      font-size: 24px;
+      font: var(--md-sys-typescale-label-large);
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      color: var(--md-sys-color-primary);
     }
 
-    .import-export {
+    .text-button:hover {
+      background-color: rgba(103, 80, 164, 0.08);
+    }
+
+    .text-button.error {
+      color: var(--md-sys-color-error);
+    }
+
+    .text-button.error:hover {
+      background-color: rgba(179, 38, 30, 0.08);
+    }
+
+    /* Dialog (Delete Confirmation) */
+    .dialog {
+      background-color: var(--md-sys-color-surface-container-highest);
+      border-radius: 28px;
+      width: 280px;
+      padding: 24px;
       display: flex;
-      gap: 8px;
-      margin-top: 16px;
+      flex-direction: column;
+      gap: 16px;
     }
 
-    #add-form {
-      display: none;
-      margin-top: 16px;
+    .dialog-title {
+      font: var(--md-sys-typescale-headline-small);
+      color: var(--md-sys-color-on-surface);
+    }
+
+    .dialog-text {
+      font: var(--md-sys-typescale-body-medium);
+      color: var(--md-sys-color-on-surface-variant);
     }
 
     .hidden {
       display: none !important;
     }
+
+    /* Color classes */
+    .bg-grey { background-color: var(--tg-color-grey); }
+    .bg-blue { background-color: var(--tg-color-blue); }
+    .bg-red { background-color: var(--tg-color-red); }
+    .bg-yellow { background-color: var(--tg-color-yellow); }
+    .bg-green { background-color: var(--tg-color-green); }
+    .bg-pink { background-color: var(--tg-color-pink); }
+    .bg-purple { background-color: var(--tg-color-purple); }
+    .bg-cyan { background-color: var(--tg-color-cyan); }
+    .bg-orange { background-color: var(--tg-color-orange); }
+
   </style>
 </head>
 <body>
-  <div class="card">
-    <div class="section-title" data-i18n="addCurrentTabTitle"></div>
-    <button id="add-current-tab" class="btn-tonal" style="width: 100%;" data-i18n="addThisDomain"></button>
-  </div>
-
-  <div class="card">
-    <div class="section-title" data-i18n="targetListTitle"></div>
-    <div id="target-list">
-      <!-- ターゲットがここに表示される -->
+  <header>
+    <div class="app-title">
+      <img src="icons/icon48.png" width="24" height="24">
+      <span>TabMagnet-Solo</span>
     </div>
-    <button id="show-add-form" class="btn-text" data-i18n="addNew"></button>
+    <button id="settings-btn" class="icon-button">
+      <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="m370-80-16-128q-13-5-24.5-12T307-235l-119 50L78-375l103-78q-1-7-1-13.5v-27q0-6.5 1-13.5L78-585l110-190 119 50q11-8 23-15t24-12l16-128h220l16 128q13 5 24.5 12t22.5 15l119-50 110 190-103 78q1 7 1 13.5v27q0 6.5-2 13.5l103 78-110 190-118-50q-11 8-23 15t-24 12L590-80H370Zm70-80h79l14-106q31-8 57.5-23.5T639-327l99 41 39-68-86-65q5-14 7-29.5t2-31.5q0-16-2-31.5t-7-29.5l86-65-39-68-99 42q-22-23-48.5-38.5T533-694l-13-106h-79l-14 106q-31 8-57.5 23.5T321-633l-99-41-39 68 86 64q-5 15-7 30t-2 32q0 16 2 31t7 30l-86 65 39 68 99-42q22 23 48.5 38.5T427-266l13 106Zm42-180q58 0 99-41t41-99q0-58-41-99t-99-41q-59 0-99.5 41T342-480q0 58 40.5 99t99.5 41Zm-2-140Z"/></svg>
+      <span class="tooltip" data-i18n="settings"></span>
+    </button>
+  </header>
 
-    <div id="add-form">
-      <input type="text" id="new-name" data-i18n-placeholder="placeholderGroupName">
-      <input type="text" id="new-pattern" data-i18n-placeholder="placeholderUrlPattern">
-      <div class="actions">
-        <button id="save-target" class="btn-primary" data-i18n="save"></button>
-        <button id="cancel-add" class="btn-outline" data-i18n="cancel"></button>
+  <main id="target-list">
+    <!-- List items will be injected here -->
+  </main>
+
+  <footer>
+    <button id="add-new-btn" class="footer-button">
+      <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/></svg>
+      <span data-i18n="addNew"></span>
+    </button>
+    <button id="add-from-domain-btn" class="footer-button">
+      <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/></svg>
+      <span data-i18n="addFromDomain"></span>
+    </button>
+  </footer>
+
+  <!-- Target Modal -->
+  <div id="target-modal-scrim" class="scrim">
+    <div class="modal">
+      <div id="modal-title" class="modal-title">新規作成</div>
+      <div class="modal-content">
+        <div class="text-field">
+          <input type="text" id="new-name" data-i18n-placeholder="placeholderGroupName">
+        </div>
+        <div class="text-field">
+          <input type="text" id="new-pattern" data-i18n-placeholder="placeholderUrlPattern">
+        </div>
+        <div class="color-selection">
+          <div class="color-option bg-grey" data-color="grey"></div>
+          <div class="color-option bg-blue" data-color="blue"></div>
+          <div class="color-option bg-red" data-color="red"></div>
+          <div class="color-option bg-yellow" data-color="yellow"></div>
+          <div class="color-option bg-green" data-color="green"></div>
+          <div class="color-option bg-pink" data-color="pink"></div>
+          <div class="color-option bg-purple" data-color="purple"></div>
+          <div class="color-option bg-cyan" data-color="cyan"></div>
+          <div class="color-option bg-orange" data-color="orange"></div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button id="delete-target-btn" class="text-button error hidden" data-i18n="delete"></button>
+        <div style="flex: 1;"></div>
+        <button id="cancel-target-btn" class="text-button" data-i18n="cancel"></button>
+        <button id="save-target-btn" class="text-button" data-i18n="save"></button>
       </div>
     </div>
   </div>
 
-  <div class="card">
-    <div class="section-title" data-i18n="settingsTitle"></div>
-    <div class="section-subtitle" style="font: var(--md-sys-typescale-body-medium); margin-bottom: 8px;" data-i18n="protectedGroupsLabel"></div>
-    <input type="text" id="protected-groups" data-i18n-placeholder="placeholderProtectedGroups">
-    <button id="save-settings" class="btn-tonal" style="width: 100%; margin-top: 8px;" data-i18n="saveSettings"></button>
-
-    <div class="import-export">
-      <button id="export-btn" class="btn-outline" style="flex: 1;" data-i18n="export"></button>
-      <button id="import-btn" class="btn-outline" style="flex: 1;" data-i18n="import"></button>
+  <!-- Delete Confirmation Dialog -->
+  <div id="delete-dialog-scrim" class="scrim">
+    <div class="dialog">
+      <div class="dialog-title" data-i18n="confirmDeleteTitle"></div>
+      <div class="dialog-text" data-i18n="confirmDelete"></div>
+      <div class="modal-actions">
+        <button id="confirm-delete-cancel-btn" class="text-button" data-i18n="cancel"></button>
+        <button id="confirm-delete-ok-btn" class="text-button" data-i18n="delete"></button>
+      </div>
     </div>
   </div>
 
