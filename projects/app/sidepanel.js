@@ -28,6 +28,7 @@ const fileExportBtn = document.getElementById('file-export-btn');
 const fileImportBtn = document.getElementById('file-import-btn');
 const fileInput = document.getElementById('file-input');
 const aboutVersionEl = document.getElementById('about-version');
+const aboutDeveloperEl = document.getElementById('about-developer');
 const aboutTargetCountEl = document.getElementById('about-target-count');
 
 // Delete Dialog elements
@@ -229,6 +230,7 @@ function setupEventListeners() {
 function updateAboutInfo() {
   const manifest = chrome.runtime.getManifest();
   aboutVersionEl.textContent = `v${manifest.version}`;
+  aboutDeveloperEl.textContent = manifest.author || 'Masanori SATAKE';
   aboutTargetCountEl.textContent = targets.length;
 }
 
