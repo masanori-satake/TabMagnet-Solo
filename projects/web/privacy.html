@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="title" content="TabMagnet-Solo" />
+    <meta name="description" content="Aggregates specific tabs like a magnet into the current window using URL patterns." />
+    <title>TabMagnet-Solo</title>
+    <style>
+      :root {
+        --md-sys-color-primary: #0061a4;
+        --md-sys-color-on-primary: #ffffff;
+        --md-sys-color-surface: #fdfbff;
+        --md-sys-color-on-surface: #1a1c1e;
+        --md-sys-color-outline: #73777f;
+      }
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        background-color: var(--md-sys-color-surface);
+        color: var(--md-sys-color-on-surface);
+        line-height: 1.6;
+      }
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 2rem;
+        border-bottom: 1px solid var(--md-sys-color-outline);
+      }
+      .lang-switcher {
+        display: flex;
+        gap: 0.5rem;
+        margin-left: 1.5rem;
+      }
+      .lang-switch {
+        cursor: pointer;
+        background: none;
+        border: 1px solid var(--md-sys-color-outline);
+        border-radius: 4px;
+        padding: 0.2rem 0.5rem;
+        font-size: 0.8rem;
+        color: var(--md-sys-color-on-surface);
+      }
+      .lang-switch.active {
+        background-color: var(--md-sys-color-primary);
+        color: var(--md-sys-color-on-primary);
+        border-color: var(--md-sys-color-primary);
+      }
+      .logo {
+        display: flex;
+        align-items: center;
+        font-weight: bold;
+        font-size: 1.2rem;
+        text-decoration: none;
+        color: var(--md-sys-color-on-surface);
+      }
+      nav a {
+        margin-left: 1.5rem;
+        text-decoration: none;
+        color: var(--md-sys-color-on-surface);
+      }
+      main {
+        max-width: 800px;
+        margin: 4rem auto;
+        padding: 0 2rem;
+      }
+      h1 {
+        color: var(--md-sys-color-primary);
+        border-bottom: 2px solid var(--md-sys-color-primary);
+      }
+      h2 {
+        margin-top: 2rem;
+      }
+      footer {
+        text-align: center;
+        padding: 2rem;
+        margin-top: 4rem;
+        border-top: 1px solid var(--md-sys-color-outline);
+      }
+    </style>
+  </head>
+  <body data-page="privacy">
+    <header>
+      <a href="index.html" class="logo">TabMagnet-Solo</a>
+      <nav style="display: flex; align-items: center">
+        <a href="index.html" data-i18n="top">トップ</a>
+        <a href="usage.html" data-i18n="usage">使い方</a>
+        <div class="lang-switcher">
+          <button class="lang-switch" data-lang="en" data-i18n="langEn">
+            English
+          </button>
+          <button class="lang-switch" data-lang="ja" data-i18n="langJa">
+            日本語
+          </button>
+        </div>
+      </nav>
+    </header>
+
+    <main>
+      <h1 data-i18n="privacyPolicy">プライバシーポリシー</h1>
+
+      <section>
+        <h2 data-i18n="privacyHeader1">1. データの収集と利用</h2>
+        <p data-i18n="privacyText1">
+          TabMagnet-Solo は、ユーザーの利便性向上のため、ユーザーが設定したURLパターンおよびグループ名を収集します。これらのデータはすべて利用者のブラウザ内（chrome.storage.local）に保存され、本拡張機能の機能提供のためにのみ利用されます。
+        </p>
+      </section>
+
+      <section>
+        <h2 data-i18n="privacyHeader2">2. データの送信</h2>
+        <p data-i18n="privacyText2">
+          収集されたデータが外部サーバーに送信されることは一切ありません。本拡張機能は、インターネット経由でのデータ送信を行わない設計（Local-Only）となっています。
+        </p>
+      </section>
+
+      <section>
+        <h2 data-i18n="privacyHeader3">3. サードパーティによる計測</h2>
+        <p data-i18n="privacyText3">
+          本拡張機能および紹介用ウェブサイトでは、Google Analytics などのアクセス解析ツールや広告トラッキングなどは一切使用していません。
+        </p>
+      </section>
+
+      <section>
+        <h2 data-i18n="privacyHeader4">4. データの削除</h2>
+        <p data-i18n="privacyText4">
+          利用者は、拡張機能をアンインストールするか、設定内の削除機能を使用することで、ローカルに保存されたすべてのデータを削除することができます。
+        </p>
+      </section>
+    </main>
+
+    <footer>
+      <p data-i18n="copyright">&copy; 2026 TabMagnet-Solo. All rights reserved.</p>
+    </footer>
+    <script src="i18n.js"></script>
+  </body>
+</html>

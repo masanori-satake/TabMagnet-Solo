@@ -1,0 +1,58 @@
+name: "Feature Request / 機能・改善リクエスト"
+description: "Suggest an idea for this project. / 新機能や改善のアイデアを提案してください。"
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        アイデアを共有していただきありがとうございます！
+        Thank you for sharing your ideas!
+  - type: dropdown
+    id: target-app
+    attributes:
+      label: "Target Application / 対象アプリ"
+      options:
+        - "TabMagnet-Solo (Extension / 拡張機能)"
+        - "Official Website / 公式サイト (Landing Page)"
+        - "Project-wide / プロジェクト全体"
+    validations:
+      required: true
+  - type: dropdown
+    id: category
+    attributes:
+      label: "Feature Category / 機能カテゴリ"
+      options:
+        - "Core Logic / タブ集約ロジック"
+        - "UI / Design / UIデザイン"
+        - "Import / Export / インポート・エクスポート"
+        - "Target Settings / ターゲット設定"
+        - "Localization / 多言語対応"
+        - "New Feature Idea / 既存にない新機能"
+        - "Other / その他"
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: "Problem Description / 解決したい課題"
+      description: "Is your feature request related to a problem? / 何か困っていることや、不便に感じていることはありますか？"
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: "Proposed Solution / 提案内容"
+      description: "Describe the solution you'd like. / どのような機能や改善を希望しますか？"
+    validations:
+      required: true
+  - type: textarea
+    id: alternative
+    attributes:
+      label: "Alternatives Considered / 代替案"
+      description: "Any alternative solutions or features you've considered. / 他に検討した方法があれば教えてください。"
+  - type: textarea
+    id: additional-info
+    attributes:
+      label: "Additional Context / 補足情報"
+      description: "Add any other context or screenshots about the feature request here. / その他、参考になる情報やイメージ図があればこちらに。"
