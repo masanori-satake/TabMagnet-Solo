@@ -12,10 +12,10 @@
     "message": "Target List"
   },
   "addNew": {
-    "message": "+ New Target"
+    "message": "New Target"
   },
   "addFromDomain": {
-    "message": "+ From Tab Domain"
+    "message": "From Tab Domain"
   },
   "placeholderGroupName": {
     "message": "Group name (e.g. Jira)"
@@ -52,6 +52,9 @@
   },
   "confirmDeleteTitle": {
     "message": "Confirm Delete"
+  },
+  "labelUrlPattern": {
+    "message": "URL Patterns"
   },
   "groupColor": {
     "message": "Group Color"

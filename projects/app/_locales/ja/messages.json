@@ -12,10 +12,10 @@
     "message": "ターゲットリスト"
   },
   "addNew": {
-    "message": "+ 新規作成"
+    "message": "新規作成"
   },
   "addFromDomain": {
-    "message": "+ タブのドメインで作成"
+    "message": "タブのドメインで作成"
   },
   "placeholderGroupName": {
     "message": "グループ名 (例: Jira)"
@@ -52,6 +52,9 @@
   },
   "confirmDeleteTitle": {
     "message": "削除の確認"
+  },
+  "labelUrlPattern": {
+    "message": "URLパターン"
   },
   "groupColor": {
     "message": "グループの色"
