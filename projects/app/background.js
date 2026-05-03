@@ -39,10 +39,46 @@ chrome.tabGroups.onUpdated.addListener(async (group) => {
   await checkAndRenameCollectingGroups();
 });
 
+
 /**
- * 全ウィンドウを走査し、同一ターゲットによる重複グループをクリーンアップする
+ * "(Now Collecting)" 状態のグループを、条件を満たしていれば正規名称にリネームする
  */
-async function performAutoCleanup() {
+export async function checkAndRenameCollectingGroups() {
+  const groupsBefore = await chrome.tabGroups.query({});
+  const collectingGroups = groupsBefore.filter(g =>
+    g.title && g.title.startsWith(PREFIX_TM) && g.title.endsWith(SUFFIX_COLLECTING)
+  );
+
+  if (collectingGroups.length === 0) return;
+
+  for (const group of collectingGroups) {
+    // 競合チェックを最新の状態で行うため、ループ内で再取得
+    const currentGroups = await chrome.tabGroups.query({});
+    const finalName = group.title.replace(SUFFIX_COLLECTING, '');
+
+    // 同一ターゲットの正規グループ、または自分よりIDの小さい同名Collectingグループが存在しないか確認
+    // (複数Collectingがある場合、一番IDが小さいものだけを正規化対象にする)
+    const hasConflict = currentGroups.some(g => {
+      if (g.id === group.id) return false;
+      // すでに正規名称のグループがある場合
+      if (g.title === finalName) return true;
+      // 自分と同じCollecting名称で、かつ自分より先に作られた(IDが小さい)ものがある場合
+      if (g.title === group.title && g.id < group.id) return true;
+      return false;
+    });
+
+    if (!hasConflict) {
+      try {
+        await chrome.tabGroups.update(group.id, { title: finalName });
+        console.log(`Auto-finalized group: ${group.title} -> ${finalName}`);
+      } catch (e) {
+        console.error(`Failed to finalize group ${group.id}:`, e);
+      }
+    }
+  }
+}
+
+export async function performAutoCleanup() {
   console.log('Starting auto-cleanup...');
   const settings = await chrome.storage.local.get(['targets', 'protectedGroups']);
   const targets = settings.targets || [];
@@ -75,32 +111,4 @@ async function performAutoCleanup() {
     }
   }
   console.log('Auto-cleanup completed.');
-}
-
-/**
- * "(Now Collecting)" 状態のグループを、条件を満たしていれば正規名称にリネームする
- */
-async function checkAndRenameCollectingGroups() {
-  const groups = await chrome.tabGroups.query({});
-  const collectingGroups = groups.filter(g =>
-    g.title && g.title.startsWith(PREFIX_TM) && g.title.endsWith(SUFFIX_COLLECTING)
-  );
-
-  if (collectingGroups.length === 0) return;
-
-  for (const group of collectingGroups) {
-    const finalName = group.title.replace(SUFFIX_COLLECTING, '');
-
-    // 同一ターゲットの正規グループが他に存在しないか確認
-    const hasConflict = groups.some(g => g.id !== group.id && g.title === finalName);
-
-    if (!hasConflict) {
-      try {
-        await chrome.tabGroups.update(group.id, { title: finalName });
-        console.log(`Auto-finalized group: ${group.title} -> ${finalName}`);
-      } catch (e) {
-        console.error(`Failed to finalize group ${group.id}:`, e);
-      }
-    }
-  }
 }

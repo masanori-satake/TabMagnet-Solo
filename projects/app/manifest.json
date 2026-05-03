@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "__MSG_extensionName__",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "author": "Masanori SATAKE",
   "description": "__MSG_extensionDescription__",
   "default_locale": "en",
@@ -14,7 +14,8 @@
   ],
   "action": {},
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "background.js",
+    "type": "module"
   },
   "side_panel": {
     "default_path": "sidepanel.html"
