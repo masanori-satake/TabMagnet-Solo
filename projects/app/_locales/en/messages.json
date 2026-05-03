@@ -104,6 +104,12 @@
   "tabAbout": {
     "message": "About"
   },
+  "sectionCommon": {
+    "message": "Common"
+  },
+  "settingCollectFromAllGroups": {
+    "message": "Collect from all tab groups"
+  },
   "sectionSettingsData": {
     "message": "Settings Data"
   },

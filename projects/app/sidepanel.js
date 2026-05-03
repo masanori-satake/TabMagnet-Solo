@@ -23,6 +23,7 @@ const settingsModalScrim = document.getElementById('settings-modal-scrim');
 const closeSettingsBtn = document.getElementById('close-settings-btn');
 const tabItems = document.querySelectorAll('.tab-item');
 const tabPanes = document.querySelectorAll('.tab-pane');
+const collectAllGroupsSwitch = document.getElementById('collect-all-groups-switch');
 const copyExportBtn = document.getElementById('copy-export-btn');
 const pasteImportBtn = document.getElementById('paste-import-btn');
 const fileExportBtn = document.getElementById('file-export-btn');
@@ -41,6 +42,9 @@ const toastEl = document.getElementById('toast');
 
 // State
 let targets = [];
+let settings = {
+  collectFromAllGroups: false
+};
 let selectedColor = 'grey';
 let currentEditIndex = null;
 let currentDeleteIndex = null;
@@ -69,10 +73,12 @@ function applyI18n() {
  */
 async function init() {
   applyI18n();
-  const data = await chrome.storage.local.get(['targets']);
+  const data = await chrome.storage.local.get(['targets', 'settings']);
   targets = data.targets || [];
+  settings = { ...settings, ...(data.settings || {}) };
 
   renderTargetList();
+  renderSettings();
   setupEventListeners();
   updateDomainButtonState();
 
@@ -89,6 +95,13 @@ async function init() {
         updateAboutInfo();
       }
     }
+    if (changes.settings) {
+      const nextSettings = changes.settings.newValue || {};
+      if (JSON.stringify(nextSettings) !== JSON.stringify(settings)) {
+        settings = { ...settings, ...nextSettings };
+        renderSettings();
+      }
+    }
   });
 
   chrome.tabs.onActivated.addListener(updateDomainButtonState);
@@ -100,6 +113,13 @@ async function init() {
 }
 
 document.addEventListener('DOMContentLoaded', init);
+
+/**
+ * 設定値をUIに反映する
+ */
+function renderSettings() {
+  collectAllGroupsSwitch.checked = !!settings.collectFromAllGroups;
+}
 
 /**
  * ターゲットリストをレンダリングする
@@ -261,6 +281,11 @@ function setupEventListeners() {
   });
 
   // 設定モーダル
+  collectAllGroupsSwitch.addEventListener('change', async () => {
+    settings.collectFromAllGroups = collectAllGroupsSwitch.checked;
+    await chrome.storage.local.set({ settings });
+  });
+
   settingsBtn.addEventListener('click', showSettingsModal);
   closeSettingsBtn.addEventListener('click', hideSettingsModal);
 
@@ -492,7 +517,11 @@ function hideSettingsModal() {
  */
 async function handleCopyExport() {
   try {
-    const json = JSON.stringify(targets, null, 2);
+    const exportData = {
+      targets: targets,
+      settings: settings
+    };
+    const json = JSON.stringify(exportData, null, 2);
     await navigator.clipboard.writeText(json);
     alert(chrome.i18n.getMessage('copied'));
   } catch (err) {
@@ -507,11 +536,7 @@ async function handlePasteImport() {
   try {
     const text = await navigator.clipboard.readText();
     const data = JSON.parse(text);
-    if (Array.isArray(data)) {
-      await importData(data);
-    } else {
-      throw new Error('Invalid format');
-    }
+    await importData(data);
   } catch (err) {
     alert(chrome.i18n.getMessage('importError'));
   }
@@ -521,7 +546,11 @@ async function handlePasteImport() {
  * エクスポート（ファイル）
  */
 function handleFileExport() {
-  const json = JSON.stringify(targets, null, 2);
+  const exportData = {
+    targets: targets,
+    settings: settings
+  };
+  const json = JSON.stringify(exportData, null, 2);
   const blob = new Blob([json], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -541,11 +570,7 @@ function handleFileImport(e) {
   reader.onload = async (event) => {
     try {
       const data = JSON.parse(event.target.result);
-      if (Array.isArray(data)) {
-        await importData(data);
-      } else {
-        throw new Error('Invalid format');
-      }
+      await importData(data);
     } catch (err) {
       alert(chrome.i18n.getMessage('importError'));
     }
@@ -557,15 +582,37 @@ function handleFileImport(e) {
 /**
  * データのインポート
  */
-async function importData(newData) {
+async function importData(data) {
+  let newTargets = [];
+  let newSettings = { collectFromAllGroups: false };
+
+  if (Array.isArray(data)) {
+    // 旧フォーマット (配列のみ)
+    newTargets = data;
+  } else if (data && typeof data === 'object') {
+    // 新フォーマット { targets: [], settings: {} }
+    newTargets = Array.isArray(data.targets) ? data.targets : [];
+    newSettings = { ...newSettings, ...(data.settings || {}) };
+  } else {
+    throw new Error('Invalid format');
+  }
+
   const mode = document.querySelector('input[name="import-mode"]:checked').value;
   if (mode === 'append') {
-    targets = [...targets, ...newData];
+    targets = [...targets, ...newTargets];
+    // append の場合は settings は上書きしない（あるいはマージする方針もあるが、
+    // ここでは今の設定を優先するか、インポート側に合わせるか。
+    // 要件では「復元」とのことなので、settings は常にインポートされたものにする、
+    // あるいは論理和をとるなどが考えられるが、単純に上書きで実装する。
+    settings = { ...settings, ...newSettings };
   } else {
-    targets = newData;
+    targets = newTargets;
+    settings = newSettings;
   }
-  await chrome.storage.local.set({ targets });
+
+  await chrome.storage.local.set({ targets, settings });
   renderTargetList();
+  renderSettings();
   alert(chrome.i18n.getMessage('importSuccess'));
 }
 

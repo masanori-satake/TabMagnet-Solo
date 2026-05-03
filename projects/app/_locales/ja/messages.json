@@ -104,6 +104,12 @@
   "tabAbout": {
     "message": "About"
   },
+  "sectionCommon": {
+    "message": "共通"
+  },
+  "settingCollectFromAllGroups": {
+    "message": "全タブグループから収集する"
+  },
   "sectionSettingsData": {
     "message": "設定データ"
   },

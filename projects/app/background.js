@@ -7,8 +7,8 @@
  * 3. 収集完了待ちグループの自動リネーム
  */
 
-const SUFFIX_TM = '_TM';
-const SUFFIX_COLLECTING = '_TM(Now Collecting)';
+const PREFIX_TM = '🧲';
+const SUFFIX_COLLECTING = '(Now Collecting)';
 
 /**
  * 拡張機能起動時またはブラウザ起動時に実行
@@ -55,10 +55,10 @@ async function performAutoCleanup() {
   for (const target of targets) {
     const targetName = target.name;
     // 同一ターゲット名を持つグループを抽出（保護されたグループは除外）
-    // 新仕様では Name_TM または Name_TM(Now Collecting) が対象
+    // 新仕様では 🧲Name または 🧲Name(Now Collecting) が対象
     const matchingGroups = groups.filter(g => {
       if (!g.title) return false;
-      const isTargetGroup = (g.title === targetName + SUFFIX_TM || g.title === targetName + SUFFIX_COLLECTING);
+      const isTargetGroup = (g.title === PREFIX_TM + targetName || g.title === PREFIX_TM + targetName + SUFFIX_COLLECTING);
       const isProtected = protectedGroups.includes(g.title);
       return isTargetGroup && !isProtected;
     });
@@ -88,8 +88,7 @@ async function checkAndRenameCollectingGroups() {
   if (collectingGroups.length === 0) return;
 
   for (const group of collectingGroups) {
-    const baseName = group.title.slice(0, -SUFFIX_COLLECTING.length);
-    const finalName = baseName + SUFFIX_TM;
+    const finalName = group.title.replace(SUFFIX_COLLECTING, '');
 
     // 同一ターゲットの正規グループが他に存在しないか確認
     const hasConflict = groups.some(g => g.id !== group.id && g.title === finalName);

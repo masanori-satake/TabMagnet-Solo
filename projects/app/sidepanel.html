@@ -106,7 +106,8 @@
       z-index: 1000;
     }
 
-    .icon-button:hover .tooltip {
+    .icon-button:hover .tooltip,
+    .tab-item:hover .tooltip {
       display: block;
     }
 
@@ -589,6 +590,71 @@
     .bg-cyan { background-color: var(--tg-color-cyan); }
     .bg-orange { background-color: var(--tg-color-orange); }
 
+    /* Material 3 Switch */
+    .switch-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 48px;
+    }
+
+    .switch-label {
+      font: var(--md-sys-typescale-body-medium);
+      color: var(--md-sys-color-on-surface);
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 52px;
+      height: 32px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: var(--md-sys-color-surface-container-highest);
+      border: 2px solid var(--md-sys-color-outline);
+      transition: .4s;
+      border-radius: 16px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 6px;
+      bottom: 6px;
+      background-color: var(--md-sys-color-outline);
+      transition: .4s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: var(--md-sys-color-primary);
+      border-color: var(--md-sys-color-primary);
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(20px);
+      background-color: var(--md-sys-color-on-primary);
+      height: 24px;
+      width: 24px;
+      left: 4px;
+      bottom: 2px;
+    }
+
   </style>
 </head>
 <body>
@@ -677,7 +743,16 @@
       <div id="settings-content">
         <!-- General Tab Content -->
         <div id="tab-content-general" class="tab-pane">
-          <div class="settings-section-title" data-i18n="sectionSettingsData"></div>
+          <div class="settings-section-title" data-i18n="sectionCommon"></div>
+          <div class="switch-container">
+            <span class="switch-label" data-i18n="settingCollectFromAllGroups"></span>
+            <label class="switch">
+              <input type="checkbox" id="collect-all-groups-switch">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="settings-section-title" data-i18n="sectionSettingsData" style="margin-top: 16px;"></div>
           <div class="settings-grid">
             <button id="copy-export-btn" class="outlined-button">
               <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20"><path d="M360-240q-33 0-56.5-23.5T280-320v-480q0-33 23.5-56.5T360-880h360q33 0 56.5 23.5T800-800v480q0 33-23.5 56.5T720-240H360Zm0-80h360v-480H360v480ZM200-80q-33 0-56.5-23.5T120-160v-560h80v560h440v80H200Zm160-240v-480 480Z"/></svg>
