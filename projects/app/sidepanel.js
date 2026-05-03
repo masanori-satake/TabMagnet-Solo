@@ -563,7 +563,15 @@ function handleFileExport() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `tabmagnet_targets_${new Date().getTime()}.json`;
+
+  const now = new Date();
+  const y = String(now.getFullYear()).slice(-2);
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  const h = String(now.getHours()).padStart(2, '0');
+  const min = String(now.getMinutes()).padStart(2, '0');
+
+  a.download = `tabmagnet_${y}${m}${d}_${h}${min}.json`;
   a.click();
   URL.revokeObjectURL(url);
 }
