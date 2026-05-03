@@ -1,6 +1,7 @@
 import json
 import re
 import os
+import sys
 
 def update_readme():
     summary_path = 'coverage/coverage-summary.json'
