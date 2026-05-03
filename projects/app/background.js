@@ -39,10 +39,36 @@ chrome.tabGroups.onUpdated.addListener(async (group) => {
   await checkAndRenameCollectingGroups();
 });
 
+
 /**
- * 全ウィンドウを走査し、同一ターゲットによる重複グループをクリーンアップする
+ * "(Now Collecting)" 状態のグループを、条件を満たしていれば正規名称にリネームする
  */
-async function performAutoCleanup() {
+export async function checkAndRenameCollectingGroups() {
+  const groups = await chrome.tabGroups.query({});
+  const collectingGroups = groups.filter(g =>
+    g.title && g.title.startsWith(PREFIX_TM) && g.title.endsWith(SUFFIX_COLLECTING)
+  );
+
+  if (collectingGroups.length === 0) return;
+
+  for (const group of collectingGroups) {
+    const finalName = group.title.replace(SUFFIX_COLLECTING, '');
+
+    // 同一ターゲットの正規グループが他に存在しないか確認
+    const hasConflict = groups.some(g => g.id !== group.id && g.title === finalName);
+
+    if (!hasConflict) {
+      try {
+        await chrome.tabGroups.update(group.id, { title: finalName });
+        console.log(`Auto-finalized group: ${group.title} -> ${finalName}`);
+      } catch (e) {
+        console.error(`Failed to finalize group ${group.id}:`, e);
+      }
+    }
+  }
+}
+
+export async function performAutoCleanup() {
   console.log('Starting auto-cleanup...');
   const settings = await chrome.storage.local.get(['targets', 'protectedGroups']);
   const targets = settings.targets || [];
@@ -75,32 +101,4 @@ async function performAutoCleanup() {
     }
   }
   console.log('Auto-cleanup completed.');
-}
-
-/**
- * "(Now Collecting)" 状態のグループを、条件を満たしていれば正規名称にリネームする
- */
-async function checkAndRenameCollectingGroups() {
-  const groups = await chrome.tabGroups.query({});
-  const collectingGroups = groups.filter(g =>
-    g.title && g.title.startsWith(PREFIX_TM) && g.title.endsWith(SUFFIX_COLLECTING)
-  );
-
-  if (collectingGroups.length === 0) return;
-
-  for (const group of collectingGroups) {
-    const finalName = group.title.replace(SUFFIX_COLLECTING, '');
-
-    // 同一ターゲットの正規グループが他に存在しないか確認
-    const hasConflict = groups.some(g => g.id !== group.id && g.title === finalName);
-
-    if (!hasConflict) {
-      try {
-        await chrome.tabGroups.update(group.id, { title: finalName });
-        console.log(`Auto-finalized group: ${group.title} -> ${finalName}`);
-      } catch (e) {
-        console.error(`Failed to finalize group ${group.id}:`, e);
-      }
-    }
-  }
 }

@@ -143,4 +143,43 @@ describe('executeMagnet naming and protection', () => {
     expect(chromeMock.tabs.group).toHaveBeenCalledWith({ tabIds: [10] });
   });
 
+  test('should collapse group after collection if collapseAfterCollect is true', async () => {
+    const { executeMagnet } = await import('../projects/app/ui/utils.js');
+    const target = { name: 'Jira', pattern: 'jira.example.com/*' };
+
+    chromeMock.storage.local.get.mockResolvedValue({
+      settings: { collapseAfterCollect: true }
+    });
+
+    chromeMock.tabs.query.mockResolvedValue([
+      { id: 10, url: 'https://jira.example.com/1', groupId: -1 }
+    ]);
+    chromeMock.tabGroups.query.mockResolvedValue([]);
+
+    await executeMagnet(target);
+
+    expect(chromeMock.tabGroups.update).toHaveBeenCalledWith(100, expect.objectContaining({ collapsed: true }));
+  });
+
+  test('should handle empty tab collection gracefully', async () => {
+    const { executeMagnet } = await import('../projects/app/ui/utils.js');
+    const target = { name: 'Jira', pattern: 'jira.example.com/*' };
+
+    chromeMock.tabs.query.mockResolvedValue([]);
+    chromeMock.tabGroups.query.mockResolvedValue([]);
+
+    await executeMagnet(target);
+
+    expect(chromeMock.tabs.group).not.toHaveBeenCalled();
+  });
+
+  test('should handle error in executeMagnet gracefully', async () => {
+    const { executeMagnet } = await import('../projects/app/ui/utils.js');
+    const target = { name: 'Jira', pattern: 'jira.example.com/*' };
+
+    chromeMock.tabs.query.mockRejectedValue(new Error('Query failed'));
+
+    await expect(executeMagnet(target)).rejects.toThrow('Query failed');
+  });
+
 });

@@ -14,3 +14,7 @@ __pycache__/
 .parcel-cache/
 dist/
 build/
+.test-user-data/
+test-results/
+playwright-report/
+blob-report/

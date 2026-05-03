@@ -54,7 +54,7 @@ let currentDeleteIndex = null;
 /**
  * HTMLの要素を翻訳する
  */
-function applyI18n() {
+export function applyI18n() {
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const message = chrome.i18n.getMessage(el.dataset.i18n);
     if (message) {
@@ -73,7 +73,7 @@ function applyI18n() {
 /**
  * 初期化処理
  */
-async function init() {
+export async function init() {
   applyI18n();
   const data = await chrome.storage.local.get(['targets', 'settings']);
   targets = data.targets || [];
@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', init);
 /**
  * 設定値をUIに反映する
  */
-function renderSettings() {
+export function renderSettings() {
   collectAllGroupsSwitch.checked = !!settings.collectFromAllGroups;
   collapseAfterCollectSwitch.checked = !!settings.collapseAfterCollect;
 }
@@ -127,7 +127,7 @@ function renderSettings() {
 /**
  * ターゲットリストをレンダリングする
  */
-function renderTargetList() {
+export function renderTargetList() {
   targetListEl.innerHTML = '';
   if (targets.length === 0) {
     targetListEl.innerHTML = `<div style="padding: 32px; text-align: center; color: var(--md-sys-color-on-surface-variant); font: var(--md-sys-typescale-body-medium);">${chrome.i18n.getMessage('noTargets')}</div>`;
@@ -203,7 +203,7 @@ targetListEl.addEventListener('drop', async (e) => {
 /**
  * ブラウザの特殊ページかどうかを判定
  */
-function isSpecialPage(url) {
+export function isSpecialPage(url) {
   if (!url) return true;
   return !url.startsWith('http://') && !url.startsWith('https://');
 }
@@ -212,7 +212,7 @@ function isSpecialPage(url) {
  * トーストを表示
  */
 let toastTimeout = null;
-function showToast(message) {
+export function showToast(message) {
   if (toastTimeout) {
     clearTimeout(toastTimeout);
   }
@@ -227,7 +227,7 @@ function showToast(message) {
 /**
  * ドメインボタンの活性状態を更新
  */
-async function updateDomainButtonState() {
+export async function updateDomainButtonState() {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!tab || isSpecialPage(tab.url)) {
     addFromDomainBtn.classList.add('disabled');
@@ -239,12 +239,12 @@ async function updateDomainButtonState() {
 /**
  * フィードバックメッセージを表示
  */
-function showModalFeedback(message) {
+export function showModalFeedback(message) {
   modalFeedbackEl.textContent = message;
   modalFeedbackEl.classList.remove('hidden');
 }
 
-function hideModalFeedback() {
+export function hideModalFeedback() {
   modalFeedbackEl.classList.add('hidden');
   modalFeedbackEl.textContent = '';
 }
@@ -252,7 +252,7 @@ function hideModalFeedback() {
 /**
  * イベントリスナーの設定
  */
-function setupEventListeners() {
+export function setupEventListeners() {
   // 実行ボタン
   targetListEl.addEventListener('click', (e) => {
     const btn = e.target.closest('.execute-btn');
@@ -330,7 +330,7 @@ function setupEventListeners() {
 /**
  * About情報を更新
  */
-function updateAboutInfo() {
+export function updateAboutInfo() {
   const manifest = chrome.runtime.getManifest();
   aboutVersionEl.textContent = `v${manifest.version}`;
   aboutDeveloperEl.textContent = manifest.author || 'Masanori SATAKE';
@@ -340,7 +340,7 @@ function updateAboutInfo() {
 /**
  * ターゲットモーダルを表示
  */
-function showModal(index = null) {
+export function showModal(index = null) {
   currentEditIndex = index;
   patternListContainer.innerHTML = '';
   hideModalFeedback();
@@ -363,7 +363,7 @@ function showModal(index = null) {
   targetModalScrim.style.display = 'flex';
 }
 
-function hideModal() {
+export function hideModal() {
   targetModalScrim.style.display = 'none';
   currentEditIndex = null;
 }
@@ -371,7 +371,7 @@ function hideModal() {
 /**
  * パターン入力欄を追加
  */
-function addPatternInput(value = '') {
+export function addPatternInput(value = '') {
   const item = document.createElement('div');
   item.className = 'pattern-item';
   item.draggable = true;
@@ -422,7 +422,7 @@ patternListContainer.addEventListener('dragover', (e) => {
 /**
  * カラー選択
  */
-function selectColor(color) {
+export function selectColor(color) {
   selectedColor = color;
   colorOptions.forEach(opt => {
     opt.classList.toggle('selected', opt.dataset.color === color);
@@ -432,7 +432,7 @@ function selectColor(color) {
 /**
  * ターゲット保存
  */
-async function handleSaveTarget() {
+export async function handleSaveTarget() {
   const name = newNameInput.value.trim();
   const rawPatterns = [...patternListContainer.querySelectorAll('.pattern-input')]
     .map(input => input.value.trim())
@@ -476,7 +476,7 @@ async function handleSaveTarget() {
 /**
  * ドメインから追加
  */
-async function handleAddFromDomain() {
+export async function handleAddFromDomain() {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!tab || !tab.url) return;
 
@@ -511,19 +511,19 @@ async function handleAddFromDomain() {
 /**
  * 設定モーダル
  */
-function showSettingsModal() {
+export function showSettingsModal() {
   settingsModalScrim.style.display = 'flex';
   updateAboutInfo();
 }
 
-function hideSettingsModal() {
+export function hideSettingsModal() {
   settingsModalScrim.style.display = 'none';
 }
 
 /**
  * エクスポート（コピー）
  */
-async function handleCopyExport() {
+export async function handleCopyExport() {
   try {
     const exportData = {
       targets: targets,
@@ -540,7 +540,7 @@ async function handleCopyExport() {
 /**
  * インポート（貼り付け）
  */
-async function handlePasteImport() {
+export async function handlePasteImport() {
   try {
     const text = await navigator.clipboard.readText();
     const data = JSON.parse(text);
@@ -553,7 +553,7 @@ async function handlePasteImport() {
 /**
  * エクスポート（ファイル）
  */
-function handleFileExport() {
+export function handleFileExport() {
   const exportData = {
     targets: targets,
     settings: settings
@@ -571,7 +571,7 @@ function handleFileExport() {
 /**
  * インポート（ファイル）
  */
-function handleFileImport(e) {
+export function handleFileImport(e) {
   const file = e.target.files[0];
   if (!file) return;
   const reader = new FileReader();
@@ -590,7 +590,7 @@ function handleFileImport(e) {
 /**
  * データのインポート
  */
-async function importData(data) {
+export async function importData(data) {
   let importedTargets = [];
   let importedSettings = { collectFromAllGroups: false, collapseAfterCollect: false };
 
@@ -619,17 +619,17 @@ async function importData(data) {
 /**
  * 削除確認
  */
-function showDeleteDialog(index) {
+export function showDeleteDialog(index) {
   currentDeleteIndex = index;
   deleteDialogScrim.style.display = 'flex';
 }
 
-function hideDeleteDialog() {
+export function hideDeleteDialog() {
   deleteDialogScrim.style.display = 'none';
   currentDeleteIndex = null;
 }
 
-async function handleConfirmDelete() {
+export async function handleConfirmDelete() {
   if (currentDeleteIndex !== null) {
     targets.splice(currentDeleteIndex, 1);
     await chrome.storage.local.set({ targets });
@@ -642,7 +642,7 @@ async function handleConfirmDelete() {
 /**
  * 磁石実行
  */
-async function handleExecuteMagnet(target) {
+export async function handleExecuteMagnet(target) {
   try {
     await executeMagnet(target);
   } catch (e) {
@@ -651,7 +651,7 @@ async function handleExecuteMagnet(target) {
   }
 }
 
-function escapeHtml(str) {
+export function escapeHtml(str) {
   if (typeof str !== 'string') return '';
   const div = document.createElement('div');
   div.textContent = str;
