@@ -14,6 +14,9 @@
   "addNew": {
     "message": "新規作成"
   },
+  "addPattern": {
+    "message": "+パターン追加"
+  },
   "addFromDomain": {
     "message": "タブのドメインで作成"
   },
@@ -46,6 +49,12 @@
   },
   "errorInputRequired": {
     "message": "名前とパターンを入力してください。"
+  },
+  "errorSpecialPage": {
+    "message": "ブラウザの特殊ページに対して作成できません"
+  },
+  "warningSpecialPageIncluded": {
+    "message": "特殊ページに該当するURLパターンが含まれるため、保存ができません"
   },
   "confirmDelete": {
     "message": "このターゲットを削除しますか？"

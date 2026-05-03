@@ -12,6 +12,7 @@ const modalTitleEl = document.getElementById('modal-title');
 const newNameInput = document.getElementById('new-name');
 const patternListContainer = document.getElementById('pattern-list-container');
 const addPatternBtn = document.getElementById('add-pattern-btn');
+const modalFeedbackEl = document.getElementById('modal-feedback');
 const colorOptions = document.querySelectorAll('.color-option');
 const deleteTargetBtn = document.getElementById('delete-target-btn');
 const cancelTargetBtn = document.getElementById('cancel-target-btn');
@@ -35,6 +36,8 @@ const aboutTargetCountEl = document.getElementById('about-target-count');
 const deleteDialogScrim = document.getElementById('delete-dialog-scrim');
 const confirmDeleteCancelBtn = document.getElementById('confirm-delete-cancel-btn');
 const confirmDeleteOkBtn = document.getElementById('confirm-delete-ok-btn');
+
+const toastEl = document.getElementById('toast');
 
 // State
 let targets = [];
@@ -71,6 +74,7 @@ async function init() {
 
   renderTargetList();
   setupEventListeners();
+  updateDomainButtonState();
 
   // Aboutタブの情報を更新
   updateAboutInfo();
@@ -84,6 +88,13 @@ async function init() {
         renderTargetList();
         updateAboutInfo();
       }
+    }
+  });
+
+  chrome.tabs.onActivated.addListener(updateDomainButtonState);
+  chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+    if (changeInfo.status === 'complete' || changeInfo.url) {
+      updateDomainButtonState();
     }
   });
 }
@@ -167,6 +178,55 @@ targetListEl.addEventListener('drop', async (e) => {
 });
 
 /**
+ * ブラウザの特殊ページかどうかを判定
+ */
+function isSpecialPage(url) {
+  if (!url) return true;
+  return !url.startsWith('http://') && !url.startsWith('https://');
+}
+
+/**
+ * トーストを表示
+ */
+let toastTimeout = null;
+function showToast(message) {
+  if (toastTimeout) {
+    clearTimeout(toastTimeout);
+  }
+  toastEl.textContent = message;
+  toastEl.classList.add('show');
+  toastTimeout = setTimeout(() => {
+    toastEl.classList.remove('show');
+    toastTimeout = null;
+  }, 3000);
+}
+
+/**
+ * ドメインボタンの活性状態を更新
+ */
+async function updateDomainButtonState() {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (!tab || isSpecialPage(tab.url)) {
+    addFromDomainBtn.classList.add('disabled');
+  } else {
+    addFromDomainBtn.classList.remove('disabled');
+  }
+}
+
+/**
+ * フィードバックメッセージを表示
+ */
+function showModalFeedback(message) {
+  modalFeedbackEl.textContent = message;
+  modalFeedbackEl.classList.remove('hidden');
+}
+
+function hideModalFeedback() {
+  modalFeedbackEl.classList.add('hidden');
+  modalFeedbackEl.textContent = '';
+}
+
+/**
  * イベントリスナーの設定
  */
 function setupEventListeners() {
@@ -183,13 +243,21 @@ function setupEventListeners() {
   addFromDomainBtn.addEventListener('click', handleAddFromDomain);
 
   // ターゲットモーダル
-  addPatternBtn.addEventListener('click', () => addPatternInput());
+  addPatternBtn.addEventListener('click', () => {
+    addPatternInput();
+    hideModalFeedback();
+  });
   cancelTargetBtn.addEventListener('click', hideModal);
   saveTargetBtn.addEventListener('click', handleSaveTarget);
   deleteTargetBtn.addEventListener('click', () => showDeleteDialog(currentEditIndex));
 
+  newNameInput.addEventListener('input', hideModalFeedback);
+
   colorOptions.forEach(opt => {
-    opt.addEventListener('click', () => selectColor(opt.dataset.color));
+    opt.addEventListener('click', () => {
+      selectColor(opt.dataset.color);
+      hideModalFeedback();
+    });
   });
 
   // 設定モーダル
@@ -242,6 +310,7 @@ function updateAboutInfo() {
 function showModal(index = null) {
   currentEditIndex = index;
   patternListContainer.innerHTML = '';
+  hideModalFeedback();
 
   if (index !== null) {
     const target = targets[index];
@@ -291,7 +360,10 @@ function addPatternInput(value = '') {
     } else {
       item.querySelector('input').value = '';
     }
+    hideModalFeedback();
   });
+
+  item.querySelector('.pattern-input').addEventListener('input', hideModalFeedback);
 
   item.addEventListener('dragstart', () => item.classList.add('dragging'));
   item.addEventListener('dragend', () => item.classList.remove('dragging'));
@@ -329,12 +401,30 @@ function selectColor(color) {
  */
 async function handleSaveTarget() {
   const name = newNameInput.value.trim();
-  const patterns = [...patternListContainer.querySelectorAll('.pattern-input')]
+  const rawPatterns = [...patternListContainer.querySelectorAll('.pattern-input')]
     .map(input => input.value.trim())
     .filter(val => val !== '');
 
-  if (!name || patterns.length === 0) {
-    alert(chrome.i18n.getMessage('errorInputRequired'));
+  if (!name || rawPatterns.length === 0) {
+    showModalFeedback(chrome.i18n.getMessage('errorInputRequired'));
+    return;
+  }
+
+  // プロトコル除去と特殊ページチェック
+  const patterns = [];
+  let hasSpecialPage = false;
+
+  for (let p of rawPatterns) {
+    if (/^https?:\/\//i.test(p)) {
+      p = p.replace(/^https?:\/\//i, '');
+    } else if (/^[a-z0-9-]+:\/\//i.test(p) || p.startsWith('about:') || p.startsWith('file:')) {
+      hasSpecialPage = true;
+    }
+    patterns.push(p);
+  }
+
+  if (hasSpecialPage) {
+    showModalFeedback(chrome.i18n.getMessage('warningSpecialPageIncluded'));
     return;
   }
 
@@ -356,10 +446,25 @@ async function handleSaveTarget() {
 async function handleAddFromDomain() {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (!tab || !tab.url) return;
+
+  if (isSpecialPage(tab.url)) {
+    showToast(chrome.i18n.getMessage('errorSpecialPage'));
+    return;
+  }
+
   try {
     const url = new URL(tab.url);
-    const domain = url.hostname;
-    const name = domain.split('.')[0].charAt(0).toUpperCase() + domain.split('.')[0].slice(1);
+    let domain = url.hostname;
+    const parts = domain.split('.');
+
+    // 一般的な文字列をスキップ
+    const skipList = ['www', 'mail', 'app', 'blog'];
+    let mainPart = parts[0];
+    if (parts.length > 2 && skipList.includes(parts[0].toLowerCase())) {
+      mainPart = parts[1];
+    }
+
+    const name = mainPart.charAt(0).toUpperCase() + mainPart.slice(1);
     const pattern = domain + '/*';
     showModal();
     newNameInput.value = name;
