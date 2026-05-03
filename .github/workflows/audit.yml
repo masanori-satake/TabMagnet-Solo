@@ -14,7 +14,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -57,3 +57,20 @@ jobs:
 
     - name: 4. 外部OSS依存関係なしの確認 (No Production Dependencies)
       run: python scripts/audit_production_dependencies.py
+
+    - name: 5. カバレッジ計測とバッジ更新 (Coverage Measurement and Badge Update)
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      run: |
+        npm test -- --coverage
+        python scripts/update_coverage_badge.py
+        mkdir -p projects/web/coverage
+        cp -r coverage/lcov-report projects/web/coverage/
+
+    - name: Commit and Push README changes
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add README.md projects/web/coverage/
+        git diff-index --quiet HEAD || git commit -m "docs: update coverage badge and report [skip ci]"
+        git push
