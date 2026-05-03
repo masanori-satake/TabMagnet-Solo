@@ -415,9 +415,9 @@ async function handleSaveTarget() {
   let hasSpecialPage = false;
 
   for (let p of rawPatterns) {
-    if (p.startsWith('http://') || p.startsWith('https://')) {
-      p = p.replace(/^https?:\/\//, '');
-    } else if (p.includes('://') || p.startsWith('about:') || p.startsWith('file:')) {
+    if (/^https?:\/\//i.test(p)) {
+      p = p.replace(/^https?:\/\//i, '');
+    } else if (/^[a-z0-9-]+:\/\//i.test(p) || p.startsWith('about:') || p.startsWith('file:')) {
       hasSpecialPage = true;
     }
     patterns.push(p);
@@ -460,7 +460,7 @@ async function handleAddFromDomain() {
     // 一般的な文字列をスキップ
     const skipList = ['www', 'mail', 'app', 'blog'];
     let mainPart = parts[0];
-    if (parts.length > 1 && skipList.includes(parts[0].toLowerCase())) {
+    if (parts.length > 2 && skipList.includes(parts[0].toLowerCase())) {
       mainPart = parts[1];
     }
 
