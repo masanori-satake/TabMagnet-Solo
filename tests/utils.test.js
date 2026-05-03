@@ -51,6 +51,11 @@ describe('executeMagnet naming and protection', () => {
         query: jest.fn(),
         update: jest.fn().mockResolvedValue(),
         TAB_GROUP_ID_NONE: -1
+      },
+      storage: {
+        local: {
+          get: jest.fn().mockResolvedValue({})
+        }
       }
     };
     global.chrome = chromeMock;
@@ -73,11 +78,11 @@ describe('executeMagnet naming and protection', () => {
     await executeMagnet(target);
 
     expect(chromeMock.tabs.group).toHaveBeenCalledWith({ tabIds: [10, 11] });
-    expect(chromeMock.tabGroups.update).toHaveBeenCalledWith(100, { title: 'Jira_TM(Now Collecting)' });
-    expect(chromeMock.tabGroups.update).toHaveBeenLastCalledWith(100, { title: 'Jira_TM' });
+    expect(chromeMock.tabGroups.update).toHaveBeenCalledWith(100, { title: '🧲Jira(Now Collecting)' });
+    expect(chromeMock.tabGroups.update).toHaveBeenLastCalledWith(100, { title: '🧲Jira' });
   });
 
-  test('should keep _TM(Now Collecting) if another _TM group exists', async () => {
+  test('should keep (Now Collecting) if another 🧲 group exists', async () => {
     const { executeMagnet } = await import('../projects/app/ui/utils.js');
     const target = { name: 'Jira', pattern: 'jira.example.com/*' };
 
@@ -85,16 +90,16 @@ describe('executeMagnet naming and protection', () => {
       { id: 10, url: 'https://jira.example.com/1', groupId: -1 }
     ]);
     chromeMock.tabGroups.query.mockResolvedValue([
-      { id: 200, title: 'Jira_TM' }
+      { id: 200, title: '🧲Jira' }
     ]);
 
     await executeMagnet(target);
 
-    expect(chromeMock.tabGroups.update).toHaveBeenCalledWith(100, { title: 'Jira_TM(Now Collecting)' });
-    expect(chromeMock.tabGroups.update).not.toHaveBeenCalledWith(100, { title: 'Jira_TM' });
+    expect(chromeMock.tabGroups.update).toHaveBeenCalledWith(100, { title: '🧲Jira(Now Collecting)' });
+    expect(chromeMock.tabGroups.update).not.toHaveBeenCalledWith(100, { title: '🧲Jira' });
   });
 
-  test('should protect groups without _TM suffix', async () => {
+  test('should protect groups without 🧲 prefix', async () => {
     const { executeMagnet } = await import('../projects/app/ui/utils.js');
     const target = { name: 'Jira', pattern: 'jira.example.com/*' };
 
@@ -109,4 +114,25 @@ describe('executeMagnet naming and protection', () => {
 
     expect(chromeMock.tabs.group).not.toHaveBeenCalled();
   });
+
+  test('should collect from unprotected groups if collectFromAllGroups is true', async () => {
+    const { executeMagnet } = await import('../projects/app/ui/utils.js');
+    const target = { name: 'Jira', pattern: 'jira.example.com/*' };
+
+    chromeMock.storage.local.get.mockResolvedValue({
+      settings: { collectFromAllGroups: true }
+    });
+
+    chromeMock.tabs.query.mockResolvedValue([
+      { id: 10, url: 'https://jira.example.com/not-protected-now', groupId: 50 }
+    ]);
+    chromeMock.tabGroups.query.mockResolvedValue([
+      { id: 50, title: 'My Manual Group' }
+    ]);
+
+    await executeMagnet(target);
+
+    expect(chromeMock.tabs.group).toHaveBeenCalledWith({ tabIds: [10] });
+  });
+
 });

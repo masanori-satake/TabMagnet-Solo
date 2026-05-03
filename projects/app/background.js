@@ -2,13 +2,13 @@
  * TabMagnet-Solo Background Service Worker
  *
  * 役割:
- * 1. 拡張機能起動時のクリーンアップ処理（旧世代グループの解体）
+ * 1. 拡張機能起動時のクリーンアップ処理（同一ターゲットによる重複グループの解体）
  * 2. ブラウザ起動時の初期化処理
  * 3. 収集完了待ちグループの自動リネーム
  */
 
-const SUFFIX_TM = '_TM';
-const SUFFIX_COLLECTING = '_TM(Now Collecting)';
+const PREFIX_TM = '🧲';
+const SUFFIX_COLLECTING = '(Now Collecting)';
 
 /**
  * 拡張機能起動時またはブラウザ起動時に実行
@@ -40,7 +40,7 @@ chrome.tabGroups.onUpdated.addListener(async (group) => {
 });
 
 /**
- * 全ウィンドウを走査し、旧世代のグループをクリーンアップする
+ * 全ウィンドウを走査し、同一ターゲットによる重複グループをクリーンアップする
  */
 async function performAutoCleanup() {
   console.log('Starting auto-cleanup...');
@@ -55,10 +55,9 @@ async function performAutoCleanup() {
   for (const target of targets) {
     const targetName = target.name;
     // 同一ターゲット名を持つグループを抽出（保護されたグループは除外）
-    // 新仕様では Name_TM または Name_TM(Now Collecting) が対象
     const matchingGroups = groups.filter(g => {
       if (!g.title) return false;
-      const isTargetGroup = (g.title === targetName + SUFFIX_TM || g.title === targetName + SUFFIX_COLLECTING);
+      const isTargetGroup = (g.title === PREFIX_TM + targetName || g.title === PREFIX_TM + targetName + SUFFIX_COLLECTING);
       const isProtected = protectedGroups.includes(g.title);
       return isTargetGroup && !isProtected;
     });
@@ -83,13 +82,14 @@ async function performAutoCleanup() {
  */
 async function checkAndRenameCollectingGroups() {
   const groups = await chrome.tabGroups.query({});
-  const collectingGroups = groups.filter(g => g.title && g.title.endsWith(SUFFIX_COLLECTING));
+  const collectingGroups = groups.filter(g =>
+    g.title && g.title.startsWith(PREFIX_TM) && g.title.endsWith(SUFFIX_COLLECTING)
+  );
 
   if (collectingGroups.length === 0) return;
 
   for (const group of collectingGroups) {
-    const baseName = group.title.slice(0, -SUFFIX_COLLECTING.length);
-    const finalName = baseName + SUFFIX_TM;
+    const finalName = group.title.replace(SUFFIX_COLLECTING, '');
 
     // 同一ターゲットの正規グループが他に存在しないか確認
     const hasConflict = groups.some(g => g.id !== group.id && g.title === finalName);
