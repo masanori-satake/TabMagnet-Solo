@@ -596,7 +596,7 @@ async function importData(data) {
   const mode = document.querySelector('input[name="import-mode"]:checked').value;
   if (mode === 'append') {
     targets = [...targets, ...importedTargets];
-    settings = { ...settings, ...importedSettings };
+    // append mode should not overwrite current common settings.
   } else {
     targets = importedTargets;
     settings = importedSettings;
