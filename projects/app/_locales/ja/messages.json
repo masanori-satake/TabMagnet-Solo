@@ -110,6 +110,9 @@
   "settingCollectFromAllGroups": {
     "message": "全タブグループから収集する"
   },
+  "settingCollapseAfterCollect": {
+    "message": "収集後にタブグループを閉じる"
+  },
   "sectionSettingsData": {
     "message": "設定データ"
   },
