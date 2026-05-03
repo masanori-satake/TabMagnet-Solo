@@ -3,6 +3,10 @@ name: Deploy GitHub Pages
 on:
   push:
     branches: ["main"]
+  workflow_run:
+    workflows: ["監査: 透明性とセキュリティ (Audit: Transparency and Security)"]
+    types:
+      - completed
   workflow_dispatch:
 
 permissions:
