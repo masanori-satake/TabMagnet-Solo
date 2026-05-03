@@ -1,4 +1,4 @@
-import { executeMagnet } from './ui/utils.js';
+import { executeMagnet, getExportTimestamp } from './ui/utils.js';
 
 // DOM elements
 const targetListEl = document.getElementById('target-list');
@@ -563,7 +563,7 @@ function handleFileExport() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `tabmagnet_targets_${new Date().getTime()}.json`;
+  a.download = `tabmagnet_${getExportTimestamp()}.json`;
   a.click();
   URL.revokeObjectURL(url);
 }

@@ -51,6 +51,24 @@ export function getTimestamp() {
 }
 
 /**
+ * ファイルエクスポート用のタイムスタンプを YYMMDD_hhmm 形式で取得する
+ *
+ * @returns {string} タイムスタンプ文字列
+ */
+export function getExportTimestamp() {
+  const now = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+
+  const yy = String(now.getFullYear()).slice(-2);
+  const mm = pad(now.getMonth() + 1);
+  const dd = pad(now.getDate());
+  const hh = pad(now.getHours());
+  const min = pad(now.getMinutes());
+
+  return `${yy}${mm}${dd}_${hh}${min}`;
+}
+
+/**
  * 指定されたターゲット設定に基づき、タブを集約（磁石発動）する
  *
  * @param {Object} target ターゲット設定 { name, pattern, color }

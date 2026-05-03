@@ -1,5 +1,5 @@
 import { jest } from '@jest/globals';
-import { matchUrl, getTimestamp } from '../projects/app/ui/utils.js';
+import { matchUrl, getTimestamp, getExportTimestamp } from '../projects/app/ui/utils.js';
 
 describe('matchUrl', () => {
   test('basic prefix match', () => {
@@ -30,6 +30,14 @@ describe('getTimestamp', () => {
   test('format check', () => {
     const ts = getTimestamp();
     expect(ts).toMatch(/^\d{8}_\d{6}$/);
+  });
+});
+
+describe('getExportTimestamp', () => {
+  test('format check', () => {
+    const ts = getExportTimestamp();
+    // YYMMDD_hhmm
+    expect(ts).toMatch(/^\d{6}_\d{4}$/);
   });
 });
 
