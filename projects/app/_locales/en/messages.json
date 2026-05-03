@@ -110,6 +110,9 @@
   "settingCollectFromAllGroups": {
     "message": "Collect from all tab groups"
   },
+  "settingCollapseAfterCollect": {
+    "message": "Collapse tab group after collection"
+  },
   "sectionSettingsData": {
     "message": "Settings Data"
   },

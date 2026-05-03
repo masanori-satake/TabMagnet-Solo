@@ -59,7 +59,7 @@ export async function executeMagnet(target) {
   const currentWindow = await chrome.windows.getCurrent();
   const allTabs = await chrome.tabs.query({});
   const storageData = await chrome.storage.local.get(['settings']);
-  const settings = storageData.settings || { collectFromAllGroups: false };
+  const settings = storageData.settings || { collectFromAllGroups: false, collapseAfterCollect: false };
 
   const allGroups = await chrome.tabGroups.query({});
   const groupMap = new Map(allGroups.map(g => [g.id, g]));
@@ -133,6 +133,9 @@ export async function executeMagnet(target) {
   if (target.color) {
     updateData.color = target.color;
   }
+  if (settings.collapseAfterCollect) {
+    updateData.collapsed = true;
+  }
   await chrome.tabGroups.update(newGroupId, updateData);
 
   // 3. 重複するグループ（新しく作ったもの以外）を解体
@@ -146,7 +149,11 @@ export async function executeMagnet(target) {
   const otherGroups = existingGroups.filter(g => g.id !== newGroupId);
 
   if (otherGroups.length === 0) {
-    await chrome.tabGroups.update(newGroupId, { title: finalGroupName });
+    const finalUpdateData = { title: finalGroupName };
+    if (settings.collapseAfterCollect) {
+      finalUpdateData.collapsed = true;
+    }
+    await chrome.tabGroups.update(newGroupId, finalUpdateData);
   }
 }
 

@@ -24,6 +24,7 @@ const closeSettingsBtn = document.getElementById('close-settings-btn');
 const tabItems = document.querySelectorAll('.tab-item');
 const tabPanes = document.querySelectorAll('.tab-pane');
 const collectAllGroupsSwitch = document.getElementById('collect-all-groups-switch');
+const collapseAfterCollectSwitch = document.getElementById('collapse-after-collect-switch');
 const copyExportBtn = document.getElementById('copy-export-btn');
 const pasteImportBtn = document.getElementById('paste-import-btn');
 const fileExportBtn = document.getElementById('file-export-btn');
@@ -43,7 +44,8 @@ const toastEl = document.getElementById('toast');
 // State
 let targets = [];
 let settings = {
-  collectFromAllGroups: false
+  collectFromAllGroups: false,
+  collapseAfterCollect: false
 };
 let selectedColor = 'grey';
 let currentEditIndex = null;
@@ -119,6 +121,7 @@ document.addEventListener('DOMContentLoaded', init);
  */
 function renderSettings() {
   collectAllGroupsSwitch.checked = !!settings.collectFromAllGroups;
+  collapseAfterCollectSwitch.checked = !!settings.collapseAfterCollect;
 }
 
 /**
@@ -283,6 +286,11 @@ function setupEventListeners() {
   // 設定モーダル
   collectAllGroupsSwitch.addEventListener('change', async () => {
     settings.collectFromAllGroups = collectAllGroupsSwitch.checked;
+    await chrome.storage.local.set({ settings });
+  });
+
+  collapseAfterCollectSwitch.addEventListener('change', async () => {
+    settings.collapseAfterCollect = collapseAfterCollectSwitch.checked;
     await chrome.storage.local.set({ settings });
   });
 
@@ -584,7 +592,7 @@ function handleFileImport(e) {
  */
 async function importData(data) {
   let importedTargets = [];
-  let importedSettings = { collectFromAllGroups: false };
+  let importedSettings = { collectFromAllGroups: false, collapseAfterCollect: false };
 
   if (data && typeof data === 'object' && !Array.isArray(data)) {
     importedTargets = Array.isArray(data.targets) ? data.targets : [];
