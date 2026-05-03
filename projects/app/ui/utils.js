@@ -59,7 +59,11 @@ export async function executeMagnet(target) {
   const currentWindow = await chrome.windows.getCurrent();
   const allTabs = await chrome.tabs.query({});
   const storageData = await chrome.storage.local.get(['settings']);
-  const settings = storageData.settings || { collectFromAllGroups: false, collapseAfterCollect: false };
+  const settings = {
+    collectFromAllGroups: false,
+    collapseAfterCollect: false,
+    ...(storageData.settings || {})
+  };
 
   const allGroups = await chrome.tabGroups.query({});
   const groupMap = new Map(allGroups.map(g => [g.id, g]));
@@ -149,11 +153,7 @@ export async function executeMagnet(target) {
   const otherGroups = existingGroups.filter(g => g.id !== newGroupId);
 
   if (otherGroups.length === 0) {
-    const finalUpdateData = { title: finalGroupName };
-    if (settings.collapseAfterCollect) {
-      finalUpdateData.collapsed = true;
-    }
-    await chrome.tabGroups.update(newGroupId, finalUpdateData);
+    await chrome.tabGroups.update(newGroupId, { title: finalGroupName });
   }
 }
 
