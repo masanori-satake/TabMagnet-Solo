@@ -19,6 +19,9 @@ const translations = {
     featureM3: "Material 3 UI",
     featureM3Text:
       "Adopts Google Material 3 (M3) design. Operates comfortably in the side panel for a seamless workflow.",
+    featureProtection: "Tab Group Protection",
+    featureProtectionText:
+      "Groups without the 🧲 prefix are automatically protected, preventing manual groups from being accidentally disbanded.",
     install: "How to Install",
     installStep1: "Access the Chrome Web Store.",
     installStep2: 'Click the "Add to Chrome" button.',
@@ -75,6 +78,9 @@ const translations = {
     featureM3: "Material 3 UI",
     featureM3Text:
       "Google Material 3 (M3) デザインを採用。サイドパネルで作業を邪魔せず、快適に操作できます。",
+    featureProtection: "タブグループ保護",
+    featureProtectionText:
+      "🧲接頭辞のないグループは自動的に保護され、手動で作成したグループが誤って解体されるのを防ぎます。",
     install: "インストール方法",
     installStep1: "Chrome ウェブストアにアクセスします。",
     installStep2: "「Chromeに追加」ボタンをクリックします。",
