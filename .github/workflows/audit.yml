@@ -15,6 +15,8 @@ on:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -72,14 +74,35 @@ jobs:
       run: |
         npm test -- --coverage
         python scripts/update_coverage_badge.py
+        # カバレッジレポートをWeb公開用に配置 (コミットはしない)
+        rm -rf projects/web/coverage
         mkdir -p projects/web/coverage
-        cp -r coverage/lcov-report projects/web/coverage/
+        cp -r coverage/lcov-report/* projects/web/coverage/
 
     - name: Commit and Push README changes
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        git add README.md projects/web/coverage/
-        git diff-index --quiet HEAD || git commit -m "docs: update coverage badge and report [skip ci]"
+        git add README.md
+        git diff-index --quiet HEAD || git commit -m "docs: update coverage badge [skip ci]"
         git push
+
+    - name: Upload artifact
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: 'projects/web'
+
+  deploy:
+    name: GitHub Pagesへデプロイ (Deploy to GitHub Pages)
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: integrity-and-oss
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
