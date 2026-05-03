@@ -91,7 +91,7 @@ export async function executeMagnet(target) {
           matchedTabs.push(tab);
         }
 
-        // 旧世代グループの特定（解体対象候補）
+        // 重複グループの特定（解体対象候補）
         // ターゲット名に合致し、かつ内部用マーカーを持つ非保護グループ
         const isTargetGroup = (group.title === PREFIX_TM + target.name) ||
                              (group.title === PREFIX_TM + target.name + SUFFIX_COLLECTING);
@@ -106,7 +106,7 @@ export async function executeMagnet(target) {
   }
 
   if (matchedTabs.length === 0) {
-    // マッチするタブがなくても、旧世代グループがあれば解体する
+    // マッチするタブがなくても、対象のグループが存在すれば解体する
     await dissolveGroups(Array.from(groupsToDissolve));
     return;
   }
@@ -135,7 +135,7 @@ export async function executeMagnet(target) {
   }
   await chrome.tabGroups.update(newGroupId, updateData);
 
-  // 3. 旧世代グループ（新しく作ったもの以外）を解体
+  // 3. 重複するグループ（新しく作ったもの以外）を解体
   const otherGroupsToDissolve = Array.from(groupsToDissolve).filter(id => id !== newGroupId);
   await dissolveGroups(otherGroupsToDissolve);
 

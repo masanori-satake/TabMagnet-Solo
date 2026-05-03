@@ -583,31 +583,23 @@ function handleFileImport(e) {
  * データのインポート
  */
 async function importData(data) {
-  let newTargets = [];
-  let newSettings = { collectFromAllGroups: false };
+  let importedTargets = [];
+  let importedSettings = { collectFromAllGroups: false };
 
-  if (Array.isArray(data)) {
-    // 旧フォーマット (配列のみ)
-    newTargets = data;
-  } else if (data && typeof data === 'object') {
-    // 新フォーマット { targets: [], settings: {} }
-    newTargets = Array.isArray(data.targets) ? data.targets : [];
-    newSettings = { ...newSettings, ...(data.settings || {}) };
+  if (data && typeof data === 'object' && !Array.isArray(data)) {
+    importedTargets = Array.isArray(data.targets) ? data.targets : [];
+    importedSettings = { ...importedSettings, ...(data.settings || {}) };
   } else {
     throw new Error('Invalid format');
   }
 
   const mode = document.querySelector('input[name="import-mode"]:checked').value;
   if (mode === 'append') {
-    targets = [...targets, ...newTargets];
-    // append の場合は settings は上書きしない（あるいはマージする方針もあるが、
-    // ここでは今の設定を優先するか、インポート側に合わせるか。
-    // 要件では「復元」とのことなので、settings は常にインポートされたものにする、
-    // あるいは論理和をとるなどが考えられるが、単純に上書きで実装する。
-    settings = { ...settings, ...newSettings };
+    targets = [...targets, ...importedTargets];
+    settings = { ...settings, ...importedSettings };
   } else {
-    targets = newTargets;
-    settings = newSettings;
+    targets = importedTargets;
+    settings = importedSettings;
   }
 
   await chrome.storage.local.set({ targets, settings });

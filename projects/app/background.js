@@ -2,7 +2,7 @@
  * TabMagnet-Solo Background Service Worker
  *
  * 役割:
- * 1. 拡張機能起動時のクリーンアップ処理（旧世代グループの解体）
+ * 1. 拡張機能起動時のクリーンアップ処理（同一ターゲットによる重複グループの解体）
  * 2. ブラウザ起動時の初期化処理
  * 3. 収集完了待ちグループの自動リネーム
  */
@@ -40,7 +40,7 @@ chrome.tabGroups.onUpdated.addListener(async (group) => {
 });
 
 /**
- * 全ウィンドウを走査し、旧世代のグループをクリーンアップする
+ * 全ウィンドウを走査し、同一ターゲットによる重複グループをクリーンアップする
  */
 async function performAutoCleanup() {
   console.log('Starting auto-cleanup...');
@@ -55,7 +55,6 @@ async function performAutoCleanup() {
   for (const target of targets) {
     const targetName = target.name;
     // 同一ターゲット名を持つグループを抽出（保護されたグループは除外）
-    // 新仕様では 🧲Name または 🧲Name(Now Collecting) が対象
     const matchingGroups = groups.filter(g => {
       if (!g.title) return false;
       const isTargetGroup = (g.title === PREFIX_TM + targetName || g.title === PREFIX_TM + targetName + SUFFIX_COLLECTING);
@@ -83,7 +82,9 @@ async function performAutoCleanup() {
  */
 async function checkAndRenameCollectingGroups() {
   const groups = await chrome.tabGroups.query({});
-  const collectingGroups = groups.filter(g => g.title && g.title.endsWith(SUFFIX_COLLECTING));
+  const collectingGroups = groups.filter(g =>
+    g.title && g.title.startsWith(PREFIX_TM) && g.title.endsWith(SUFFIX_COLLECTING)
+  );
 
   if (collectingGroups.length === 0) return;
 
