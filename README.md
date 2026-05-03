@@ -1,6 +1,6 @@
 # TabMagnet-Solo
 
-[![version](https://img.shields.io/badge/version-0.11.0-blue)](projects/app/manifest.json)
+[![version](https://img.shields.io/badge/version-1.0.0-blue)](projects/app/manifest.json)
 [![Coverage](https://img.shields.io/badge/coverage-51%25-red)](https://masanori-satake.github.io/TabMagnet-Solo/coverage/lcov-report/)
 [![Privacy-Local Only](https://img.shields.io/badge/Privacy-Local%20Only-brightgreen)](AGENTS.md)
 [![Manifest V3](https://img.shields.io/badge/Manifest-V3-orange)](projects/app/manifest.json)
@@ -16,18 +16,21 @@ TabMagnet-Soloは、プライバシーを最優先に設計された、タブ管
 
 ## 特徴
 
-* **Smart Aggregation**: 全ウィンドウを走査し、指定URLパターンのタブを現在のウィンドウに集約。
-* **Singleton Management**: 特定ターゲットにつき1つのグループのみを維持。再実行時には既存グループを最新状態に更新。
+* **Smart Aggregation**: 全ウィンドウを走査し、指定URLパターンのタブを現在のウィンドウに一括集約。
+* **Singleton Management**: 同一ターゲットに対して常に一つのグループのみを維持。再実行時には既存グループを自動更新。
+* **Automatic Protection**: ユーザーが手動で作成した既存のタブグループを破壊しないよう、接頭辞 `🧲` のないグループは自動的に保護されます。
+* **Add from Domain**: 現在開いているタブのドメインから、ワンクリックで新しい集約ターゲットを作成可能。
 * **完全ローカル実行**: すべてのデータはブラウザ内の `chrome.storage.local` に保存されます。外部サーバーへの送信は一切行われず、プライバシーを強力に保護します。
-* **Vanilla JS & ゼロ依存**: 外部ライブラリを一切使用せず、ブラウザ標準のAPIのみで構築されています。
-* **Material 3 デザイン**: Google Material 3 (M3) に準拠したUI。
-* **ポータビリティ**: 設定データをJSON形式でクリップボード経由でエクスポート/インポート可能。
+* **Vanilla JS & ゼロ依存**: 外部ライブラリを一切使用せず、ブラウザ標準のAPIのみで構築。軽量かつ高速に動作します。
+* **Material 3 デザイン**: Google Material 3 (M3) に準拠した、直感的でモダンなUI。
+* **ポータビリティ**: 設定データをJSON形式でクリップボードまたはファイル経由でエクスポート/インポート可能。
+* **多言語対応**: 日本語と英語をサポート。
 
 ## インストール方法
 
 ### Chrome ウェブストアからインストール（推奨）
 
-[Chrome ウェブストア](https://chrome.google.com/webstore) からインストールしてください。（※限定公開予定）
+[Chrome ウェブストア](https://chromewebstore.google.com/detail/tabmagnet-solo/lffgddghjafcjpfjdpknhfbonhnkdlmc) からインストールしてください。
 
 ### ソースコードからインストール
 
