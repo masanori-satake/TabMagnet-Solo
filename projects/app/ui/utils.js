@@ -165,12 +165,17 @@ export async function executeMagnet(target) {
   await dissolveGroups(otherGroupsToDissolve);
 
   // 4. 収集完了後の名称変更チェック
-  // 他のウィンドウに同名の(Now Collectingでない)グループが存在しないか確認
+  // 他のウィンドウに同名の正規グループ、または自分よりIDの小さい同名Collectingグループが存在しないか確認
   const finalGroupName = PREFIX_TM + target.name;
-  const existingGroups = await chrome.tabGroups.query({ title: finalGroupName });
-  const otherGroups = existingGroups.filter(g => g.id !== newGroupId);
+  const allGroupsAfter = await chrome.tabGroups.query({});
+  const hasConflict = allGroupsAfter.some(g => {
+    if (g.id === newGroupId) return false;
+    if (g.title === finalGroupName) return true;
+    if (g.title === tempGroupName && g.id < newGroupId) return true;
+    return false;
+  });
 
-  if (otherGroups.length === 0) {
+  if (!hasConflict) {
     await chrome.tabGroups.update(newGroupId, { title: finalGroupName });
   }
 }

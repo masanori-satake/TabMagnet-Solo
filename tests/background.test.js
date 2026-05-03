@@ -146,4 +146,32 @@ describe('background auto-cleanup and renaming', () => {
     await checkAndRenameCollectingGroups();
     // Should not throw
   });
+
+  test('checkAndRenameCollectingGroups should prioritize the group with smaller ID when multiple Collecting groups exist', async () => {
+    const { checkAndRenameCollectingGroups } = await import('../projects/app/background.js');
+
+    // Simulate multiple collecting groups for the same target
+    // ID 1 should be finalized, ID 2 should stay as is
+    chromeMock.tabGroups.query
+      .mockResolvedValueOnce([
+        { id: 1, title: '🧲Jira(Now Collecting)' },
+        { id: 2, title: '🧲Jira(Now Collecting)' }
+      ])
+      // Second call (inside loop for ID 1)
+      .mockResolvedValueOnce([
+        { id: 1, title: '🧲Jira(Now Collecting)' },
+        { id: 2, title: '🧲Jira(Now Collecting)' }
+      ])
+      // Third call (inside loop for ID 2)
+      .mockResolvedValueOnce([
+        { id: 1, title: '🧲Jira' }, // ID 1 was finalized
+        { id: 2, title: '🧲Jira(Now Collecting)' }
+      ]);
+
+    await checkAndRenameCollectingGroups();
+
+    // Should only finalize group 1
+    expect(chromeMock.tabGroups.update).toHaveBeenCalledWith(1, { title: '🧲Jira' });
+    expect(chromeMock.tabGroups.update).not.toHaveBeenCalledWith(2, expect.anything());
+  });
 });

@@ -44,18 +44,28 @@ chrome.tabGroups.onUpdated.addListener(async (group) => {
  * "(Now Collecting)" 状態のグループを、条件を満たしていれば正規名称にリネームする
  */
 export async function checkAndRenameCollectingGroups() {
-  const groups = await chrome.tabGroups.query({});
-  const collectingGroups = groups.filter(g =>
+  const groupsBefore = await chrome.tabGroups.query({});
+  const collectingGroups = groupsBefore.filter(g =>
     g.title && g.title.startsWith(PREFIX_TM) && g.title.endsWith(SUFFIX_COLLECTING)
   );
 
   if (collectingGroups.length === 0) return;
 
   for (const group of collectingGroups) {
+    // 競合チェックを最新の状態で行うため、ループ内で再取得
+    const currentGroups = await chrome.tabGroups.query({});
     const finalName = group.title.replace(SUFFIX_COLLECTING, '');
 
-    // 同一ターゲットの正規グループが他に存在しないか確認
-    const hasConflict = groups.some(g => g.id !== group.id && g.title === finalName);
+    // 同一ターゲットの正規グループ、または自分よりIDの小さい同名Collectingグループが存在しないか確認
+    // (複数Collectingがある場合、一番IDが小さいものだけを正規化対象にする)
+    const hasConflict = currentGroups.some(g => {
+      if (g.id === group.id) return false;
+      // すでに正規名称のグループがある場合
+      if (g.title === finalName) return true;
+      // 自分と同じCollecting名称で、かつ自分より先に作られた(IDが小さい)ものがある場合
+      if (g.title === group.title && g.id < group.id) return true;
+      return false;
+    });
 
     if (!hasConflict) {
       try {
