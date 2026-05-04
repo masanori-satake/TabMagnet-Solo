@@ -9,7 +9,8 @@ export const DEFAULT_SETTINGS = {
   collectFromAllGroups: false,
   collapseAfterCollect: false,
   discardTabsAfterCollect: false,
-  closeDuplicateTabs: false
+  closeDuplicateTabs: false,
+  keepTMOrder: false
 };
 
 /**
@@ -213,6 +214,76 @@ export async function executeMagnet(target) {
       } catch (e) {
         console.error(`Failed to discard tab ${tab.id}:`, e);
       }
+    }
+  }
+
+  // 6. 順序/位置の維持設定が有効な場合、並べ替えを行う
+  if (settings.keepTMOrder) {
+    await maintainTMOrder(currentWindow.id);
+  }
+}
+
+/**
+ * TabMagnetグループの順序と位置を維持する
+ * @param {number} windowId
+ */
+async function maintainTMOrder(windowId) {
+  const data = await chrome.storage.local.get(['targets']);
+  const targets = data.targets || [];
+  if (targets.length === 0) return;
+
+  const PREFIX_TM = '🧲';
+  const allGroups = await chrome.tabGroups.query({ windowId });
+  const tmGroups = allGroups.filter(g => g.title && g.title.startsWith(PREFIX_TM));
+
+  if (tmGroups.length === 0) return;
+
+  // ターゲットリストの順序に従って、存在するグループを並べる
+  const groupOrder = [];
+  for (const target of targets) {
+    const group = tmGroups.find(g => g.title === PREFIX_TM + target.name || g.title === PREFIX_TM + target.name + '(Now Collecting)');
+    if (group) {
+      groupOrder.push(group);
+    }
+  }
+
+  // 現在の並び順と位置を確認
+  const allTabs = await chrome.tabs.query({ windowId });
+
+  // 各グループの現在の（最小の）インデックスを取得
+  const groupCurrentInfo = await Promise.all(groupOrder.map(async (g) => {
+    const tabs = await chrome.tabs.query({ groupId: g.id });
+    const minIndex = Math.min(...tabs.map(t => t.index));
+    return { id: g.id, minIndex };
+  }));
+
+  // 既に正しい順序で最後尾に並んでいるかチェック
+  let isCorrect = true;
+  if (groupOrder.length > 0) {
+    // 最後尾にあるべきタブの数
+    let expectedTabCount = 0;
+    for (const g of groupOrder) {
+      const tabs = await chrome.tabs.query({ groupId: g.id });
+      expectedTabCount += tabs.length;
+    }
+
+    const firstTMIndex = allTabs.length - expectedTabCount;
+
+    let currentPos = firstTMIndex;
+    for (const info of groupCurrentInfo) {
+      if (info.minIndex !== currentPos) {
+        isCorrect = false;
+        break;
+      }
+      const tabs = await chrome.tabs.query({ groupId: info.id });
+      currentPos += tabs.length;
+    }
+  }
+
+  if (!isCorrect) {
+    // 順番に最後尾（index: -1）へ移動させていく
+    for (const group of groupOrder) {
+      await chrome.tabGroups.move(group.id, { index: -1 });
     }
   }
 }

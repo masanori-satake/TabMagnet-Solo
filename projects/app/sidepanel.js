@@ -28,6 +28,7 @@ const collapseAfterCollectSwitch = document.getElementById('collapse-after-colle
 const discardTabsContainer = document.getElementById('discard-tabs-container');
 const discardTabsSwitch = document.getElementById('discard-tabs-switch');
 const closeDuplicateTabsSwitch = document.getElementById('close-duplicate-tabs-switch');
+const keepTMOrderSwitch = document.getElementById('keep-tm-order-switch');
 const copyExportBtn = document.getElementById('copy-export-btn');
 const pasteImportBtn = document.getElementById('paste-import-btn');
 const fileExportBtn = document.getElementById('file-export-btn');
@@ -124,6 +125,7 @@ export function renderSettings() {
   collapseAfterCollectSwitch.checked = !!settings.collapseAfterCollect;
   discardTabsSwitch.checked = !!settings.discardTabsAfterCollect;
   closeDuplicateTabsSwitch.checked = !!settings.closeDuplicateTabs;
+  keepTMOrderSwitch.checked = !!settings.keepTMOrder;
 
   if (settings.collapseAfterCollect) {
     discardTabsContainer.classList.remove('disabled');
@@ -312,6 +314,11 @@ export function setupEventListeners() {
 
   closeDuplicateTabsSwitch.addEventListener('change', async () => {
     settings.closeDuplicateTabs = closeDuplicateTabsSwitch.checked;
+    await chrome.storage.local.set({ settings });
+  });
+
+  keepTMOrderSwitch.addEventListener('change', async () => {
+    settings.keepTMOrder = keepTMOrderSwitch.checked;
     await chrome.storage.local.set({ settings });
   });
 

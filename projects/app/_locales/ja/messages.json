@@ -119,6 +119,9 @@
   "settingCloseDuplicateTabs": {
     "message": "URLが重複するタブをクローズする"
   },
+  "settingKeepTMOrder": {
+    "message": "TabMagnetタブグループの順序/位置を維持する"
+  },
   "sectionSettingsData": {
     "message": "設定データ"
   },
