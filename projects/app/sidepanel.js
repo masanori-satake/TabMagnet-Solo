@@ -129,8 +129,10 @@ export function renderSettings() {
 
   if (settings.collapseAfterCollect) {
     discardTabsContainer.classList.remove('disabled');
+    discardTabsSwitch.disabled = false;
   } else {
     discardTabsContainer.classList.add('disabled');
+    discardTabsSwitch.disabled = true;
   }
 }
 
