@@ -52,6 +52,7 @@ describe('executeMagnet naming and protection', () => {
       tabs: {
         query: jest.fn(),
         move: jest.fn().mockResolvedValue(),
+        remove: jest.fn().mockResolvedValue(),
         group: jest.fn().mockResolvedValue(100),
         ungroup: jest.fn().mockResolvedValue()
       },
@@ -180,6 +181,49 @@ describe('executeMagnet naming and protection', () => {
     chromeMock.tabs.query.mockRejectedValue(new Error('Query failed'));
 
     await expect(executeMagnet(target)).rejects.toThrow('Query failed');
+  });
+
+  test('should close duplicate tabs if closeDuplicateTabs is true', async () => {
+    const { executeMagnet } = await import('../projects/app/ui/utils.js');
+    const target = { name: 'Jira', pattern: 'jira.example.com/*' };
+
+    chromeMock.storage.local.get.mockResolvedValue({
+      settings: { closeDuplicateTabs: true }
+    });
+
+    chromeMock.tabs.query.mockResolvedValue([
+      { id: 10, url: 'https://jira.example.com/1', groupId: -1 },
+      { id: 11, url: 'https://jira.example.com/1', groupId: -1 },
+      { id: 12, url: 'https://jira.example.com/2', groupId: -1 }
+    ]);
+    chromeMock.tabGroups.query.mockResolvedValue([]);
+
+    await executeMagnet(target);
+
+    expect(chromeMock.tabs.remove).toHaveBeenCalledWith([11]);
+    expect(chromeMock.tabs.group).toHaveBeenCalledWith({ tabIds: [10, 12] });
+  });
+
+  test('should NOT close duplicates if they are in protected groups', async () => {
+    const { executeMagnet } = await import('../projects/app/ui/utils.js');
+    const target = { name: 'Jira', pattern: 'jira.example.com/*' };
+
+    chromeMock.storage.local.get.mockResolvedValue({
+      settings: { closeDuplicateTabs: true, collectFromAllGroups: false }
+    });
+
+    chromeMock.tabs.query.mockResolvedValue([
+      { id: 10, url: 'https://jira.example.com/1', groupId: 50 }, // protected
+      { id: 11, url: 'https://jira.example.com/1', groupId: -1 }  // would be duplicate but first is protected
+    ]);
+    chromeMock.tabGroups.query.mockResolvedValue([
+      { id: 50, title: 'My Manual Group' }
+    ]);
+
+    await executeMagnet(target);
+
+    expect(chromeMock.tabs.remove).not.toHaveBeenCalled();
+    expect(chromeMock.tabs.group).toHaveBeenCalledWith({ tabIds: [11] });
   });
 
 });

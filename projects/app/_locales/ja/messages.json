@@ -116,6 +116,9 @@
   "settingDiscardTabsAfterCollect": {
     "message": "メモリを節約する"
   },
+  "settingCloseDuplicateTabs": {
+    "message": "URLが重複するタブをクローズする"
+  },
   "sectionSettingsData": {
     "message": "設定データ"
   },

@@ -1,4 +1,4 @@
-import { executeMagnet, getExportTimestamp } from './ui/utils.js';
+import { executeMagnet, getExportTimestamp, DEFAULT_SETTINGS } from './ui/utils.js';
 
 // DOM elements
 const targetListEl = document.getElementById('target-list');
@@ -27,6 +27,7 @@ const collectAllGroupsSwitch = document.getElementById('collect-all-groups-switc
 const collapseAfterCollectSwitch = document.getElementById('collapse-after-collect-switch');
 const discardTabsContainer = document.getElementById('discard-tabs-container');
 const discardTabsSwitch = document.getElementById('discard-tabs-switch');
+const closeDuplicateTabsSwitch = document.getElementById('close-duplicate-tabs-switch');
 const copyExportBtn = document.getElementById('copy-export-btn');
 const pasteImportBtn = document.getElementById('paste-import-btn');
 const fileExportBtn = document.getElementById('file-export-btn');
@@ -45,11 +46,7 @@ const toastEl = document.getElementById('toast');
 
 // State
 let targets = [];
-let settings = {
-  collectFromAllGroups: false,
-  collapseAfterCollect: false,
-  discardTabsAfterCollect: false
-};
+let settings = { ...DEFAULT_SETTINGS };
 let selectedColor = 'grey';
 let currentEditIndex = null;
 let currentDeleteIndex = null;
@@ -126,6 +123,7 @@ export function renderSettings() {
   collectAllGroupsSwitch.checked = !!settings.collectFromAllGroups;
   collapseAfterCollectSwitch.checked = !!settings.collapseAfterCollect;
   discardTabsSwitch.checked = !!settings.discardTabsAfterCollect;
+  closeDuplicateTabsSwitch.checked = !!settings.closeDuplicateTabs;
 
   if (settings.collapseAfterCollect) {
     discardTabsContainer.classList.remove('disabled');
@@ -309,6 +307,11 @@ export function setupEventListeners() {
 
   discardTabsSwitch.addEventListener('change', async () => {
     settings.discardTabsAfterCollect = discardTabsSwitch.checked;
+    await chrome.storage.local.set({ settings });
+  });
+
+  closeDuplicateTabsSwitch.addEventListener('change', async () => {
+    settings.closeDuplicateTabs = closeDuplicateTabsSwitch.checked;
     await chrome.storage.local.set({ settings });
   });
 
@@ -610,7 +613,7 @@ export function handleFileImport(e) {
  */
 export async function importData(data) {
   let importedTargets = [];
-  let importedSettings = { collectFromAllGroups: false, collapseAfterCollect: false, discardTabsAfterCollect: false };
+  let importedSettings = { ...DEFAULT_SETTINGS };
 
   if (data && typeof data === 'object' && !Array.isArray(data)) {
     importedTargets = Array.isArray(data.targets) ? data.targets : [];

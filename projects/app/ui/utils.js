@@ -3,6 +3,16 @@
  */
 
 /**
+ * デフォルト設定
+ */
+export const DEFAULT_SETTINGS = {
+  collectFromAllGroups: false,
+  collapseAfterCollect: false,
+  discardTabsAfterCollect: false,
+  closeDuplicateTabs: false
+};
+
+/**
  * URLパターンがマッチするか判定する
  *
  * 仕様:
@@ -77,12 +87,7 @@ export async function executeMagnet(target) {
   const currentWindow = await chrome.windows.getCurrent();
   const allTabs = await chrome.tabs.query({});
   const storageData = await chrome.storage.local.get(['settings']);
-  const settings = {
-    collectFromAllGroups: false,
-    collapseAfterCollect: false,
-    discardTabsAfterCollect: false,
-    ...(storageData.settings || {})
-  };
+  const settings = { ...DEFAULT_SETTINGS, ...(storageData.settings || {}) };
 
   const allGroups = await chrome.tabGroups.query({});
   const groupMap = new Map(allGroups.map(g => [g.id, g]));
@@ -93,39 +98,47 @@ export async function executeMagnet(target) {
   // マッチするタブを抽出（保護されたグループに属するものは除外）
   const matchedTabs = [];
   const groupsToDissolve = new Set();
+  const tabsToClose = [];
+  const seenUrls = new Set();
 
   const patterns = Array.isArray(target.pattern) ? target.pattern : [target.pattern];
 
   for (const tab of allTabs) {
     const isMatched = patterns.some(p => matchUrl(tab.url, p));
+    if (!isMatched) continue;
+
+    let isProtected = false;
+    let isTMGroup = false;
+    let isTargetGroup = false;
 
     if (tab.groupId !== chrome.tabGroups.TAB_GROUP_ID_NONE) {
       const group = groupMap.get(tab.groupId);
       if (group && group.title) {
-        // 自動保護: 🧲 で始まらないグループは保護（ただし「全タブグループから収集」がONの場合は例外）
-        const isTMGroup = group.title.startsWith(PREFIX_TM);
+        isTMGroup = group.title.startsWith(PREFIX_TM);
+        isProtected = !isTMGroup && !settings.collectFromAllGroups;
 
-        const isProtected = !isTMGroup && !settings.collectFromAllGroups;
-
-        if (isMatched) {
-          if (isProtected) {
-            continue; // 保護されているのでスキップ
-          }
-          matchedTabs.push(tab);
-        }
-
-        // 重複グループの特定（解体対象候補）
-        // ターゲット名に合致し、かつ内部用マーカーを持つ非保護グループ
-        const isTargetGroup = (group.title === PREFIX_TM + target.name) ||
-                             (group.title === PREFIX_TM + target.name + SUFFIX_COLLECTING);
+        isTargetGroup = (group.title === PREFIX_TM + target.name) ||
+                        (group.title === PREFIX_TM + target.name + SUFFIX_COLLECTING);
 
         if (isTMGroup && isTargetGroup) {
           groupsToDissolve.add(group.id);
         }
       }
-    } else if (isMatched) {
-      matchedTabs.push(tab);
     }
+
+    if (isProtected) {
+      continue;
+    }
+
+    if (settings.closeDuplicateTabs) {
+      if (seenUrls.has(tab.url)) {
+        tabsToClose.push(tab.id);
+        continue;
+      }
+      seenUrls.add(tab.url);
+    }
+
+    matchedTabs.push(tab);
   }
 
   if (matchedTabs.length === 0) {
@@ -149,6 +162,11 @@ export async function executeMagnet(target) {
 
   // タブを現在のウィンドウに移動
   await chrome.tabs.move(tabIds, { windowId: currentWindow.id, index: -1 });
+
+  // 重複タブのクローズ
+  if (tabsToClose.length > 0) {
+    await chrome.tabs.remove(tabsToClose);
+  }
 
   // グループ化
   const newGroupId = await chrome.tabs.group({ tabIds });
