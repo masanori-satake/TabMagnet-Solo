@@ -1,4 +1,4 @@
-import { executeMagnet, getExportTimestamp } from './ui/utils.js';
+import { executeMagnet, getExportTimestamp, DEFAULT_SETTINGS } from './ui/utils.js';
 
 // DOM elements
 const targetListEl = document.getElementById('target-list');
@@ -46,12 +46,7 @@ const toastEl = document.getElementById('toast');
 
 // State
 let targets = [];
-let settings = {
-  collectFromAllGroups: false,
-  collapseAfterCollect: false,
-  discardTabsAfterCollect: false,
-  closeDuplicateTabs: false
-};
+let settings = { ...DEFAULT_SETTINGS };
 let selectedColor = 'grey';
 let currentEditIndex = null;
 let currentDeleteIndex = null;
@@ -618,12 +613,7 @@ export function handleFileImport(e) {
  */
 export async function importData(data) {
   let importedTargets = [];
-  let importedSettings = {
-    collectFromAllGroups: false,
-    collapseAfterCollect: false,
-    discardTabsAfterCollect: false,
-    closeDuplicateTabs: false
-  };
+  let importedSettings = { ...DEFAULT_SETTINGS };
 
   if (data && typeof data === 'object' && !Array.isArray(data)) {
     importedTargets = Array.isArray(data.targets) ? data.targets : [];
