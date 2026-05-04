@@ -116,6 +116,9 @@
   "settingDiscardTabsAfterCollect": {
     "message": "Save memory"
   },
+  "settingCloseDuplicateTabs": {
+    "message": "Close duplicate tabs"
+  },
   "sectionSettingsData": {
     "message": "Settings Data"
   },

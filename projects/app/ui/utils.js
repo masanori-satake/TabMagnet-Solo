@@ -81,6 +81,7 @@ export async function executeMagnet(target) {
     collectFromAllGroups: false,
     collapseAfterCollect: false,
     discardTabsAfterCollect: false,
+    closeDuplicateTabs: false,
     ...(storageData.settings || {})
   };
 
@@ -96,8 +97,19 @@ export async function executeMagnet(target) {
 
   const patterns = Array.isArray(target.pattern) ? target.pattern : [target.pattern];
 
+  const seenUrls = new Set();
+  const tabsToClose = [];
+
   for (const tab of allTabs) {
     const isMatched = patterns.some(p => matchUrl(tab.url, p));
+
+    if (isMatched && settings.closeDuplicateTabs) {
+      if (seenUrls.has(tab.url)) {
+        tabsToClose.push(tab.id);
+        continue;
+      }
+      seenUrls.add(tab.url);
+    }
 
     if (tab.groupId !== chrome.tabGroups.TAB_GROUP_ID_NONE) {
       const group = groupMap.get(tab.groupId);
@@ -149,6 +161,11 @@ export async function executeMagnet(target) {
 
   // タブを現在のウィンドウに移動
   await chrome.tabs.move(tabIds, { windowId: currentWindow.id, index: -1 });
+
+  // 重複タブのクローズ
+  if (tabsToClose.length > 0) {
+    await chrome.tabs.remove(tabsToClose);
+  }
 
   // グループ化
   const newGroupId = await chrome.tabs.group({ tabIds });
