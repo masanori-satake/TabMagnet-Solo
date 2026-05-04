@@ -598,6 +598,15 @@
       height: 48px;
     }
 
+    .switch-container.indent {
+      padding-left: 24px;
+    }
+
+    .switch-container.disabled {
+      opacity: 0.38;
+      pointer-events: none;
+    }
+
     .switch-label {
       font: var(--md-sys-typescale-body-medium);
       color: var(--md-sys-color-on-surface);
@@ -755,6 +764,13 @@
             <span class="switch-label" data-i18n="settingCollapseAfterCollect"></span>
             <label class="switch">
               <input type="checkbox" id="collapse-after-collect-switch">
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div id="discard-tabs-container" class="switch-container indent">
+            <span class="switch-label" data-i18n="settingDiscardTabsAfterCollect"></span>
+            <label class="switch">
+              <input type="checkbox" id="discard-tabs-switch">
               <span class="slider"></span>
             </label>
           </div>
