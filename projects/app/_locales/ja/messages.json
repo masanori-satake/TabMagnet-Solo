@@ -113,6 +113,9 @@
   "settingCollapseAfterCollect": {
     "message": "収集後にタブグループを閉じる"
   },
+  "settingDiscardTabsAfterCollect": {
+    "message": "メモリを節約する"
+  },
   "sectionSettingsData": {
     "message": "設定データ"
   },

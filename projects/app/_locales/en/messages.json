@@ -113,6 +113,9 @@
   "settingCollapseAfterCollect": {
     "message": "Collapse tab group after collection"
   },
+  "settingDiscardTabsAfterCollect": {
+    "message": "Save memory"
+  },
   "sectionSettingsData": {
     "message": "Settings Data"
   },

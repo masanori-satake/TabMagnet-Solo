@@ -25,6 +25,8 @@ const tabItems = document.querySelectorAll('.tab-item');
 const tabPanes = document.querySelectorAll('.tab-pane');
 const collectAllGroupsSwitch = document.getElementById('collect-all-groups-switch');
 const collapseAfterCollectSwitch = document.getElementById('collapse-after-collect-switch');
+const discardTabsContainer = document.getElementById('discard-tabs-container');
+const discardTabsSwitch = document.getElementById('discard-tabs-switch');
 const copyExportBtn = document.getElementById('copy-export-btn');
 const pasteImportBtn = document.getElementById('paste-import-btn');
 const fileExportBtn = document.getElementById('file-export-btn');
@@ -45,7 +47,8 @@ const toastEl = document.getElementById('toast');
 let targets = [];
 let settings = {
   collectFromAllGroups: false,
-  collapseAfterCollect: false
+  collapseAfterCollect: false,
+  discardTabsAfterCollect: false
 };
 let selectedColor = 'grey';
 let currentEditIndex = null;
@@ -122,6 +125,15 @@ document.addEventListener('DOMContentLoaded', init);
 export function renderSettings() {
   collectAllGroupsSwitch.checked = !!settings.collectFromAllGroups;
   collapseAfterCollectSwitch.checked = !!settings.collapseAfterCollect;
+  discardTabsSwitch.checked = !!settings.discardTabsAfterCollect;
+
+  if (settings.collapseAfterCollect) {
+    discardTabsContainer.classList.remove('disabled');
+    discardTabsSwitch.disabled = false;
+  } else {
+    discardTabsContainer.classList.add('disabled');
+    discardTabsSwitch.disabled = true;
+  }
 }
 
 /**
@@ -291,6 +303,12 @@ export function setupEventListeners() {
 
   collapseAfterCollectSwitch.addEventListener('change', async () => {
     settings.collapseAfterCollect = collapseAfterCollectSwitch.checked;
+    await chrome.storage.local.set({ settings });
+    renderSettings();
+  });
+
+  discardTabsSwitch.addEventListener('change', async () => {
+    settings.discardTabsAfterCollect = discardTabsSwitch.checked;
     await chrome.storage.local.set({ settings });
   });
 
@@ -592,7 +610,7 @@ export function handleFileImport(e) {
  */
 export async function importData(data) {
   let importedTargets = [];
-  let importedSettings = { collectFromAllGroups: false, collapseAfterCollect: false };
+  let importedSettings = { collectFromAllGroups: false, collapseAfterCollect: false, discardTabsAfterCollect: false };
 
   if (data && typeof data === 'object' && !Array.isArray(data)) {
     importedTargets = Array.isArray(data.targets) ? data.targets : [];

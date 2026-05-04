@@ -80,6 +80,7 @@ export async function executeMagnet(target) {
   const settings = {
     collectFromAllGroups: false,
     collapseAfterCollect: false,
+    discardTabsAfterCollect: false,
     ...(storageData.settings || {})
   };
 
@@ -177,6 +178,24 @@ export async function executeMagnet(target) {
 
   if (!hasConflict) {
     await chrome.tabGroups.update(newGroupId, { title: finalGroupName });
+  }
+
+  // 5. メモリ節約設定が有効な場合、タブを破棄（discard）する
+  if (settings.collapseAfterCollect && settings.discardTabsAfterCollect) {
+    const tabsInNewGroup = await chrome.tabs.query({ groupId: newGroupId });
+    const [activeTabInCurrentWindow] = await chrome.tabs.query({ active: true, windowId: currentWindow.id });
+
+    for (const tab of tabsInNewGroup) {
+      // 操作中のウィンドウのアクティブタブ以外を破棄対象とする
+      if (activeTabInCurrentWindow && tab.id === activeTabInCurrentWindow.id) {
+        continue;
+      }
+      try {
+        await chrome.tabs.discard(tab.id);
+      } catch (e) {
+        console.error(`Failed to discard tab ${tab.id}:`, e);
+      }
+    }
   }
 }
 
