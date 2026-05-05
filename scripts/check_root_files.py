@@ -12,6 +12,7 @@ ALLOWED_FILES = {
     ".markdownlint.json",
     "jest.config.js",
     "playwright.config.js",
+    "eslint.config.js",
 }
 
 ALLOWED_DIRS = {
