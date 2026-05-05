@@ -1,4 +1,6 @@
-import globals from "globals";
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+const globals = require("globals");
 
 export default [
   {
