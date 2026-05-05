@@ -233,10 +233,16 @@ async function _executeMagnetInternal(target) {
       if (activeTabInCurrentWindow && tab.id === activeTabInCurrentWindow.id) {
         continue;
       }
+
+      // 既に破棄（discard）されている場合はスキップ
+      if (tab.discarded) {
+        continue;
+      }
+
       try {
         await chrome.tabs.discard(tab.id);
       } catch (e) {
-        // すでにタブが閉じられている等のケースがあるため warn に留める
+        // 既に破棄されているか、タブが閉じられている等の通常起こりうるケース以外で例外が発生した場合のみ警告する
         console.warn(`Failed to discard tab ${tab.id}: ${e.message}`);
       }
     }
@@ -250,6 +256,11 @@ async function _executeMagnetInternal(target) {
 
 /**
  * TabMagnetグループの順序と位置を維持する
+ *
+ * 各ターゲット設定の順序に基づき、ウィンドウ内の全TabMagnetグループを最後尾に並べ替える。
+ * 確実性を高めるため、タブ単位の移動ではなく、グループ単位（chrome.tabGroups.move）で
+ * ターゲットリストの順序通りに一つずつ最後尾（index: -1）へ移動させる。
+ *
  * @param {number} windowId
  */
 export async function maintainTMOrder(windowId) {
@@ -260,84 +271,52 @@ export async function maintainTMOrder(windowId) {
   const PREFIX_TM = '🧲';
   const SUFFIX_COLLECTING = ' (Now Collecting)';
   const allGroups = await chrome.tabGroups.query({ windowId });
-  const groupMap = new Map(allGroups.map(g => [g.id, g]));
 
-  // ウィンドウ内の全タブを一度だけ取得し、インデックス順にソートしてグループごとに分類
-  const allTabs = (await chrome.tabs.query({ windowId })).sort((a, b) => a.index - b.index);
-  const tabsByGroup = new Map();
-  for (const tab of allTabs) {
-    if (tab.groupId === chrome.tabGroups.TAB_GROUP_ID_NONE) continue;
-    if (!tabsByGroup.has(tab.groupId)) {
-      tabsByGroup.set(tab.groupId, []);
-    }
-    tabsByGroup.get(tab.groupId).push(tab);
-  }
-
-  // 有効なTabMagnetグループのみを抽出（タブが1つ以上含まれるものに限定）
-  const tmGroups = allGroups.filter(g => {
-    if (!g.title || !g.title.startsWith(PREFIX_TM)) return false;
-    const tabs = tabsByGroup.get(g.id);
-    return tabs && tabs.length > 0;
-  });
-
+  // 有効なTabMagnetグループのみを抽出
+  const tmGroups = allGroups.filter(g => g.title && g.title.startsWith(PREFIX_TM));
   if (tmGroups.length === 0) return;
 
-  // ターゲットリストの順序に従って、存在するグループの情報（最小インデックスとタブリスト）を抽出
-  const groupOrderInfo = [];
+  // グループ名からグループオブジェクトへのマップを作成
+  const groupsByName = new Map();
+  for (const g of tmGroups) {
+    if (!groupsByName.has(g.title)) {
+      groupsByName.set(g.title, []);
+    }
+    groupsByName.get(g.title).push(g);
+  }
+
+  // ターゲットリストの順序に従って、移動すべきグループIDを特定
+  const orderedGroupIds = [];
   for (const target of targets) {
-    // 複数のグループがヒットする場合に備え、filterして有効なものを選ぶ
-    const matchedGroups = tmGroups.filter(g => g.title === PREFIX_TM + target.name || g.title === PREFIX_TM + target.name + SUFFIX_COLLECTING);
+    const finalName = PREFIX_TM + target.name;
+    const collectingName = finalName + SUFFIX_COLLECTING;
+
+    const matchedGroups = [
+      ...(groupsByName.get(finalName) || []),
+      ...(groupsByName.get(collectingName) || [])
+    ];
+
     if (matchedGroups.length > 0) {
-      // 複数の場合は、Collecting ではない方を優先し、それでも複数ある場合はIDが新しい方を採用する
+      // 複数の同名グループがある場合、Collectingではない方を優先し、さらにIDが新しい方を採用
       const group = matchedGroups.length === 1 ? matchedGroups[0] : matchedGroups.sort((a, b) => {
         const aIsColl = a.title.endsWith(SUFFIX_COLLECTING);
         const bIsColl = b.title.endsWith(SUFFIX_COLLECTING);
         if (aIsColl !== bIsColl) return aIsColl ? 1 : -1;
         return b.id - a.id;
       })[0];
-      const tabs = tabsByGroup.get(group.id);
-      const minIndex = tabs[0].index; // ソート済みなので[0]が最小
-      groupOrderInfo.push({ id: group.id, minIndex, tabs });
+      orderedGroupIds.push(group.id);
     }
   }
 
-  if (groupOrderInfo.length === 0) return;
+  if (orderedGroupIds.length === 0) return;
 
-  // 既に正しい順序で最後尾に並んでいるかチェック
-  let isCorrect = true;
-  const totalTMTabs = groupOrderInfo.reduce((sum, info) => sum + info.tabs.length, 0);
-  let currentPos = allTabs.length - totalTMTabs;
-
-  for (const info of groupOrderInfo) {
-    if (info.minIndex !== currentPos) {
-      isCorrect = false;
-      break;
-    }
-    currentPos += info.tabs.length;
-  }
-
-  if (!isCorrect) {
-    // ターゲット順に正しい絶対インデックスへ移動させる
-    // 現在ウィンドウ内にあるTabMagnetグループ以外のタブを取得
-    const nonTMTabs = allTabs.filter(t => {
-      if (t.groupId === chrome.tabGroups.TAB_GROUP_ID_NONE) return true;
-      const group = groupMap.get(t.groupId);
-      return !group || !group.title || !group.title.startsWith(PREFIX_TM);
-    });
-
-    // 非TabMagnetタブを先頭に寄せる（既存の相対順序を維持）
-    for (let i = 0; i < nonTMTabs.length; i++) {
-      if (nonTMTabs[i].index !== i) {
-        await chrome.tabs.move(nonTMTabs[i].id, { index: i });
-      }
-    }
-
-    // ターゲット順にTabMagnetグループをその後に配置
-    let currentTargetIndex = nonTMTabs.length;
-    for (const info of groupOrderInfo) {
-      // chrome.tabGroups.move を使うと、そのグループ内の全タブが指定インデックス以降に移動する
-      await chrome.tabGroups.move(info.id, { index: currentTargetIndex });
-      currentTargetIndex += info.tabs.length;
+  // ターゲットリストの順序に従い、一つずつ最後尾へ移動させる
+  // これにより、自然にターゲットリスト通りの順序で末尾に整列する
+  for (const groupId of orderedGroupIds) {
+    try {
+      await chrome.tabGroups.move(groupId, { index: -1 });
+    } catch (e) {
+      console.warn(`Failed to move group ${groupId}: ${e.message}`);
     }
   }
 }
