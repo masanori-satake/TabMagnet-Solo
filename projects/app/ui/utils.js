@@ -35,7 +35,7 @@ export function matchUrl(url, pattern) {
 
   // "*" を正規表現の ".*" に変換して判定
   // エスケープ処理: 正規表現の特殊文字をエスケープ（"*" 以外）
-  const escapedPattern = normalizedPattern.replace(/[.+^${}()|[\]\\]/g, '\\$&');
+  const escapedPattern = normalizedPattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&');
   let regexPattern = '^' + escapedPattern.replace(/\*/g, '.*');
 
   // 末尾が "/*" で終わるパターンの場合、スラッシュなしのドメイン単体にもマッチするように調整

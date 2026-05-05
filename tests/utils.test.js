@@ -20,6 +20,14 @@ describe('matchUrl', () => {
     expect(matchUrl('https://google.com', 'example.com')).toBe(false);
   });
 
+  test('special characters match', () => {
+    // ? should be treated as literal if it's in the pattern
+    expect(matchUrl('https://example.com/search?q=1', 'example.com/search?q=1')).toBe(true);
+    // . should be escaped
+    expect(matchUrl('https://example.com/a.b', 'example.com/a.b')).toBe(true);
+    expect(matchUrl('https://example.com/axb', 'example.com/a.b')).toBe(false);
+  });
+
   test('normalization test', () => {
     expect(matchUrl('https://example.com/path', 'https://example.com/*')).toBe(true);
     expect(matchUrl('https://example.com/path', 'http://example.com/*')).toBe(true);
