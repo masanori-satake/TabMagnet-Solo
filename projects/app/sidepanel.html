@@ -93,22 +93,36 @@
     /* Tooltip */
     .tooltip {
       position: absolute;
-      bottom: -32px;
+      top: 100%;
       left: 50%;
       transform: translateX(-50%);
       background-color: var(--md-sys-color-on-surface-variant);
       color: var(--md-sys-color-surface);
-      padding: 4px 8px;
+      padding: 6px 10px;
       border-radius: 4px;
       font: var(--md-sys-typescale-label-small);
-      white-space: nowrap;
+      white-space: pre-wrap;
+      width: max-content;
+      max-width: 200px;
       display: none;
       z-index: 1000;
+      pointer-events: none;
+      margin-top: 4px;
+      line-height: 1.4;
+      text-align: left;
     }
 
     .icon-button:hover .tooltip,
-    .tab-item:hover .tooltip {
+    .tab-item:hover .tooltip,
+    .switch-label:hover .tooltip,
+    .radio-option:hover .tooltip {
       display: block;
+    }
+
+    #settings-btn .tooltip {
+      left: auto;
+      right: 0;
+      transform: none;
     }
 
     /* List Area */
@@ -438,6 +452,7 @@
       gap: 4px;
       font: var(--md-sys-typescale-body-medium);
       cursor: pointer;
+      position: relative;
     }
 
     /* About Tab Content */
@@ -610,6 +625,8 @@
     .switch-label {
       font: var(--md-sys-typescale-body-medium);
       color: var(--md-sys-color-on-surface);
+      position: relative;
+      cursor: help;
     }
 
     .switch {
@@ -754,35 +771,50 @@
         <div id="tab-content-general" class="tab-pane">
           <div class="settings-section-title" data-i18n="sectionCommon"></div>
           <div class="switch-container">
-            <span class="switch-label" data-i18n="settingCollectFromAllGroups"></span>
+            <span class="switch-label">
+              <span data-i18n="settingCollectFromAllGroups"></span>
+              <span class="tooltip" data-i18n="tooltipCollectFromAllGroups"></span>
+            </span>
             <label class="switch">
               <input type="checkbox" id="collect-all-groups-switch">
               <span class="slider"></span>
             </label>
           </div>
           <div class="switch-container">
-            <span class="switch-label" data-i18n="settingKeepTMOrder"></span>
+            <span class="switch-label">
+              <span data-i18n="settingKeepTMOrder"></span>
+              <span class="tooltip" data-i18n="tooltipKeepTMOrder"></span>
+            </span>
             <label class="switch">
               <input type="checkbox" id="keep-tm-order-switch">
               <span class="slider"></span>
             </label>
           </div>
           <div class="switch-container">
-            <span class="switch-label" data-i18n="settingCollapseAfterCollect"></span>
+            <span class="switch-label">
+              <span data-i18n="settingCollapseAfterCollect"></span>
+              <span class="tooltip" data-i18n="tooltipCollapseAfterCollect"></span>
+            </span>
             <label class="switch">
               <input type="checkbox" id="collapse-after-collect-switch">
               <span class="slider"></span>
             </label>
           </div>
           <div id="discard-tabs-container" class="switch-container indent">
-            <span class="switch-label" data-i18n="settingDiscardTabsAfterCollect"></span>
+            <span class="switch-label">
+              <span data-i18n="settingDiscardTabsAfterCollect"></span>
+              <span class="tooltip" data-i18n="tooltipDiscardTabsAfterCollect"></span>
+            </span>
             <label class="switch">
               <input type="checkbox" id="discard-tabs-switch">
               <span class="slider"></span>
             </label>
           </div>
           <div class="switch-container">
-            <span class="switch-label" data-i18n="settingCloseDuplicateTabs"></span>
+            <span class="switch-label">
+              <span data-i18n="settingCloseDuplicateTabs"></span>
+              <span class="tooltip" data-i18n="tooltipCloseDuplicateTabs"></span>
+            </span>
             <label class="switch">
               <input type="checkbox" id="close-duplicate-tabs-switch">
               <span class="slider"></span>
@@ -814,10 +846,12 @@
               <label class="radio-option">
                 <input type="radio" name="import-mode" value="append" checked>
                 <span data-i18n="append"></span>
+                <span class="tooltip" data-i18n="tooltipImportMode"></span>
               </label>
               <label class="radio-option">
                 <input type="radio" name="import-mode" value="overwrite">
                 <span data-i18n="overwrite"></span>
+                <span class="tooltip" data-i18n="tooltipImportMode"></span>
               </label>
             </div>
           </div>
