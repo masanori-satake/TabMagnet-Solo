@@ -100,7 +100,11 @@ export function executeMagnet(target) {
  */
 async function _executeMagnetInternal(target) {
   const currentWindow = await chrome.windows.getCurrent();
-  const allTabs = await chrome.tabs.query({});
+  // タブをウィンドウID、次いでインデックス順にソートして一貫性を確保
+  const allTabs = (await chrome.tabs.query({})).sort((a, b) => {
+    if (a.windowId !== b.windowId) return a.windowId - b.windowId;
+    return a.index - b.index;
+  });
   const storageData = await chrome.storage.local.get(['settings']);
   const settings = { ...DEFAULT_SETTINGS, ...(storageData.settings || {}) };
 
@@ -204,17 +208,23 @@ async function _executeMagnetInternal(target) {
   const allGroupsAfter = await chrome.tabGroups.query({});
   const hasConflict = allGroupsAfter.some(g => {
     if (g.id === newGroupId) return false;
+    // 重複判定にウィンドウIDは問わない（全ウィンドウで唯一の正規グループ名を維持するため）
     if (g.title === finalGroupName) return true;
     if (g.title === tempGroupName && g.id < newGroupId) return true;
     return false;
   });
 
   if (!hasConflict) {
-    await chrome.tabGroups.update(newGroupId, { title: finalGroupName });
+    try {
+      await chrome.tabGroups.update(newGroupId, { title: finalGroupName });
+    } catch (e) {
+      console.warn(`Failed to update group title: ${e.message}`);
+    }
   }
 
   // 5. メモリ節約設定が有効な場合、タブを破棄（discard）する
   if (settings.collapseAfterCollect && settings.discardTabsAfterCollect) {
+    // 最新のタブ状態を取得
     const tabsInNewGroup = await chrome.tabs.query({ groupId: newGroupId });
     const [activeTabInCurrentWindow] = await chrome.tabs.query({ active: true, windowId: currentWindow.id });
 
@@ -226,7 +236,8 @@ async function _executeMagnetInternal(target) {
       try {
         await chrome.tabs.discard(tab.id);
       } catch (e) {
-        console.error(`Failed to discard tab ${tab.id}:`, e);
+        // すでにタブが閉じられている等のケースがあるため warn に留める
+        console.warn(`Failed to discard tab ${tab.id}: ${e.message}`);
       }
     }
   }
@@ -241,7 +252,7 @@ async function _executeMagnetInternal(target) {
  * TabMagnetグループの順序と位置を維持する
  * @param {number} windowId
  */
-async function maintainTMOrder(windowId) {
+export async function maintainTMOrder(windowId) {
   const data = await chrome.storage.local.get(['targets']);
   const targets = data.targets || [];
   if (targets.length === 0) return;
@@ -250,12 +261,9 @@ async function maintainTMOrder(windowId) {
   const SUFFIX_COLLECTING = ' (Now Collecting)';
   const allGroups = await chrome.tabGroups.query({ windowId });
   const groupMap = new Map(allGroups.map(g => [g.id, g]));
-  const tmGroups = allGroups.filter(g => g.title && g.title.startsWith(PREFIX_TM));
 
-  if (tmGroups.length === 0) return;
-
-  // ウィンドウ内の全タブを一度だけ取得し、グループごとに分類
-  const allTabs = await chrome.tabs.query({ windowId });
+  // ウィンドウ内の全タブを一度だけ取得し、インデックス順にソートしてグループごとに分類
+  const allTabs = (await chrome.tabs.query({ windowId })).sort((a, b) => a.index - b.index);
   const tabsByGroup = new Map();
   for (const tab of allTabs) {
     if (tab.groupId === chrome.tabGroups.TAB_GROUP_ID_NONE) continue;
@@ -265,13 +273,30 @@ async function maintainTMOrder(windowId) {
     tabsByGroup.get(tab.groupId).push(tab);
   }
 
+  // 有効なTabMagnetグループのみを抽出（タブが1つ以上含まれるものに限定）
+  const tmGroups = allGroups.filter(g => {
+    if (!g.title || !g.title.startsWith(PREFIX_TM)) return false;
+    const tabs = tabsByGroup.get(g.id);
+    return tabs && tabs.length > 0;
+  });
+
+  if (tmGroups.length === 0) return;
+
   // ターゲットリストの順序に従って、存在するグループの情報（最小インデックスとタブリスト）を抽出
   const groupOrderInfo = [];
   for (const target of targets) {
-    const group = tmGroups.find(g => g.title === PREFIX_TM + target.name || g.title === PREFIX_TM + target.name + SUFFIX_COLLECTING);
-    if (group) {
-      const tabs = tabsByGroup.get(group.id) || [];
-      const minIndex = tabs.length > 0 ? Math.min(...tabs.map(t => t.index)) : -1;
+    // 複数のグループがヒットする場合に備え、filterして有効なものを選ぶ
+    const matchedGroups = tmGroups.filter(g => g.title === PREFIX_TM + target.name || g.title === PREFIX_TM + target.name + SUFFIX_COLLECTING);
+    if (matchedGroups.length > 0) {
+      // 複数の場合は、Collecting ではない方を優先し、それでも複数ある場合はIDが新しい方を採用する
+      const group = matchedGroups.length === 1 ? matchedGroups[0] : matchedGroups.sort((a, b) => {
+        const aIsColl = a.title.endsWith(SUFFIX_COLLECTING);
+        const bIsColl = b.title.endsWith(SUFFIX_COLLECTING);
+        if (aIsColl !== bIsColl) return aIsColl ? 1 : -1;
+        return b.id - a.id;
+      })[0];
+      const tabs = tabsByGroup.get(group.id);
+      const minIndex = tabs[0].index; // ソート済みなので[0]が最小
       groupOrderInfo.push({ id: group.id, minIndex, tabs });
     }
   }
