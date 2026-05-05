@@ -79,12 +79,26 @@ export function getExportTimestamp() {
   return `${yy}${mm}${dd}_${hh}${min}`;
 }
 
+let executionQueue = Promise.resolve();
+
 /**
  * 指定されたターゲット設定に基づき、タブを集約（磁石発動）する
+ * 同時に複数の処理が走らないよう、キューでシリアルに実行する
  *
  * @param {Object} target ターゲット設定 { name, pattern, color }
  */
-export async function executeMagnet(target) {
+export function executeMagnet(target) {
+  const currentTask = executionQueue.then(() => _executeMagnetInternal(target));
+  // 次のタスクのために、エラーが発生してもキューが止まらないようにする
+  executionQueue = currentTask.catch(() => {});
+  return currentTask;
+}
+
+/**
+ * 実際の磁石処理の内部実装
+ * @param {Object} target
+ */
+async function _executeMagnetInternal(target) {
   const currentWindow = await chrome.windows.getCurrent();
   const allTabs = await chrome.tabs.query({});
   const storageData = await chrome.storage.local.get(['settings']);
