@@ -249,6 +249,7 @@ async function maintainTMOrder(windowId) {
   const PREFIX_TM = '🧲';
   const SUFFIX_COLLECTING = ' (Now Collecting)';
   const allGroups = await chrome.tabGroups.query({ windowId });
+  const groupMap = new Map(allGroups.map(g => [g.id, g]));
   const tmGroups = allGroups.filter(g => g.title && g.title.startsWith(PREFIX_TM));
 
   if (tmGroups.length === 0) return;
@@ -291,14 +292,16 @@ async function maintainTMOrder(windowId) {
   }
 
   if (!isCorrect) {
-    // 1. 全てのTabMagnetグループの全タブを取得
-    const allTMTabIds = groupOrderInfo.flatMap(info => info.tabs.map(t => t.id));
+    // ターゲット順に正しい絶対インデックスへ移動させる
+    // ターゲットリストにないTabMagnetグループ（手動作成や保護されていないもの）を考慮し、
+    // 現在ウィンドウ内にあるTabMagnetグループ以外のタブの末尾を起点とする。
+    const nonTMTabs = allTabs.filter(t => {
+      if (t.groupId === chrome.tabGroups.TAB_GROUP_ID_NONE) return true;
+      const group = groupMap.get(t.groupId);
+      return !group || !group.title || !group.title.startsWith(PREFIX_TM);
+    });
 
-    // 2. TabMagnetグループ以外のタブの総数を計算
-    const nonTMTabCount = allTabs.length - allTMTabIds.length;
-
-    // 3. ターゲット順に正しい絶対インデックスへ移動させる
-    let currentTargetIndex = nonTMTabCount;
+    let currentTargetIndex = nonTMTabs.length;
     for (const info of groupOrderInfo) {
       // chrome.tabGroups.move を使うと、そのグループ内の全タブが指定インデックス以降に移動する
       await chrome.tabGroups.move(info.id, { index: currentTargetIndex });
