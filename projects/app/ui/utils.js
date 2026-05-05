@@ -257,62 +257,68 @@ async function _executeMagnetInternal(target) {
 /**
  * TabMagnetグループの順序と位置を維持する
  *
- * 各ターゲット設定の順序に基づき、ウィンドウ内の全TabMagnetグループを最後尾に並べ替える。
- * 確実性を高めるため、タブ単位の移動ではなく、グループ単位（chrome.tabGroups.move）で
- * ターゲットリストの順序通りに一つずつ最後尾（index: -1）へ移動させる。
+ * ウィンドウ内の全TabMagnetグループ（🧲で始まるもの）を最後尾に並べ替え、
+ * さらにターゲットリストの定義順に従って整列させる。
+ *
+ * 確実性を高めるため、グループ単位（chrome.tabGroups.move）で
+ * 一つずつ最後尾（index: -1）へ移動させる方式を採用。
+ * 1. ターゲットリストに含まれない孤立したTMグループを先に最後尾へ移動
+ * 2. ターゲットリストに含まれるTMグループを、リストの順序に従って最後尾へ移動
+ * これにより、最終的にターゲットリスト順がウィンドウの末尾に確定する。
  *
  * @param {number} windowId
  */
 export async function maintainTMOrder(windowId) {
   const data = await chrome.storage.local.get(['targets']);
   const targets = data.targets || [];
-  if (targets.length === 0) return;
 
   const PREFIX_TM = '🧲';
   const SUFFIX_COLLECTING = ' (Now Collecting)';
   const allGroups = await chrome.tabGroups.query({ windowId });
 
-  // 有効なTabMagnetグループのみを抽出
+  // 全てのTabMagnetグループを特定
   const tmGroups = allGroups.filter(g => g.title && g.title.startsWith(PREFIX_TM));
   if (tmGroups.length === 0) return;
 
-  // グループ名からグループオブジェクトへのマップを作成
-  const groupsByName = new Map();
-  for (const g of tmGroups) {
-    if (!groupsByName.has(g.title)) {
-      groupsByName.set(g.title, []);
-    }
-    groupsByName.get(g.title).push(g);
-  }
-
-  // ターゲットリストの順序に従って、移動すべきグループIDを特定
+  const movedGroupIds = new Set();
   const orderedGroupIds = [];
+
+  // 1. ターゲットリストに合致するグループ（重複含む）を順序通りに収集
   for (const target of targets) {
     const finalName = PREFIX_TM + target.name;
     const collectingName = finalName + SUFFIX_COLLECTING;
 
-    const matchedGroups = [
-      ...(groupsByName.get(finalName) || []),
-      ...(groupsByName.get(collectingName) || [])
-    ];
+    // 同名グループ（正規・収集中）をすべて抽出
+    const matchedGroups = tmGroups.filter(g => g.title === finalName || g.title === collectingName);
 
     if (matchedGroups.length > 0) {
-      // 複数の同名グループがある場合、Collectingではない方を優先し、さらにIDが新しい方を採用
-      const group = matchedGroups.length === 1 ? matchedGroups[0] : matchedGroups.sort((a, b) => {
+      // 複数の同名グループがある場合、Collectingではない（正規）方を優先し、さらにIDが古い順に並べる
+      // (最後尾に送るループのため、優先度の低いものを先に並べる)
+      const sorted = matchedGroups.sort((a, b) => {
         const aIsColl = a.title.endsWith(SUFFIX_COLLECTING);
         const bIsColl = b.title.endsWith(SUFFIX_COLLECTING);
-        if (aIsColl !== bIsColl) return aIsColl ? 1 : -1;
-        return b.id - a.id;
-      })[0];
-      orderedGroupIds.push(group.id);
+        if (aIsColl !== bIsColl) return aIsColl ? -1 : 1; // Collectingを先（＝先に移動させ、正規を後に移動させて後ろにする）
+        return a.id - b.id; // 古いIDを先
+      });
+
+      for (const g of sorted) {
+        orderedGroupIds.push(g.id);
+        movedGroupIds.add(g.id);
+      }
     }
   }
 
-  if (orderedGroupIds.length === 0) return;
+  // 2. ターゲットリストに含まれない「孤立したTMグループ」を特定
+  const orphanGroupIds = tmGroups
+    .filter(g => !movedGroupIds.has(g.id))
+    .map(g => g.id);
 
-  // ターゲットリストの順序に従い、一つずつ最後尾へ移動させる
-  // これにより、自然にターゲットリスト通りの順序で末尾に整列する
-  for (const groupId of orderedGroupIds) {
+  // 移動の実行
+  // まず孤立グループを最後尾へ、次にターゲットグループを順に最後尾へ。
+  // これにより、[非TMタブ] [孤立TMグループ] [ターゲットTM1] [ターゲットTM2] ... の順になる。
+  const allIdsToMove = [...orphanGroupIds, ...orderedGroupIds];
+
+  for (const groupId of allIdsToMove) {
     try {
       await chrome.tabGroups.move(groupId, { index: -1 });
     } catch (e) {
