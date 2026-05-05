@@ -15,6 +15,7 @@ repos:
     -   id: eslint
         files: \.js$
         additional_dependencies:
+        -   eslint@9.19.0
         -   globals@15.15.0
 
 -   repo: https://github.com/igorshubovych/markdownlint-cli
