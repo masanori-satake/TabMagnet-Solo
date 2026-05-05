@@ -46,7 +46,7 @@ describe('background auto-cleanup and renaming', () => {
 
     chromeMock.tabGroups.query.mockResolvedValue([
       { id: 1, title: '🧲Jira' },
-      { id: 2, title: '🧲Jira(Now Collecting)' }
+      { id: 2, title: '🧲Jira (Now Collecting)' }
     ]);
 
     chromeMock.tabs.query.mockImplementation(({ groupId }) => {
@@ -88,7 +88,7 @@ describe('background auto-cleanup and renaming', () => {
 
     chromeMock.tabGroups.query.mockResolvedValue([
       { id: 1, title: '🧲Jira' },
-      { id: 2, title: '🧲Jira(Now Collecting)' }
+      { id: 2, title: '🧲Jira (Now Collecting)' }
     ]);
 
     await performAutoCleanup();
@@ -100,7 +100,7 @@ describe('background auto-cleanup and renaming', () => {
     const { checkAndRenameCollectingGroups } = await import('../projects/app/background.js');
 
     chromeMock.tabGroups.query.mockResolvedValue([
-      { id: 1, title: '🧲Jira(Now Collecting)' }
+      { id: 1, title: '🧲Jira (Now Collecting)' }
     ]);
 
     await checkAndRenameCollectingGroups();
@@ -112,7 +112,7 @@ describe('background auto-cleanup and renaming', () => {
     const { checkAndRenameCollectingGroups } = await import('../projects/app/background.js');
 
     chromeMock.tabGroups.query.mockResolvedValue([
-      { id: 1, title: '🧲Jira(Now Collecting)' },
+      { id: 1, title: '🧲Jira (Now Collecting)' },
       { id: 2, title: '🧲Jira' }
     ]);
 
@@ -125,8 +125,8 @@ describe('background auto-cleanup and renaming', () => {
     const { checkAndRenameCollectingGroups } = await import('../projects/app/background.js');
 
     chromeMock.tabGroups.query.mockResolvedValue([
-      { id: 1, title: '🧲Jira(Now Collecting)' },
-      { id: 2, title: '🧲Github(Now Collecting)' }
+      { id: 1, title: '🧲Jira (Now Collecting)' },
+      { id: 2, title: '🧲Github (Now Collecting)' }
     ]);
 
     await checkAndRenameCollectingGroups();
@@ -139,7 +139,7 @@ describe('background auto-cleanup and renaming', () => {
     const { checkAndRenameCollectingGroups } = await import('../projects/app/background.js');
 
     chromeMock.tabGroups.query.mockResolvedValue([
-      { id: 1, title: '🧲Jira(Now Collecting)' }
+      { id: 1, title: '🧲Jira (Now Collecting)' }
     ]);
     chromeMock.tabGroups.update.mockRejectedValue(new Error('Update failed'));
 
@@ -154,18 +154,18 @@ describe('background auto-cleanup and renaming', () => {
     // ID 1 should be finalized, ID 2 should stay as is
     chromeMock.tabGroups.query
       .mockResolvedValueOnce([
-        { id: 1, title: '🧲Jira(Now Collecting)' },
-        { id: 2, title: '🧲Jira(Now Collecting)' }
+        { id: 1, title: '🧲Jira (Now Collecting)' },
+        { id: 2, title: '🧲Jira (Now Collecting)' }
       ])
       // Second call (inside loop for ID 1)
       .mockResolvedValueOnce([
-        { id: 1, title: '🧲Jira(Now Collecting)' },
-        { id: 2, title: '🧲Jira(Now Collecting)' }
+        { id: 1, title: '🧲Jira (Now Collecting)' },
+        { id: 2, title: '🧲Jira (Now Collecting)' }
       ])
       // Third call (inside loop for ID 2)
       .mockResolvedValueOnce([
         { id: 1, title: '🧲Jira' }, // ID 1 was finalized
-        { id: 2, title: '🧲Jira(Now Collecting)' }
+        { id: 2, title: '🧲Jira (Now Collecting)' }
       ]);
 
     await checkAndRenameCollectingGroups();

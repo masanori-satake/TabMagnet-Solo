@@ -87,11 +87,11 @@ describe('executeMagnet naming and protection', () => {
     await executeMagnet(target);
 
     expect(chromeMock.tabs.group).toHaveBeenCalledWith({ tabIds: [10, 11] });
-    expect(chromeMock.tabGroups.update).toHaveBeenCalledWith(100, { title: '🧲Jira(Now Collecting)' });
+    expect(chromeMock.tabGroups.update).toHaveBeenCalledWith(100, { title: '🧲Jira (Now Collecting)' });
     expect(chromeMock.tabGroups.update).toHaveBeenLastCalledWith(100, { title: '🧲Jira' });
   });
 
-  test('should keep (Now Collecting) if another 🧲 group exists', async () => {
+  test('should keep  (Now Collecting) if another 🧲 group exists', async () => {
     const { executeMagnet } = await import('../projects/app/ui/utils.js');
     const target = { name: 'Jira', pattern: 'jira.example.com/*' };
 
@@ -104,7 +104,7 @@ describe('executeMagnet naming and protection', () => {
 
     await executeMagnet(target);
 
-    expect(chromeMock.tabGroups.update).toHaveBeenCalledWith(100, { title: '🧲Jira(Now Collecting)' });
+    expect(chromeMock.tabGroups.update).toHaveBeenCalledWith(100, { title: '🧲Jira (Now Collecting)' });
     expect(chromeMock.tabGroups.update).not.toHaveBeenCalledWith(100, { title: '🧲Jira' });
   });
 

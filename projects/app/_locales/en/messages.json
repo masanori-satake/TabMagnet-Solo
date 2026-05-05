@@ -119,6 +119,9 @@
   "settingCloseDuplicateTabs": {
     "message": "Close duplicate tabs"
   },
+  "settingKeepTMOrder": {
+    "message": "Keep TabMagnet group order"
+  },
   "sectionSettingsData": {
     "message": "Settings Data"
   },

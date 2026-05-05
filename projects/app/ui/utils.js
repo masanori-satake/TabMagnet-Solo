@@ -9,7 +9,8 @@ export const DEFAULT_SETTINGS = {
   collectFromAllGroups: false,
   collapseAfterCollect: false,
   discardTabsAfterCollect: false,
-  closeDuplicateTabs: false
+  closeDuplicateTabs: false,
+  keepTMOrder: false
 };
 
 /**
@@ -93,7 +94,7 @@ export async function executeMagnet(target) {
   const groupMap = new Map(allGroups.map(g => [g.id, g]));
 
   const PREFIX_TM = '🧲';
-  const SUFFIX_COLLECTING = '(Now Collecting)';
+  const SUFFIX_COLLECTING = ' (Now Collecting)';
 
   // マッチするタブを抽出（保護されたグループに属するものは除外）
   const matchedTabs = [];
@@ -213,6 +214,72 @@ export async function executeMagnet(target) {
       } catch (e) {
         console.error(`Failed to discard tab ${tab.id}:`, e);
       }
+    }
+  }
+
+  // 6. 順序/位置の維持設定が有効な場合、並べ替えを行う
+  if (settings.keepTMOrder) {
+    await maintainTMOrder(currentWindow.id);
+  }
+}
+
+/**
+ * TabMagnetグループの順序と位置を維持する
+ * @param {number} windowId
+ */
+async function maintainTMOrder(windowId) {
+  const data = await chrome.storage.local.get(['targets']);
+  const targets = data.targets || [];
+  if (targets.length === 0) return;
+
+  const PREFIX_TM = '🧲';
+  const SUFFIX_COLLECTING = ' (Now Collecting)';
+  const allGroups = await chrome.tabGroups.query({ windowId });
+  const tmGroups = allGroups.filter(g => g.title && g.title.startsWith(PREFIX_TM));
+
+  if (tmGroups.length === 0) return;
+
+  // ウィンドウ内の全タブを一度だけ取得し、グループごとに分類
+  const allTabs = await chrome.tabs.query({ windowId });
+  const tabsByGroup = new Map();
+  for (const tab of allTabs) {
+    if (tab.groupId === chrome.tabGroups.TAB_GROUP_ID_NONE) continue;
+    if (!tabsByGroup.has(tab.groupId)) {
+      tabsByGroup.set(tab.groupId, []);
+    }
+    tabsByGroup.get(tab.groupId).push(tab);
+  }
+
+  // ターゲットリストの順序に従って、存在するグループの情報（最小インデックスとタブリスト）を抽出
+  const groupOrderInfo = [];
+  for (const target of targets) {
+    const group = tmGroups.find(g => g.title === PREFIX_TM + target.name || g.title === PREFIX_TM + target.name + SUFFIX_COLLECTING);
+    if (group) {
+      const tabs = tabsByGroup.get(group.id) || [];
+      const minIndex = tabs.length > 0 ? Math.min(...tabs.map(t => t.index)) : -1;
+      groupOrderInfo.push({ id: group.id, minIndex, tabs });
+    }
+  }
+
+  if (groupOrderInfo.length === 0) return;
+
+  // 既に正しい順序で最後尾に並んでいるかチェック
+  let isCorrect = true;
+  const totalTMTabs = groupOrderInfo.reduce((sum, info) => sum + info.tabs.length, 0);
+  let currentPos = allTabs.length - totalTMTabs;
+
+  for (const info of groupOrderInfo) {
+    if (info.minIndex !== currentPos) {
+      isCorrect = false;
+      break;
+    }
+    currentPos += info.tabs.length;
+  }
+
+  if (!isCorrect) {
+    // 順番に最後尾（index: -1）へ移動させていく
+    for (const info of groupOrderInfo) {
+      await chrome.tabGroups.move(info.id, { index: -1 });
     }
   }
 }

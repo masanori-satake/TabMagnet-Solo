@@ -8,7 +8,7 @@
  */
 
 const PREFIX_TM = '🧲';
-const SUFFIX_COLLECTING = '(Now Collecting)';
+const SUFFIX_COLLECTING = ' (Now Collecting)';
 
 /**
  * 拡張機能起動時またはブラウザ起動時に実行
