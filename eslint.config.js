@@ -18,6 +18,14 @@ export default [
     },
   },
   {
+    files: ["projects/web/**/*.js"],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+      },
+    },
+  },
+  {
     files: ["tests/**/*.js", "jest.config.js"],
     languageOptions: {
       globals: {
