@@ -291,9 +291,18 @@ async function maintainTMOrder(windowId) {
   }
 
   if (!isCorrect) {
-    // 順番に最後尾（index: -1）へ移動させていく
+    // 1. 全てのTabMagnetグループの全タブを取得
+    const allTMTabIds = groupOrderInfo.flatMap(info => info.tabs.map(t => t.id));
+
+    // 2. TabMagnetグループ以外のタブの総数を計算
+    const nonTMTabCount = allTabs.length - allTMTabIds.length;
+
+    // 3. ターゲット順に正しい絶対インデックスへ移動させる
+    let currentTargetIndex = nonTMTabCount;
     for (const info of groupOrderInfo) {
-      await chrome.tabGroups.move(info.id, { index: -1 });
+      // chrome.tabGroups.move を使うと、そのグループ内の全タブが指定インデックス以降に移動する
+      await chrome.tabGroups.move(info.id, { index: currentTargetIndex });
+      currentTargetIndex += info.tabs.length;
     }
   }
 }
