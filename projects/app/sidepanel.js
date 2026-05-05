@@ -559,7 +559,7 @@ export async function handleCopyExport() {
     };
     const json = JSON.stringify(exportData, null, 2);
     await navigator.clipboard.writeText(json);
-    alert(chrome.i18n.getMessage('copied'));
+    showToast(chrome.i18n.getMessage('copied'));
   } catch (err) {
     console.error('Failed to copy targets:', err);
   }
@@ -574,7 +574,7 @@ export async function handlePasteImport() {
     const data = JSON.parse(text);
     await importData(data);
   } catch (err) {
-    alert(chrome.i18n.getMessage('importError'));
+    showToast(chrome.i18n.getMessage('importError'));
   }
 }
 
@@ -592,7 +592,9 @@ export function handleFileExport() {
   const a = document.createElement('a');
   a.href = url;
   a.download = `tabmagnet_${getExportTimestamp()}.json`;
+  document.body.appendChild(a);
   a.click();
+  document.body.removeChild(a);
   URL.revokeObjectURL(url);
 }
 
@@ -608,7 +610,7 @@ export function handleFileImport(e) {
       const data = JSON.parse(event.target.result);
       await importData(data);
     } catch (err) {
-      alert(chrome.i18n.getMessage('importError'));
+      showToast(chrome.i18n.getMessage('importError'));
     }
     fileInput.value = '';
   };
@@ -641,7 +643,7 @@ export async function importData(data) {
   await chrome.storage.local.set({ targets, settings });
   renderTargetList();
   renderSettings();
-  alert(chrome.i18n.getMessage('importSuccess'));
+  showToast(chrome.i18n.getMessage('importSuccess'));
 }
 
 /**
@@ -675,7 +677,7 @@ export async function handleExecuteMagnet(target) {
     await executeMagnet(target);
   } catch (e) {
     console.error('Magnet execution failed:', e);
-    alert(chrome.i18n.getMessage('errorExecutionFailed'));
+    showToast(chrome.i18n.getMessage('errorExecutionFailed'));
   }
 }
 

@@ -72,7 +72,7 @@ describe('sidepanel logic', () => {
 
     // Set radio button to overwrite
     document.querySelector('input[name="import-mode"][value="overwrite"]').checked = true;
-    window.alert = jest.fn();
+    const toast = document.getElementById('toast');
 
     const validData = {
       targets: [{ name: 'NewTarget', pattern: ['example.com'], color: 'blue' }],
@@ -85,7 +85,8 @@ describe('sidepanel logic', () => {
       targets: validData.targets,
       settings: expect.objectContaining({ collectFromAllGroups: true })
     }));
-    expect(window.alert).toHaveBeenCalledWith('importSuccess');
+    expect(toast.textContent).toBe('importSuccess');
+    expect(toast.classList.contains('show')).toBe(true);
   });
 
   test('importData handles valid data in append mode', async () => {
@@ -100,7 +101,7 @@ describe('sidepanel logic', () => {
     await init();
 
     document.querySelector('input[name="import-mode"][value="append"]').checked = true;
-    window.alert = jest.fn();
+    const toast = document.getElementById('toast');
 
     const validData = {
       targets: [{ name: 'Appended', pattern: ['new.com'], color: 'red' }]
@@ -114,6 +115,7 @@ describe('sidepanel logic', () => {
         { name: 'Appended', pattern: ['new.com'], color: 'red' }
       ]
     }));
+    expect(toast.textContent).toBe('importSuccess');
   });
 
   test('showModal correctly handles edit vs new', async () => {
