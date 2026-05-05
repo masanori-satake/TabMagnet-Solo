@@ -318,14 +318,21 @@ export async function maintainTMOrder(windowId) {
 
   if (!isCorrect) {
     // ターゲット順に正しい絶対インデックスへ移動させる
-    // ターゲットリストにないTabMagnetグループ（手動作成や保護されていないもの）を考慮し、
-    // 現在ウィンドウ内にあるTabMagnetグループ以外のタブの末尾を起点とする。
+    // 現在ウィンドウ内にあるTabMagnetグループ以外のタブを取得
     const nonTMTabs = allTabs.filter(t => {
       if (t.groupId === chrome.tabGroups.TAB_GROUP_ID_NONE) return true;
       const group = groupMap.get(t.groupId);
       return !group || !group.title || !group.title.startsWith(PREFIX_TM);
     });
 
+    // 非TabMagnetタブを先頭に寄せる（既存の相対順序を維持）
+    for (let i = 0; i < nonTMTabs.length; i++) {
+      if (nonTMTabs[i].index !== i) {
+        await chrome.tabs.move(nonTMTabs[i].id, { index: i });
+      }
+    }
+
+    // ターゲット順にTabMagnetグループをその後に配置
     let currentTargetIndex = nonTMTabs.length;
     for (const info of groupOrderInfo) {
       // chrome.tabGroups.move を使うと、そのグループ内の全タブが指定インデックス以降に移動する
