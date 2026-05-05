@@ -35,10 +35,17 @@ export function matchUrl(url, pattern) {
 
   // "*" を正規表現の ".*" に変換して判定
   // エスケープ処理: 正規表現の特殊文字をエスケープ（"*" 以外）
-  const escapedPattern = normalizedPattern.replace(/[.+^${}()|[\]\\]/g, '\\$&');
-  const regexPattern = '^' + escapedPattern.replace(/\*/g, '.*');
-  const regex = new RegExp(regexPattern);
+  const escapedPattern = normalizedPattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&');
+  let regexPattern = '^' + escapedPattern.replace(/\*/g, '.*');
 
+  // 末尾が "/*" で終わるパターンの場合、スラッシュなしのドメイン単体にもマッチするように調整
+  // 例: "example.com/*" が "example.com" (正規化済み) にもマッチするようにする
+  if (normalizedPattern.endsWith('/*')) {
+    // 末尾の "/.*" (3文字) を "(/.*)?" に置換
+    regexPattern = regexPattern.slice(0, -3) + '(/.*)?';
+  }
+
+  const regex = new RegExp(regexPattern);
   return regex.test(normalizedUrl);
 }
 
