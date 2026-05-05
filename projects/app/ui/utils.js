@@ -292,13 +292,25 @@ export async function maintainTMOrder(windowId) {
 
   if (tmGroups.length === 0) return;
 
+  // グループ名（正規名および収集用名称）からグループオブジェクトへのマップを作成
+  const groupsByName = new Map();
+  for (const g of tmGroups) {
+    if (!groupsByName.has(g.title)) {
+      groupsByName.set(g.title, []);
+    }
+    groupsByName.get(g.title).push(g);
+  }
+
   // ターゲットリストの順序に従って、移動すべきタブIDを順番に収集する
   const orderedTabIds = [];
   for (const target of targets) {
-    const matchedGroups = tmGroups.filter(g =>
-      g.title === PREFIX_TM + target.name ||
-      g.title === PREFIX_TM + target.name + SUFFIX_COLLECTING
-    );
+    const finalName = PREFIX_TM + target.name;
+    const collectingName = finalName + SUFFIX_COLLECTING;
+
+    const matchedGroups = [
+      ...(groupsByName.get(finalName) || []),
+      ...(groupsByName.get(collectingName) || [])
+    ];
 
     if (matchedGroups.length > 0) {
       // 複数の同名グループがある場合、Collectingではない方を優先し、さらにIDが新しい方を採用
@@ -311,7 +323,7 @@ export async function maintainTMOrder(windowId) {
 
       const tabs = tabsByGroup.get(group.id);
       if (tabs) {
-        // ピン留めされていないタブのみを対象（念のため）
+        // ピン留めされていないタブのみを対象
         orderedTabIds.push(...tabs.filter(t => !t.pinned).map(t => t.id));
       }
     }
