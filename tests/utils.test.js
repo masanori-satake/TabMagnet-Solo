@@ -23,6 +23,8 @@ describe('matchUrl', () => {
   test('normalization test', () => {
     expect(matchUrl('https://example.com/path', 'https://example.com/*')).toBe(true);
     expect(matchUrl('https://example.com/path', 'http://example.com/*')).toBe(true);
+    // Regression test for: notebooklm.google.com/* should match https://notebooklm.google.com/
+    expect(matchUrl('https://notebooklm.google.com/', 'notebooklm.google.com/*')).toBe(true);
   });
 });
 
