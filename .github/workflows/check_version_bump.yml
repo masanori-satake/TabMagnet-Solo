@@ -6,6 +6,9 @@ on:
     paths:
       - 'projects/app/**'
 
+permissions:
+  contents: read
+
 jobs:
   check-bump:
     name: バージョン更新の有無を確認
