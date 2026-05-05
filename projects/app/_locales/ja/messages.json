@@ -122,6 +122,24 @@
   "settingKeepTMOrder": {
     "message": "タブグループの順序を維持する"
   },
+  "tooltipCollectFromAllGroups": {
+    "message": "OFF: 🧲マークのない通常のグループ内のタブは無視されます。\nON: すべてのタブグループから該当するタブを収集します。\nリスク: 意図せず整理済みのグループからタブが移動する可能性があります。"
+  },
+  "tooltipKeepTMOrder": {
+    "message": "OFF: タブグループの並び順は変更されません。\nON: ターゲットリストの順序に従って、タブグループを末尾に再整列します。"
+  },
+  "tooltipCollapseAfterCollect": {
+    "message": "OFF: 収集後、グループは開いたままになります。\nON: 収集が完了すると、自動的にグループを折りたたみます。"
+  },
+  "tooltipDiscardTabsAfterCollect": {
+    "message": "OFF: タブの内容はメモリ上に保持されます。\nON: 収集して閉じたタブのメモリを解放します。\nリスク: タブを再度開く際に再読み込みが発生します。"
+  },
+  "tooltipCloseDuplicateTabs": {
+    "message": "OFF: 同一のURLでもすべてのタブを保持します。\nON: 重複したURLのタブは1つを残し、他は閉じます。\nリスク: 入力中のフォームなどがある場合、そのデータが失われる可能性があります。"
+  },
+  "tooltipImportMode": {
+    "message": "追記はターゲットリストのみを追加し、上書きはターゲットリストと共通設定の両方を置き換えます。"
+  },
   "sectionSettingsData": {
     "message": "設定データ"
   },

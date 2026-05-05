@@ -122,6 +122,24 @@
   "settingKeepTMOrder": {
     "message": "Keep TabMagnet group order"
   },
+  "tooltipCollectFromAllGroups": {
+    "message": "OFF: Tabs in regular groups without the 🧲 mark are ignored.\nON: Collects matching tabs from all tab groups.\nRisk: Tabs may be moved from your manually organized groups."
+  },
+  "tooltipKeepTMOrder": {
+    "message": "OFF: The order of tab groups is not changed.\nON: Reorders tab groups at the end according to the target list order."
+  },
+  "tooltipCollapseAfterCollect": {
+    "message": "OFF: Tab groups remain open after collection.\nON: Automatically collapses tab groups after collection is complete."
+  },
+  "tooltipDiscardTabsAfterCollect": {
+    "message": "OFF: Tab content is kept in memory.\nON: Releases memory for collected and collapsed tabs.\nRisk: Reloading will occur when you reopen the tab."
+  },
+  "tooltipCloseDuplicateTabs": {
+    "message": "OFF: Keeps all tabs even if they have the same URL.\nON: Keeps only one tab per URL and closes others.\nRisk: Data in unsubmitted forms may be lost."
+  },
+  "tooltipImportMode": {
+    "message": "Append adds only to the target list, while Overwrite replaces both the target list and common settings."
+  },
   "sectionSettingsData": {
     "message": "Settings Data"
   },
