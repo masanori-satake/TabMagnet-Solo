@@ -26,7 +26,7 @@ def update_readme():
         color = 'red'
 
     badge_url = f'https://img.shields.io/badge/coverage-{branches_pct:.0f}%25-{color}'
-    new_link = 'https://masanori-satake.github.io/TabMagnet-Solo/coverage/lcov-report/'
+    new_link = 'https://masanori-satake.github.io/TabMagnet-Solo/coverage/'
 
     # Update README.md
     if not os.path.exists(readme_path):

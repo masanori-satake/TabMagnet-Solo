@@ -131,7 +131,6 @@ async function _executeMagnetInternal(target) {
 
   for (const tab of allTabs) {
     const isMatched = patterns.some(p => matchUrl(tab.url, p));
-    if (!isMatched) continue;
 
     let isProtected = false;
     let isTMGroup = false;
@@ -152,7 +151,7 @@ async function _executeMagnetInternal(target) {
       }
     }
 
-    if (isProtected) {
+    if (!isMatched || isProtected) {
       continue;
     }
 
