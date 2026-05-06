@@ -23,7 +23,7 @@ describe('ui/modal-settings.js', () => {
     `;
     global.chrome = {
       runtime: {
-        getManifest: jest.fn(() => ({ version: '1.5.2', author: 'Author' }))
+        getManifest: jest.fn(() => ({ version: '9.9.9', author: 'Author' }))
       }
     };
     state.settings = {
@@ -42,7 +42,7 @@ describe('ui/modal-settings.js', () => {
 
   test('updateAboutInfo updates info', () => {
     updateAboutInfo();
-    expect(document.getElementById('about-version').textContent).toBe('v1.5.2');
+    expect(document.getElementById('about-version').textContent).toBe('v9.9.9');
     expect(document.getElementById('about-target-count').textContent).toBe('2');
   });
 

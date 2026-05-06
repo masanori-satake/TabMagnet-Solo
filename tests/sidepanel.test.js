@@ -42,7 +42,7 @@ describe('sidepanel logic', () => {
         TAB_GROUP_ID_NONE: -1
       },
       runtime: {
-        getManifest: jest.fn(() => ({ version: '1.5.3', author: 'Test' }))
+        getManifest: jest.fn(() => ({ version: '9.9.9', author: 'Test' }))
       }
     };
     global.chrome = chromeMock;
