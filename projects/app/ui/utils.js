@@ -1,6 +1,7 @@
 /**
  * TabMagnet-Solo Core Utilities
  */
+import { PREFIX_TM, SUFFIX_COLLECTING } from './constants.js';
 
 /**
  * デフォルト設定
@@ -47,6 +48,16 @@ export function matchUrl(url, pattern) {
 
   const regex = new RegExp(regexPattern);
   return regex.test(normalizedUrl);
+}
+
+/**
+ * ブラウザの特殊ページ（chrome:// など）かどうかを判定する
+ * @param {string} url - 判定対象のURL
+ * @returns {boolean} 特殊ページの場合はtrue
+ */
+export function isSpecialPage(url) {
+  if (!url) return true;
+  return !url.startsWith('http://') && !url.startsWith('https://');
 }
 
 /**
@@ -117,9 +128,6 @@ async function _executeMagnetInternal(target) {
 
   const allGroups = await chrome.tabGroups.query({});
   const groupMap = new Map(allGroups.map(g => [g.id, g]));
-
-  const PREFIX_TM = '🧲';
-  const SUFFIX_COLLECTING = ' (Now Collecting)';
 
   // マッチするタブを抽出（保護されたグループに属するものは除外）
   const matchedTabs = [];
@@ -261,6 +269,72 @@ async function _executeMagnetInternal(target) {
 }
 
 /**
+ * "(Now Collecting)" 状態のグループを、条件を満たしていれば正規名称にリネームする
+ */
+export async function checkAndRenameCollectingGroups() {
+  const groupsBefore = await chrome.tabGroups.query({});
+  const collectingGroups = groupsBefore.filter(g =>
+    g.title && g.title.startsWith(PREFIX_TM) && g.title.endsWith(SUFFIX_COLLECTING)
+  );
+
+  if (collectingGroups.length === 0) return;
+
+  for (const group of collectingGroups) {
+    // 競合チェックを最新の状態で行うため、ループ内で再取得
+    const currentGroups = await chrome.tabGroups.query({});
+    const finalName = group.title.replace(SUFFIX_COLLECTING, '');
+
+    // 同一ターゲットの正規グループ、または自分よりIDの小さい同名Collectingグループが存在しないか確認
+    // (複数Collectingがある場合、一番IDが小さいものだけを正規化対象にする)
+    const hasConflict = currentGroups.some(g => {
+      if (g.id === group.id) return false;
+      // すでに正規名称のグループがある場合
+      if (g.title === finalName) return true;
+      // 自分と同じCollecting名称で、かつ自分より先に作られた(IDが小さい)ものがある場合
+      if (g.title === group.title && g.id < group.id) return true;
+      return false;
+    });
+
+    if (!hasConflict) {
+      try {
+        await chrome.tabGroups.update(group.id, { title: finalName });
+      } catch (e) {
+        console.warn(`Failed to finalize group ${group.id}: ${e.message}`);
+      }
+    }
+  }
+}
+
+/**
+ * 重複するターゲットグループのクリーンアップ
+ */
+export async function performAutoCleanup() {
+  const data = await chrome.storage.local.get(['targets', 'protectedGroups']);
+  const targets = data.targets || [];
+  const protectedGroups = data.protectedGroups || [];
+
+  if (targets.length === 0) return;
+
+  const groups = await chrome.tabGroups.query({});
+
+  for (const target of targets) {
+    const targetName = target.name;
+    // 同一ターゲット名を持つグループを抽出（保護されたグループは除外）
+    const matchingGroups = groups.filter(g => {
+      if (!g.title) return false;
+      const isTargetGroup = (g.title === PREFIX_TM + targetName || g.title === PREFIX_TM + targetName + SUFFIX_COLLECTING);
+      const isProtected = protectedGroups.includes(g.title);
+      return isTargetGroup && !isProtected;
+    });
+
+    if (matchingGroups.length <= 1) continue;
+
+    // 全てを解体対象にする
+    await dissolveGroups(matchingGroups.map(g => g.id));
+  }
+}
+
+/**
  * TabMagnetグループの順序と位置を維持する
  *
  * ウィンドウ内の全TabMagnetグループ（🧲で始まるもの）を最後尾に並べ替え、
@@ -278,8 +352,6 @@ export async function maintainTMOrder(windowId) {
   const data = await chrome.storage.local.get(['targets']);
   const targets = data.targets || [];
 
-  const PREFIX_TM = '🧲';
-  const SUFFIX_COLLECTING = ' (Now Collecting)';
   const allGroups = await chrome.tabGroups.query({ windowId });
 
   // 全てのTabMagnetグループを特定
