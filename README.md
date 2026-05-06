@@ -1,7 +1,7 @@
 # TabMagnet-Solo
 
-[![version](https://img.shields.io/badge/version-1.5.1-blue)](projects/app/manifest.json)
-[![Coverage](https://img.shields.io/badge/coverage-49%25-red)](https://masanori-satake.github.io/TabMagnet-Solo/coverage/lcov-report/)
+[![version](https://img.shields.io/badge/version-1.5.2-blue)](projects/app/manifest.json)
+[![Coverage](https://img.shields.io/badge/coverage-87%25-brightgreen)](https://masanori-satake.github.io/TabMagnet-Solo/coverage/)
 [![Privacy-Local Only](https://img.shields.io/badge/Privacy-Local%20Only-brightgreen)](AGENTS.md)
 [![Manifest V3](https://img.shields.io/badge/Manifest-V3-orange)](projects/app/manifest.json)
 

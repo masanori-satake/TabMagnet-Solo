@@ -104,9 +104,13 @@ export async function performAutoCleanup() {
     // あるいは、Now Collectingでない方を優先して残すなどのロジックも考えられるが、
     // 重複が発生している異常系なので、安全に全解除するのがシンプル。
     for (const group of matchingGroups) {
-      const tabs = await chrome.tabs.query({ groupId: group.id });
-      if (tabs.length > 0) {
-        await chrome.tabs.ungroup(tabs.map(t => t.id));
+      try {
+        const tabs = await chrome.tabs.query({ groupId: group.id });
+        if (tabs.length > 0) {
+          await chrome.tabs.ungroup(tabs.map(t => t.id));
+        }
+      } catch (e) {
+        console.error(`Failed to ungroup tabs from duplicate group ${group.id}:`, e);
       }
     }
   }

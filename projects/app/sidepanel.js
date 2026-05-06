@@ -506,13 +506,12 @@ export async function handleSaveTarget() {
  */
 export async function handleAddFromDomain() {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  if (!tab || !tab.url) return;
-
-  if (isSpecialPage(tab.url)) {
-    showToast(chrome.i18n.getMessage('errorSpecialPage'));
+  if (!tab || !tab.url || isSpecialPage(tab.url)) {
+    if (tab && isSpecialPage(tab.url)) {
+      showToast(chrome.i18n.getMessage('errorSpecialPage'));
+    }
     return;
   }
-
   try {
     const url = new URL(tab.url);
     let domain = url.hostname;

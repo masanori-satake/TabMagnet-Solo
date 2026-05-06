@@ -147,6 +147,23 @@ describe('background auto-cleanup and renaming', () => {
     // Should not throw
   });
 
+  test('performAutoCleanup handles error when querying tabs', async () => {
+    const { performAutoCleanup } = await import('../projects/app/background.js');
+    const originalConsoleError = console.error;
+    console.error = jest.fn();
+
+    chromeMock.storage.local.get.mockResolvedValue({ targets: [{ name: 'Jira' }], protectedGroups: [] });
+    chromeMock.tabGroups.query.mockResolvedValue([{ id: 1, title: '🧲Jira' }, { id: 2, title: '🧲Jira' }]);
+    chromeMock.tabs.query.mockReturnValue(Promise.reject(new Error('Query error')));
+
+    try {
+      await performAutoCleanup();
+      expect(console.error).toHaveBeenCalledWith(expect.stringContaining('Failed to ungroup tabs from duplicate group 1'), expect.any(Error));
+    } finally {
+      console.error = originalConsoleError;
+    }
+  });
+
   test('checkAndRenameCollectingGroups should prioritize the group with smaller ID when multiple Collecting groups exist', async () => {
     const { checkAndRenameCollectingGroups } = await import('../projects/app/background.js');
 
@@ -173,5 +190,39 @@ describe('background auto-cleanup and renaming', () => {
     // Should only finalize group 1
     expect(chromeMock.tabGroups.update).toHaveBeenCalledWith(1, { title: '🧲Jira' });
     expect(chromeMock.tabGroups.update).not.toHaveBeenCalledWith(2, expect.anything());
+  });
+
+  test('listeners are registered', async () => {
+    await import('../projects/app/background.js');
+
+    expect(chromeMock.runtime.onStartup.addListener).toHaveBeenCalled();
+    expect(chromeMock.runtime.onInstalled.addListener).toHaveBeenCalled();
+    expect(chromeMock.tabGroups.onRemoved.addListener).toHaveBeenCalled();
+    expect(chromeMock.tabGroups.onUpdated.addListener).toHaveBeenCalled();
+  });
+
+  test('onInstalled sets sidepanel behavior', async () => {
+    await import('../projects/app/background.js');
+    const onInstalled = chromeMock.runtime.onInstalled.addListener.mock.calls[0][0];
+
+    chromeMock.storage.local.get.mockResolvedValue({ targets: [] });
+    await onInstalled();
+
+    expect(chromeMock.sidePanel.setPanelBehavior).toHaveBeenCalledWith({ openPanelOnActionClick: true });
+  });
+
+  test('onRemoved and onUpdated trigger checkAndRenameCollectingGroups', async () => {
+    await import('../projects/app/background.js');
+    const onRemoved = chromeMock.tabGroups.onRemoved.addListener.mock.calls[0][0];
+    const onUpdated = chromeMock.tabGroups.onUpdated.addListener.mock.calls[0][0];
+
+    chromeMock.tabGroups.query.mockResolvedValue([{ id: 1, title: '🧲Jira (Now Collecting)' }]);
+
+    await onRemoved();
+    expect(chromeMock.tabGroups.update).toHaveBeenCalledWith(1, { title: '🧲Jira' });
+
+    chromeMock.tabGroups.update.mockClear();
+    await onUpdated();
+    expect(chromeMock.tabGroups.update).toHaveBeenCalledWith(1, { title: '🧲Jira' });
   });
 });
