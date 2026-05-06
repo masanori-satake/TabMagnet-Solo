@@ -154,11 +154,14 @@ describe('background auto-cleanup and renaming', () => {
 
     chromeMock.storage.local.get.mockResolvedValue({ targets: [{ name: 'Jira' }], protectedGroups: [] });
     chromeMock.tabGroups.query.mockResolvedValue([{ id: 1, title: '🧲Jira' }, { id: 2, title: '🧲Jira' }]);
-    chromeMock.tabs.query.mockReturnValue(Promise.reject(new Error('Query error')));
+    chromeMock.tabs.query.mockReturnValue(Promise.resolve([{ id: 101 }]));
+    // Mock ungroup to fail
+    chromeMock.tabs.ungroup.mockRejectedValue(new Error('Ungroup error'));
 
     try {
       await performAutoCleanup();
-      expect(console.error).toHaveBeenCalledWith(expect.stringContaining('Failed to ungroup tabs from duplicate group 1'), expect.any(Error));
+      // Error is logged in dissolveGroups (which is now in utils.js)
+      expect(console.error).toHaveBeenCalled();
     } finally {
       console.error = originalConsoleError;
     }

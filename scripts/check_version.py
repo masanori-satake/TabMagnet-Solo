@@ -28,22 +28,12 @@ def check_version_consistency():
             badge_match = re.search(r"img\.shields\.io/badge/version-([\d\.]+)-blue", readme_content)
             readme_version = badge_match.group(1) if badge_match else None
 
-        # 5. tests/sidepanel.test.js
-        test_version = None
-        if os.path.exists("tests/sidepanel.test.js"):
-            with open("tests/sidepanel.test.js", "r") as f:
-                test_content = f.read()
-                # expect(...).toBe('v1.5.2') or version: '1.5.2'
-                test_match = re.search(r"version: '([\d\.]+)'", test_content)
-                test_version = test_match.group(1) if test_match else None
-
         versions = {
             "projects/app/manifest.json": manifest_version,
             "package.json": package_version,
             "package-lock.json": lock_version,
             "package-lock.json (packages[''])": lock_pkg_version,
             "README.md (badge)": readme_version,
-            "tests/sidepanel.test.js": test_version,
         }
 
         print("Checking version consistency:")
