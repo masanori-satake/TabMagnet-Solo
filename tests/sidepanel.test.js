@@ -42,7 +42,7 @@ describe('sidepanel logic', () => {
         TAB_GROUP_ID_NONE: -1
       },
       runtime: {
-        getManifest: jest.fn(() => ({ version: '1.0.0', author: 'Test' }))
+        getManifest: jest.fn(() => ({ version: '1.5.2', author: 'Test' }))
       }
     };
     global.chrome = chromeMock;
@@ -554,7 +554,7 @@ describe('sidepanel logic', () => {
   test('updateAboutInfo updates version and target count', async () => {
     const { updateAboutInfo, init } = await import('../projects/app/sidepanel.js');
 
-    chromeMock.runtime.getManifest.mockReturnValue({ version: '1.5.1', author: 'Masanori SATAKE' });
+    chromeMock.runtime.getManifest.mockReturnValue({ version: '1.5.2', author: 'Masanori SATAKE' });
     chromeMock.storage.local.get.mockResolvedValue({
       targets: [{}, {}, {}]
     });
@@ -562,7 +562,7 @@ describe('sidepanel logic', () => {
 
     updateAboutInfo();
 
-    expect(document.getElementById('about-version').textContent).toBe('v1.5.1');
+    expect(document.getElementById('about-version').textContent).toBe('v1.5.2');
     expect(document.getElementById('about-target-count').textContent).toBe('3');
   });
 
@@ -584,7 +584,7 @@ describe('sidepanel logic', () => {
 
   test('about info handles missing author', async () => {
     const { updateAboutInfo, init } = await import('../projects/app/sidepanel.js');
-    chromeMock.runtime.getManifest.mockReturnValue({ version: '1.5.1' }); // no author
+    chromeMock.runtime.getManifest.mockReturnValue({ version: '1.5.2' }); // no author
     chromeMock.storage.local.get.mockResolvedValue({ targets: [] });
     await init();
     updateAboutInfo();
