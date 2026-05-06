@@ -506,15 +506,13 @@ export async function handleSaveTarget() {
  */
 export async function handleAddFromDomain() {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  if (!tab || !tab.url) return;
-
-  if (isSpecialPage(tab.url)) {
-    showToast(chrome.i18n.getMessage('errorSpecialPage'));
+  if (!tab || !tab.url || isSpecialPage(tab.url)) {
+    if (tab && isSpecialPage(tab.url)) {
+      showToast(chrome.i18n.getMessage('errorSpecialPage'));
+    }
     return;
   }
-
   try {
-    if (!tab.url) throw new Error('Invalid URL');
     const url = new URL(tab.url);
     let domain = url.hostname;
     const parts = domain.split('.');
@@ -528,7 +526,6 @@ export async function handleAddFromDomain() {
 
     const name = mainPart.charAt(0).toUpperCase() + mainPart.slice(1);
     const pattern = domain + '/*';
-    if (!name || !pattern) throw new Error('Failed to generate name or pattern');
     showModal();
     newNameInput.value = name;
     patternListContainer.innerHTML = '';
