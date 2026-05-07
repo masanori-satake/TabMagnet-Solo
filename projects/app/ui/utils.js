@@ -1,12 +1,9 @@
-/**
- * TabMagnet-Solo Core Utilities
- */
 import {
   PREFIX_TM,
   SUFFIX_COLLECTING,
   COLORS_CHROME,
   COLORS_EDGE,
-  EDGE_TO_CHROME_COLOR_MAP
+  COLOR_COMPATIBILITY_MAP
 } from './constants.js';
 
 /**
@@ -39,9 +36,11 @@ export function getCompatibleColor(color) {
   if (supportedColors.includes(color)) {
     return color;
   }
-  // Edge固有の色をChrome用にマッピング
-  if (!isEdge() && EDGE_TO_CHROME_COLOR_MAP[color]) {
-    return EDGE_TO_CHROME_COLOR_MAP[color];
+  // 互換性マッピングを適用
+  if (COLOR_COMPATIBILITY_MAP[color]) {
+    const mappedColor = COLOR_COMPATIBILITY_MAP[color];
+    // マッピング先が現在のブラウザでサポートされているか再帰的に確認（念のため）
+    return supportedColors.includes(mappedColor) ? mappedColor : 'grey';
   }
   return 'grey'; // フォールバック
 }
