@@ -92,9 +92,6 @@
   "colorCyan": {
     "message": "シアン"
   },
-  "colorCyanEdge": {
-    "message": "紺青色"
-  },
   "colorOrange": {
     "message": "オレンジ"
   },
@@ -112,6 +109,24 @@
   },
   "colorBrown": {
     "message": "ブラウン"
+  },
+  "colorGreyEdge": {
+    "message": "灰色"
+  },
+  "colorBlueEdge": {
+    "message": "青"
+  },
+  "colorYellowEdge": {
+    "message": "黄色"
+  },
+  "colorPurpleEdge": {
+    "message": "紫"
+  },
+  "colorMagentaEdge": {
+    "message": "紫"
+  },
+  "colorCyanEdge": {
+    "message": "紺青色"
   },
   "settings": {
     "message": "設定"

@@ -110,6 +110,24 @@
   "colorBrown": {
     "message": "Brown"
   },
+  "colorGreyEdge": {
+    "message": "Grey"
+  },
+  "colorBlueEdge": {
+    "message": "Blue"
+  },
+  "colorYellowEdge": {
+    "message": "Yellow"
+  },
+  "colorPurpleEdge": {
+    "message": "Purple"
+  },
+  "colorMagentaEdge": {
+    "message": "Purple"
+  },
+  "colorCyanEdge": {
+    "message": "Royal blue"
+  },
   "settings": {
     "message": "Settings"
   },

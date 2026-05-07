@@ -60,9 +60,15 @@ function renderColorOptions() {
     option.dataset.color = color;
 
     // i18n メッセージキーの組み立て (e.g. colorGrey, colorMagenta)
-    let labelKey = 'color' + color.charAt(0).toUpperCase() + color.slice(1);
-    // Edgeの特定の色の名称を調整
-    if (isEdge() && color === 'cyan') labelKey = 'colorCyanEdge';
+    const colorCap = color.charAt(0).toUpperCase() + color.slice(1);
+    let labelKey = 'color' + colorCap;
+
+    // EdgeのUI名に準拠するための調整
+    if (isEdge()) {
+      const edgeKey = 'color' + colorCap + 'Edge';
+      const edgeMsg = chrome.i18n.getMessage(edgeKey);
+      if (edgeMsg) labelKey = edgeKey;
+    }
 
     const label = chrome.i18n.getMessage(labelKey) || color;
     if (tooltip) tooltip.textContent = label;
