@@ -116,17 +116,26 @@
   "colorBlueEdge": {
     "message": "Blue"
   },
+  "colorRedEdge": {
+    "message": "Purple (Magenta)"
+  },
   "colorYellowEdge": {
     "message": "Yellow"
+  },
+  "colorGreenEdge": {
+    "message": "Teal"
+  },
+  "colorPinkEdge": {
+    "message": "Pink"
   },
   "colorPurpleEdge": {
     "message": "Purple"
   },
-  "colorMagentaEdge": {
-    "message": "Purple"
-  },
   "colorCyanEdge": {
     "message": "Royal blue"
+  },
+  "colorOrangeEdge": {
+    "message": "Orange"
   },
   "settings": {
     "message": "Settings"

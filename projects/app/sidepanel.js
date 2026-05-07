@@ -29,7 +29,8 @@ import {
   getExportTimestamp,
   DEFAULT_SETTINGS,
   isSpecialPage,
-  getCompatibleColor
+  getCompatibleColor,
+  isEdge
 } from './ui/utils.js';
 
 // DOM elements
@@ -72,6 +73,9 @@ const confirmDeleteOkBtn = document.getElementById('confirm-delete-ok-btn');
  * 初期化処理
  */
 export async function init() {
+  if (isEdge()) {
+    document.body.classList.add('edge-mode');
+  }
   applyI18n();
   await loadState();
 

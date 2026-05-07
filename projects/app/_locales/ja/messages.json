@@ -116,17 +116,26 @@
   "colorBlueEdge": {
     "message": "青"
   },
+  "colorRedEdge": {
+    "message": "紫 (赤紫)"
+  },
   "colorYellowEdge": {
     "message": "黄色"
+  },
+  "colorGreenEdge": {
+    "message": "青緑"
+  },
+  "colorPinkEdge": {
+    "message": "ピンク"
   },
   "colorPurpleEdge": {
     "message": "紫"
   },
-  "colorMagentaEdge": {
-    "message": "紫"
-  },
   "colorCyanEdge": {
     "message": "紺青色"
+  },
+  "colorOrangeEdge": {
+    "message": "オレンジ"
   },
   "settings": {
     "message": "設定"

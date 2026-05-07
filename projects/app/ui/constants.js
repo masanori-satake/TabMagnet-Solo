@@ -14,15 +14,14 @@ export const PREFIX_TM = '🧲';
 export const SUFFIX_COLLECTING = ' (Now Collecting)';
 
 /**
- * Chromiumでサポートされているタブグループのカラー（全14色）
+ * Chromium API で正式にサポートされているタブグループのカラー（全9色）
  */
 export const ALL_COLORS = [
-  'grey', 'blue', 'red', 'yellow', 'green', 'pink', 'purple', 'cyan', 'orange',
-  'white', 'black', 'brown', 'magenta', 'teal'
+  'grey', 'blue', 'red', 'yellow', 'green', 'pink', 'purple', 'cyan', 'orange'
 ];
 
 /**
- * ChromeのUIで選択可能なカラー（9色）
+ * ChromeのUIで一般的に選択可能なカラー（9色）
  */
 export const COLORS_CHROME = [
   'grey', 'blue', 'red', 'yellow', 'green', 'pink', 'purple', 'cyan', 'orange'
@@ -30,27 +29,21 @@ export const COLORS_CHROME = [
 
 /**
  * EdgeのUIで選択可能なカラー（9色）
- * ユーザーフィードバックに基づくマッピング：
- * 灰色(grey), 青(blue), 黄色(yellow), ピンク(pink), 紫(purple),
- * 紫/赤紫(magenta), 紺青色(cyan), 青緑(teal), オレンジ(orange)
- * ※Edgeには「赤」「緑」の代わりに「マゼンタ」「青緑」がUI上に存在する
+ * API上はChromeと同じキーを使用するが、UI上の並び順と見た目が異なる。
+ * 並び順: 青, ピンク, 紫, 紫(赤紫), 紺青色, 青緑, オレンジ, 黄色, 灰色
  */
 export const COLORS_EDGE = [
-  'grey', 'blue', 'yellow', 'pink', 'purple', 'magenta', 'cyan', 'teal', 'orange'
+  'blue', 'pink', 'purple', 'red', 'cyan', 'green', 'orange', 'yellow', 'grey'
 ];
 
 /**
  * ブラウザ間のカラー互換性マッピング
- * 相手側のUIに存在しない色を、最も近い色に変換する
+ * APIレベルで同一の9色を使用するため、実質的な「変換」は不要だが、
+ * 以前のバージョン（1.6.0暫定版）で保存された可能性がある非標準色を救済するために定義。
  */
 export const COLOR_COMPATIBILITY_MAP = {
-  // Chrome -> Edge
-  'red': 'magenta',
-  'green': 'teal',
-  // Edge -> Chrome
   'magenta': 'red',
   'teal': 'green',
-  // その他(API上は存在するがUIにない色) -> 各ブラウザの標準パレットへ
   'brown': 'orange',
   'white': 'grey',
   'black': 'grey'

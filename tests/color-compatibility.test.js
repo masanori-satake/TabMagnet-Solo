@@ -29,44 +29,40 @@ describe('Color Compatibility Utilities', () => {
     expect(isEdge()).toBe(false);
   });
 
-  test('getCompatibleColor returns same color if supported in current browser', () => {
-    // Chrome
-    Object.defineProperty(navigator, 'userAgent', {
-      value: 'Chrome',
-      configurable: true
-    });
-    expect(getCompatibleColor('red')).toBe('red');
-    expect(getCompatibleColor('grey')).toBe('grey');
+  test('getCompatibleColor returns same color if supported (standard 9 colors)', () => {
+    // Both Chrome and Edge support the same standard 9 IDs now
+    const standardColors = ['blue', 'red', 'yellow', 'green', 'pink', 'purple', 'cyan', 'orange', 'grey'];
 
-    // Edge
-    Object.defineProperty(navigator, 'userAgent', {
-      value: 'Edg/120',
-      configurable: true
+    // Test in Chrome mode
+    Object.defineProperty(navigator, 'userAgent', { value: 'Chrome', configurable: true });
+    standardColors.forEach(color => {
+      expect(getCompatibleColor(color)).toBe(color);
     });
-    expect(getCompatibleColor('magenta')).toBe('magenta');
-    expect(getCompatibleColor('teal')).toBe('teal');
+
+    // Test in Edge mode
+    Object.defineProperty(navigator, 'userAgent', { value: 'Edg/120', configurable: true });
+    standardColors.forEach(color => {
+      expect(getCompatibleColor(color)).toBe(color);
+    });
   });
 
-  test('getCompatibleColor maps incompatible colors correctly', () => {
-    // Edge (magenta) -> Chrome (red)
-    Object.defineProperty(navigator, 'userAgent', {
-      value: 'Chrome',
-      configurable: true
-    });
+  test('getCompatibleColor maps non-standard colors correctly via COMPATIBILITY_MAP', () => {
+    // Chrome mode
+    Object.defineProperty(navigator, 'userAgent', { value: 'Chrome', configurable: true });
     expect(getCompatibleColor('magenta')).toBe('red');
     expect(getCompatibleColor('teal')).toBe('green');
     expect(getCompatibleColor('brown')).toBe('orange');
+    expect(getCompatibleColor('white')).toBe('grey');
 
-    // Chrome (red) -> Edge (magenta)
-    Object.defineProperty(navigator, 'userAgent', {
-      value: 'Edg/120',
-      configurable: true
-    });
-    expect(getCompatibleColor('red')).toBe('magenta');
-    expect(getCompatibleColor('green')).toBe('teal');
+    // Edge mode (same mapping should apply as API IDs are identical)
+    Object.defineProperty(navigator, 'userAgent', { value: 'Edg/120', configurable: true });
+    expect(getCompatibleColor('magenta')).toBe('red');
+    expect(getCompatibleColor('teal')).toBe('green');
+    expect(getCompatibleColor('brown')).toBe('orange');
+    expect(getCompatibleColor('white')).toBe('grey');
   });
 
   test('getCompatibleColor falls back to grey for unknown colors', () => {
-    expect(getCompatibleColor('unknown-color')).toBe('grey');
+    expect(getCompatibleColor('completely-unknown-color')).toBe('grey');
   });
 });

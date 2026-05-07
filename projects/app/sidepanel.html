@@ -37,7 +37,7 @@
       --md-sys-typescale-title-medium: 500 16px/24px Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
       --md-sys-typescale-headline-small: 400 24px/32px Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
 
-      /* Chrome/Edge Tab Group Colors */
+      /* Chrome Tab Group Colors (9 IDs) */
       --tg-color-grey: #5F6368;
       --tg-color-blue: #1A73E8;
       --tg-color-red: #D93025;
@@ -53,6 +53,19 @@
       --tg-color-brown: #795548;
       --tg-color-magenta: #C2185B;
       --tg-color-teal: #00897B;
+    }
+
+    /* Edge-specific color overrides for the same 9 IDs */
+    body.edge-mode {
+      --tg-color-blue: #0078D4;   /* Blue */
+      --tg-color-pink: #E3008C;   /* Pink */
+      --tg-color-purple: #5C2D91; /* Purple */
+      --tg-color-red: #B4009E;    /* Purple (Magenta) - API: red */
+      --tg-color-cyan: #004E8C;   /* Royal blue - API: cyan */
+      --tg-color-green: #008272;  /* Teal - API: green */
+      --tg-color-orange: #D83B01; /* Orange */
+      --tg-color-yellow: #FFB900; /* Yellow */
+      --tg-color-grey: #737373;   /* Grey */
     }
 
     body {
@@ -611,7 +624,7 @@
       cursor: default;
     }
 
-    /* Color classes */
+    /* Color classes for standard 9 IDs */
     .bg-grey { background-color: var(--tg-color-grey); }
     .bg-blue { background-color: var(--tg-color-blue); }
     .bg-red { background-color: var(--tg-color-red); }
