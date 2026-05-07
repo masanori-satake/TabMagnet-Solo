@@ -37,7 +37,7 @@
       --md-sys-typescale-title-medium: 500 16px/24px Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
       --md-sys-typescale-headline-small: 400 24px/32px Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
 
-      /* Chrome Tab Group Colors */
+      /* Chrome/Edge Tab Group Colors */
       --tg-color-grey: #5F6368;
       --tg-color-blue: #1A73E8;
       --tg-color-red: #D93025;
@@ -47,6 +47,9 @@
       --tg-color-purple: #9334E6;
       --tg-color-cyan: #007B83;
       --tg-color-orange: #E8710A;
+      /* Edge Unique Colors */
+      --tg-color-brown: #795548;
+      --tg-color-white: #FFFFFF;
     }
 
     body {
@@ -613,6 +616,11 @@
     .bg-purple { background-color: var(--tg-color-purple); }
     .bg-cyan { background-color: var(--tg-color-cyan); }
     .bg-orange { background-color: var(--tg-color-orange); }
+    .bg-brown { background-color: var(--tg-color-brown); }
+    .bg-white {
+      background-color: var(--tg-color-white);
+      border: 1px solid var(--md-sys-color-outline-variant) !important;
+    }
 
     /* Material 3 Switch */
     .switch-container {
@@ -724,16 +732,8 @@
           <input type="text" id="new-name" placeholder=" " required>
           <label data-i18n="placeholderGroupName"></label>
         </div>
-        <div class="color-selection">
-          <div class="color-option bg-grey" data-color="grey"><svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20"><path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"/></svg></div>
-          <div class="color-option bg-blue" data-color="blue"><svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20"><path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"/></svg></div>
-          <div class="color-option bg-red" data-color="red"><svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20"><path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"/></svg></div>
-          <div class="color-option bg-yellow" data-color="yellow"><svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20"><path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"/></svg></div>
-          <div class="color-option bg-green" data-color="green"><svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20"><path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"/></svg></div>
-          <div class="color-option bg-pink" data-color="pink"><svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20"><path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"/></svg></div>
-          <div class="color-option bg-purple" data-color="purple"><svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20"><path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"/></svg></div>
-          <div class="color-option bg-cyan" data-color="cyan"><svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20"><path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"/></svg></div>
-          <div class="color-option bg-orange" data-color="orange"><svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20"><path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"/></svg></div>
+        <div id="color-selection" class="color-selection">
+          <!-- カラーオプションはJavaScriptで動的に生成されます -->
         </div>
         <div class="pattern-list-label" data-i18n="labelUrlPattern"></div>
         <div id="pattern-list-container" class="pattern-list-container">

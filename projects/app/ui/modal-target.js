@@ -1,6 +1,8 @@
 import { state } from './state.js';
 import { escapeHtml } from './list-renderer.js';
 import { applyI18n } from './i18n.js';
+import { isEdge } from './utils.js';
+import { COLORS_CHROME, COLORS_EDGE } from './constants.js';
 
 /**
  * ターゲット追加・編集モーダルの表示
@@ -12,6 +14,9 @@ export function showTargetModal(index = null) {
   const newNameInput = document.getElementById('new-name');
   const patternListContainer = document.getElementById('pattern-list-container');
   const deleteTargetBtn = document.getElementById('delete-target-btn');
+
+  // ブラウザに合わせてカラーオプションを動的に生成
+  renderColorOptions();
 
   state.currentEditIndex = index;
   if (patternListContainer) patternListContainer.innerHTML = '';
@@ -33,6 +38,31 @@ export function showTargetModal(index = null) {
     if (deleteTargetBtn) deleteTargetBtn.classList.add('hidden');
   }
   if (targetModalScrim) targetModalScrim.style.display = 'flex';
+}
+
+/**
+ * カラーオプションを動的に生成・表示する
+ */
+function renderColorOptions() {
+  const container = document.getElementById('color-selection');
+  if (!container) return;
+
+  const supportedColors = isEdge() ? COLORS_EDGE : COLORS_CHROME;
+  container.innerHTML = supportedColors.map(color => `
+    <div class="color-option bg-${color}" data-color="${color}">
+      <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20">
+        <path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"/>
+      </svg>
+    </div>
+  `).join('');
+
+  // イベントリスナーの再設定
+  container.querySelectorAll('.color-option').forEach(opt => {
+    opt.addEventListener('click', () => {
+      selectColor(opt.dataset.color);
+      hideModalFeedback();
+    });
+  });
 }
 
 /**

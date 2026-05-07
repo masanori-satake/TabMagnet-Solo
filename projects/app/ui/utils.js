@@ -1,7 +1,13 @@
 /**
  * TabMagnet-Solo Core Utilities
  */
-import { PREFIX_TM, SUFFIX_COLLECTING } from './constants.js';
+import {
+  PREFIX_TM,
+  SUFFIX_COLLECTING,
+  COLORS_CHROME,
+  COLORS_EDGE,
+  EDGE_TO_CHROME_COLOR_MAP
+} from './constants.js';
 
 /**
  * デフォルト設定
@@ -13,6 +19,32 @@ export const DEFAULT_SETTINGS = {
   closeDuplicateTabs: false,
   keepTMOrder: false
 };
+
+/**
+ * 現在のブラウザがMicrosoft Edgeであるか判定する
+ * @returns {boolean} Edgeの場合はtrue
+ */
+export function isEdge() {
+  return navigator.userAgent.includes('Edg/');
+}
+
+/**
+ * 指定された色が現在のブラウザでサポートされているか確認し、
+ * サポートされていない場合は代替の色を返す
+ * @param {string} color - チェックする色名
+ * @returns {string} サポートされている色名
+ */
+export function getCompatibleColor(color) {
+  const supportedColors = isEdge() ? COLORS_EDGE : COLORS_CHROME;
+  if (supportedColors.includes(color)) {
+    return color;
+  }
+  // Edge固有の色をChrome用にマッピング
+  if (!isEdge() && EDGE_TO_CHROME_COLOR_MAP[color]) {
+    return EDGE_TO_CHROME_COLOR_MAP[color];
+  }
+  return 'grey'; // フォールバック
+}
 
 /**
  * URLパターンがマッチするか判定する
@@ -205,7 +237,8 @@ async function _executeMagnetInternal(target) {
   const newGroupId = await chrome.tabs.group({ tabIds });
   const updateData = { title: tempGroupName };
   if (target.color) {
-    updateData.color = target.color;
+    // ブラウザ互換性を考慮して色を設定
+    updateData.color = getCompatibleColor(target.color);
   }
   if (settings.collapseAfterCollect) {
     updateData.collapsed = true;

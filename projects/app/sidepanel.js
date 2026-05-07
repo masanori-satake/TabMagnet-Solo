@@ -26,7 +26,12 @@ import {
   showDeleteDialog,
   hideDeleteDialog
 } from './ui/dialog-delete.js';
-import { getExportTimestamp, DEFAULT_SETTINGS, isSpecialPage } from './ui/utils.js';
+import {
+  getExportTimestamp,
+  DEFAULT_SETTINGS,
+  isSpecialPage,
+  getCompatibleColor
+} from './ui/utils.js';
 
 // DOM elements
 const targetListEl = document.getElementById('target-list');
@@ -39,7 +44,6 @@ const targetModalScrim = document.getElementById('target-modal-scrim');
 const newNameInput = document.getElementById('new-name');
 const patternListContainer = document.getElementById('pattern-list-container');
 const addPatternBtn = document.getElementById('add-pattern-btn');
-const colorOptions = document.querySelectorAll('.color-option');
 const deleteTargetBtn = document.getElementById('delete-target-btn');
 const cancelTargetBtn = document.getElementById('cancel-target-btn');
 const saveTargetBtn = document.getElementById('save-target-btn');
@@ -149,13 +153,6 @@ function setupEventListeners() {
   deleteTargetBtn.addEventListener('click', () => showDeleteDialog(state.currentEditIndex));
 
   newNameInput.addEventListener('input', hideModalFeedback);
-
-  colorOptions.forEach(opt => {
-    opt.addEventListener('click', () => {
-      selectColor(opt.dataset.color);
-      hideModalFeedback();
-    });
-  });
 
   patternListContainer.addEventListener('dragover', handlePatternDragOver);
 
@@ -306,6 +303,12 @@ async function importData(data) {
   } else {
     throw new Error('Invalid format');
   }
+
+  // インポート時にブラウザ互換の色に変換
+  importedTargets = importedTargets.map(target => ({
+    ...target,
+    color: target.color ? getCompatibleColor(target.color) : 'grey'
+  }));
 
   const mode = document.querySelector('input[name="import-mode"]:checked').value;
   if (mode === 'append') {
