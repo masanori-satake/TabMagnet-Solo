@@ -95,6 +95,48 @@
   "colorOrange": {
     "message": "Orange"
   },
+  "colorMagenta": {
+    "message": "Magenta"
+  },
+  "colorTeal": {
+    "message": "Teal"
+  },
+  "colorWhite": {
+    "message": "White"
+  },
+  "colorBlack": {
+    "message": "Black"
+  },
+  "colorBrown": {
+    "message": "Brown"
+  },
+  "colorGreyEdge": {
+    "message": "Grey"
+  },
+  "colorBlueEdge": {
+    "message": "Blue"
+  },
+  "colorRedEdge": {
+    "message": "Purple (Magenta)"
+  },
+  "colorYellowEdge": {
+    "message": "Yellow"
+  },
+  "colorGreenEdge": {
+    "message": "Teal"
+  },
+  "colorPinkEdge": {
+    "message": "Pink"
+  },
+  "colorPurpleEdge": {
+    "message": "Purple"
+  },
+  "colorCyanEdge": {
+    "message": "Royal blue"
+  },
+  "colorOrangeEdge": {
+    "message": "Orange"
+  },
   "settings": {
     "message": "Settings"
   },

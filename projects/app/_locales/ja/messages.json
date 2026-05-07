@@ -95,6 +95,48 @@
   "colorOrange": {
     "message": "オレンジ"
   },
+  "colorMagenta": {
+    "message": "マゼンタ"
+  },
+  "colorTeal": {
+    "message": "青緑"
+  },
+  "colorWhite": {
+    "message": "ホワイト"
+  },
+  "colorBlack": {
+    "message": "ブラック"
+  },
+  "colorBrown": {
+    "message": "ブラウン"
+  },
+  "colorGreyEdge": {
+    "message": "灰色"
+  },
+  "colorBlueEdge": {
+    "message": "青"
+  },
+  "colorRedEdge": {
+    "message": "紫 (赤紫)"
+  },
+  "colorYellowEdge": {
+    "message": "黄色"
+  },
+  "colorGreenEdge": {
+    "message": "青緑"
+  },
+  "colorPinkEdge": {
+    "message": "ピンク"
+  },
+  "colorPurpleEdge": {
+    "message": "紫"
+  },
+  "colorCyanEdge": {
+    "message": "紺青色"
+  },
+  "colorOrangeEdge": {
+    "message": "オレンジ"
+  },
   "settings": {
     "message": "設定"
   },

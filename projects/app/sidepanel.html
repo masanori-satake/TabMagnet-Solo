@@ -37,7 +37,7 @@
       --md-sys-typescale-title-medium: 500 16px/24px Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
       --md-sys-typescale-headline-small: 400 24px/32px Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
 
-      /* Chrome Tab Group Colors */
+      /* Chrome Tab Group Colors (9 IDs) */
       --tg-color-grey: #5F6368;
       --tg-color-blue: #1A73E8;
       --tg-color-red: #D93025;
@@ -47,6 +47,19 @@
       --tg-color-purple: #9334E6;
       --tg-color-cyan: #007B83;
       --tg-color-orange: #E8710A;
+    }
+
+    /* Edge-specific color overrides for the same 9 IDs */
+    body.edge-mode {
+      --tg-color-blue: #0078D4;   /* Blue */
+      --tg-color-pink: #E3008C;   /* Pink */
+      --tg-color-purple: #5C2D91; /* Purple */
+      --tg-color-red: #B4009E;    /* Purple (Magenta) - API: red */
+      --tg-color-cyan: #004E8C;   /* Royal blue - API: cyan */
+      --tg-color-green: #008272;  /* Teal - API: green */
+      --tg-color-orange: #D83B01; /* Orange */
+      --tg-color-yellow: #FFB900; /* Yellow */
+      --tg-color-grey: #737373;   /* Grey */
     }
 
     body {
@@ -117,7 +130,8 @@
     .icon-button:hover .tooltip,
     .tab-item:hover .tooltip,
     .switch-label:hover .tooltip,
-    .radio-option:hover .tooltip {
+    .radio-option:hover .tooltip,
+    .color-option:hover .tooltip {
       display: block;
     }
 
@@ -328,6 +342,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      position: relative;
     }
 
     .color-option.selected {
@@ -603,7 +618,7 @@
       cursor: default;
     }
 
-    /* Color classes */
+    /* Color classes for standard 9 IDs */
     .bg-grey { background-color: var(--tg-color-grey); }
     .bg-blue { background-color: var(--tg-color-blue); }
     .bg-red { background-color: var(--tg-color-red); }
@@ -724,16 +739,8 @@
           <input type="text" id="new-name" placeholder=" " required>
           <label data-i18n="placeholderGroupName"></label>
         </div>
-        <div class="color-selection">
-          <div class="color-option bg-grey" data-color="grey"><svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20"><path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"/></svg></div>
-          <div class="color-option bg-blue" data-color="blue"><svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20"><path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"/></svg></div>
-          <div class="color-option bg-red" data-color="red"><svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20"><path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"/></svg></div>
-          <div class="color-option bg-yellow" data-color="yellow"><svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20"><path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"/></svg></div>
-          <div class="color-option bg-green" data-color="green"><svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20"><path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"/></svg></div>
-          <div class="color-option bg-pink" data-color="pink"><svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20"><path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"/></svg></div>
-          <div class="color-option bg-purple" data-color="purple"><svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20"><path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"/></svg></div>
-          <div class="color-option bg-cyan" data-color="cyan"><svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20"><path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"/></svg></div>
-          <div class="color-option bg-orange" data-color="orange"><svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20"><path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"/></svg></div>
+        <div id="color-selection" class="color-selection">
+          <!-- カラーオプションはJavaScriptで動的に生成されます -->
         </div>
         <div class="pattern-list-label" data-i18n="labelUrlPattern"></div>
         <div id="pattern-list-container" class="pattern-list-container">
@@ -904,6 +911,16 @@
 
   <input type="file" id="file-input" class="hidden" accept=".json">
   <div id="toast" class="toast"></div>
+
+  <template id="color-option-template">
+    <div class="color-option">
+      <span class="tooltip"></span>
+      <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20">
+        <path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"/>
+      </svg>
+    </div>
+  </template>
+
   <script type="module" src="sidepanel.js"></script>
 </body>
 </html>
