@@ -45,23 +45,34 @@ export function showTargetModal(index = null) {
  */
 function renderColorOptions() {
   const container = document.getElementById('color-selection');
-  if (!container) return;
+  const template = document.getElementById('color-option-template');
+  if (!container || !template) return;
 
+  container.innerHTML = ''; // 既存の要素をクリア
   const supportedColors = isEdge() ? COLORS_EDGE : COLORS_CHROME;
-  container.innerHTML = supportedColors.map(color => `
-    <div class="color-option bg-${color}" data-color="${color}">
-      <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20">
-        <path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"/>
-      </svg>
-    </div>
-  `).join('');
 
-  // イベントリスナーの再設定
-  container.querySelectorAll('.color-option').forEach(opt => {
-    opt.addEventListener('click', () => {
-      selectColor(opt.dataset.color);
+  supportedColors.forEach(color => {
+    const clone = template.content.cloneNode(true);
+    const option = clone.querySelector('.color-option');
+    const tooltip = clone.querySelector('.tooltip');
+
+    option.classList.add(`bg-${color}`);
+    option.dataset.color = color;
+
+    // i18n メッセージキーの組み立て (e.g. colorGrey, colorMagenta)
+    let labelKey = 'color' + color.charAt(0).toUpperCase() + color.slice(1);
+    // Edgeの特定の色の名称を調整
+    if (isEdge() && color === 'cyan') labelKey = 'colorCyanEdge';
+
+    const label = chrome.i18n.getMessage(labelKey) || color;
+    if (tooltip) tooltip.textContent = label;
+
+    option.addEventListener('click', () => {
+      selectColor(color);
       hideModalFeedback();
     });
+
+    container.appendChild(option);
   });
 }
 

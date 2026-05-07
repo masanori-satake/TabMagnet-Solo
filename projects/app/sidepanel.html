@@ -123,7 +123,8 @@
     .icon-button:hover .tooltip,
     .tab-item:hover .tooltip,
     .switch-label:hover .tooltip,
-    .radio-option:hover .tooltip {
+    .radio-option:hover .tooltip,
+    .color-option:hover .tooltip {
       display: block;
     }
 
@@ -334,6 +335,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      position: relative;
     }
 
     .color-option.selected {
@@ -621,7 +623,7 @@
     .bg-orange { background-color: var(--tg-color-orange); }
     .bg-white {
       background-color: var(--tg-color-white);
-      border: 1px solid var(--md-sys-color-outline-variant) !important;
+      border: 2px solid var(--md-sys-color-outline-variant);
     }
     .bg-black { background-color: var(--tg-color-black); }
     .bg-brown { background-color: var(--tg-color-brown); }
@@ -910,6 +912,16 @@
 
   <input type="file" id="file-input" class="hidden" accept=".json">
   <div id="toast" class="toast"></div>
+
+  <template id="color-option-template">
+    <div class="color-option">
+      <span class="tooltip"></span>
+      <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20">
+        <path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"/>
+      </svg>
+    </div>
+  </template>
+
   <script type="module" src="sidepanel.js"></script>
 </body>
 </html>

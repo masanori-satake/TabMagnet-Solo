@@ -13,7 +13,6 @@ import {
   addPatternInput,
   hideModalFeedback,
   showModalFeedback,
-  selectColor,
   handlePatternDragOver
 } from './ui/modal-target.js';
 import {
@@ -154,6 +153,8 @@ function setupEventListeners() {
 
   newNameInput.addEventListener('input', hideModalFeedback);
 
+  // カラーオプションのイベントリスナーは modal-target.js 内の renderColorOptions で設定されます
+
   patternListContainer.addEventListener('dragover', handlePatternDragOver);
 
   // 設定モーダル
@@ -291,24 +292,22 @@ async function handleAddFromDomain() {
 
 /**
  * データのインポート処理共通
- * @param {Object} data - インポートするJSONデータ
+ * @param {Object} data - インポートする JSON データ
  */
 async function importData(data) {
-  let importedTargets = [];
-  let importedSettings = { ...DEFAULT_SETTINGS };
-
-  if (data && typeof data === 'object' && !Array.isArray(data)) {
-    importedTargets = Array.isArray(data.targets) ? data.targets : [];
-    importedSettings = { ...importedSettings, ...(data.settings || {}) };
-  } else {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) {
     throw new Error('Invalid format');
   }
 
-  // インポート時にブラウザ互換の色に変換
-  importedTargets = importedTargets.map(target => ({
+  // インポートするターゲットの取得とブラウザ互換色への変換
+  const targets = Array.isArray(data.targets) ? data.targets : [];
+  const importedTargets = targets.map(target => ({
     ...target,
     color: target.color ? getCompatibleColor(target.color) : 'grey'
   }));
+
+  // 設定の取得
+  const importedSettings = { ...DEFAULT_SETTINGS, ...(data.settings || {}) };
 
   const mode = document.querySelector('input[name="import-mode"]:checked').value;
   if (mode === 'append') {

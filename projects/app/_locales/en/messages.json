@@ -95,6 +95,21 @@
   "colorOrange": {
     "message": "Orange"
   },
+  "colorMagenta": {
+    "message": "Magenta"
+  },
+  "colorTeal": {
+    "message": "Teal"
+  },
+  "colorWhite": {
+    "message": "White"
+  },
+  "colorBlack": {
+    "message": "Black"
+  },
+  "colorBrown": {
+    "message": "Brown"
+  },
   "settings": {
     "message": "Settings"
   },

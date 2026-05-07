@@ -92,8 +92,26 @@
   "colorCyan": {
     "message": "シアン"
   },
+  "colorCyanEdge": {
+    "message": "紺青色"
+  },
   "colorOrange": {
     "message": "オレンジ"
+  },
+  "colorMagenta": {
+    "message": "マゼンタ"
+  },
+  "colorTeal": {
+    "message": "青緑"
+  },
+  "colorWhite": {
+    "message": "ホワイト"
+  },
+  "colorBlack": {
+    "message": "ブラック"
+  },
+  "colorBrown": {
+    "message": "ブラウン"
   },
   "settings": {
     "message": "設定"

@@ -22,17 +22,18 @@ export const ALL_COLORS = [
 ];
 
 /**
- * ChromeのUIで一般的に選択可能なカラー（9色）
+ * ChromeのUIで選択可能なカラー（9色）
  */
 export const COLORS_CHROME = [
   'grey', 'blue', 'red', 'yellow', 'green', 'pink', 'purple', 'cyan', 'orange'
 ];
 
 /**
- * EdgeのUIで一般的に選択可能なカラー（9色）
+ * EdgeのUIで選択可能なカラー（9色）
  * ユーザーフィードバックに基づくマッピング：
  * 灰色(grey), 青(blue), 黄色(yellow), ピンク(pink), 紫(purple),
- * 紫/赤紫(magenta), 紺青色(cyan?), 青緑(teal), オレンジ(orange)
+ * 紫/赤紫(magenta), 紺青色(cyan), 青緑(teal), オレンジ(orange)
+ * ※Edgeには「赤」「緑」の代わりに「マゼンタ」「青緑」がUI上に存在する
  */
 export const COLORS_EDGE = [
   'grey', 'blue', 'yellow', 'pink', 'purple', 'magenta', 'cyan', 'teal', 'orange'
@@ -49,7 +50,7 @@ export const COLOR_COMPATIBILITY_MAP = {
   // Edge -> Chrome
   'magenta': 'red',
   'teal': 'green',
-  // その他(Edge固有等) -> Chrome/Default
+  // その他(API上は存在するがUIにない色) -> 各ブラウザの標準パレットへ
   'brown': 'orange',
   'white': 'grey',
   'black': 'grey'
