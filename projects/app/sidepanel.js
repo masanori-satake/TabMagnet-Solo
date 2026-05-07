@@ -13,7 +13,6 @@ import {
   addPatternInput,
   hideModalFeedback,
   showModalFeedback,
-  selectColor,
   handlePatternDragOver
 } from './ui/modal-target.js';
 import {
@@ -26,7 +25,13 @@ import {
   showDeleteDialog,
   hideDeleteDialog
 } from './ui/dialog-delete.js';
-import { getExportTimestamp, DEFAULT_SETTINGS, isSpecialPage } from './ui/utils.js';
+import {
+  getExportTimestamp,
+  DEFAULT_SETTINGS,
+  isSpecialPage,
+  getCompatibleColor,
+  isEdge
+} from './ui/utils.js';
 
 // DOM elements
 const targetListEl = document.getElementById('target-list');
@@ -39,7 +44,6 @@ const targetModalScrim = document.getElementById('target-modal-scrim');
 const newNameInput = document.getElementById('new-name');
 const patternListContainer = document.getElementById('pattern-list-container');
 const addPatternBtn = document.getElementById('add-pattern-btn');
-const colorOptions = document.querySelectorAll('.color-option');
 const deleteTargetBtn = document.getElementById('delete-target-btn');
 const cancelTargetBtn = document.getElementById('cancel-target-btn');
 const saveTargetBtn = document.getElementById('save-target-btn');
@@ -69,6 +73,9 @@ const confirmDeleteOkBtn = document.getElementById('confirm-delete-ok-btn');
  * 初期化処理
  */
 export async function init() {
+  if (isEdge()) {
+    document.body.classList.add('edge-mode');
+  }
   applyI18n();
   await loadState();
 
@@ -150,12 +157,7 @@ function setupEventListeners() {
 
   newNameInput.addEventListener('input', hideModalFeedback);
 
-  colorOptions.forEach(opt => {
-    opt.addEventListener('click', () => {
-      selectColor(opt.dataset.color);
-      hideModalFeedback();
-    });
-  });
+  // カラーオプションのイベントリスナーは modal-target.js 内の renderColorOptions で設定されます
 
   patternListContainer.addEventListener('dragover', handlePatternDragOver);
 
@@ -294,18 +296,22 @@ async function handleAddFromDomain() {
 
 /**
  * データのインポート処理共通
- * @param {Object} data - インポートするJSONデータ
+ * @param {Object} data - インポートする JSON データ
  */
 async function importData(data) {
-  let importedTargets = [];
-  let importedSettings = { ...DEFAULT_SETTINGS };
-
-  if (data && typeof data === 'object' && !Array.isArray(data)) {
-    importedTargets = Array.isArray(data.targets) ? data.targets : [];
-    importedSettings = { ...importedSettings, ...(data.settings || {}) };
-  } else {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) {
     throw new Error('Invalid format');
   }
+
+  // インポートするターゲットの取得とブラウザ互換色への変換
+  const targets = Array.isArray(data.targets) ? data.targets : [];
+  const importedTargets = targets.map(target => ({
+    ...target,
+    color: target.color ? getCompatibleColor(target.color) : 'grey'
+  }));
+
+  // 設定の取得
+  const importedSettings = { ...DEFAULT_SETTINGS, ...(data.settings || {}) };
 
   const mode = document.querySelector('input[name="import-mode"]:checked').value;
   if (mode === 'append') {

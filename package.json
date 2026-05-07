@@ -1,6 +1,6 @@
 {
   "name": "tabmagnet-solo",
-  "version": "1.5.3",
+  "version": "1.6.1",
   "private": true,
   "description": "Magnetically aggregate specific tabs into the current window and maintain singleton groups.",
   "type": "module",

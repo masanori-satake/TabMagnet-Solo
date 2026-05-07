@@ -1,6 +1,8 @@
 import { state } from './state.js';
 import { escapeHtml } from './list-renderer.js';
 import { applyI18n } from './i18n.js';
+import { isEdge } from './utils.js';
+import { COLORS_CHROME, COLORS_EDGE } from './constants.js';
 
 /**
  * ターゲット追加・編集モーダルの表示
@@ -12,6 +14,9 @@ export function showTargetModal(index = null) {
   const newNameInput = document.getElementById('new-name');
   const patternListContainer = document.getElementById('pattern-list-container');
   const deleteTargetBtn = document.getElementById('delete-target-btn');
+
+  // ブラウザに合わせてカラーオプションを動的に生成
+  renderColorOptions();
 
   state.currentEditIndex = index;
   if (patternListContainer) patternListContainer.innerHTML = '';
@@ -33,6 +38,48 @@ export function showTargetModal(index = null) {
     if (deleteTargetBtn) deleteTargetBtn.classList.add('hidden');
   }
   if (targetModalScrim) targetModalScrim.style.display = 'flex';
+}
+
+/**
+ * カラーオプションを動的に生成・表示する
+ */
+function renderColorOptions() {
+  const container = document.getElementById('color-selection');
+  const template = document.getElementById('color-option-template');
+  if (!container || !template) return;
+
+  container.innerHTML = ''; // 既存の要素をクリア
+  const supportedColors = isEdge() ? COLORS_EDGE : COLORS_CHROME;
+
+  supportedColors.forEach(color => {
+    const clone = template.content.cloneNode(true);
+    const option = clone.querySelector('.color-option');
+    const tooltip = clone.querySelector('.tooltip');
+
+    option.classList.add(`bg-${color}`);
+    option.dataset.color = color;
+
+    // i18n メッセージキーの組み立て (e.g. colorGrey, colorMagenta)
+    const colorCap = color.charAt(0).toUpperCase() + color.slice(1);
+    let labelKey = 'color' + colorCap;
+
+    // EdgeのUI名に準拠するための調整
+    if (isEdge()) {
+      const edgeKey = 'color' + colorCap + 'Edge';
+      const edgeMsg = chrome.i18n.getMessage(edgeKey);
+      if (edgeMsg) labelKey = edgeKey;
+    }
+
+    const label = chrome.i18n.getMessage(labelKey) || color;
+    if (tooltip) tooltip.textContent = label;
+
+    option.addEventListener('click', () => {
+      selectColor(color);
+      hideModalFeedback();
+    });
+
+    container.appendChild(option);
+  });
 }
 
 /**
