@@ -69,6 +69,12 @@ const deleteDialogScrim = document.getElementById('delete-dialog-scrim');
 const confirmDeleteCancelBtn = document.getElementById('confirm-delete-cancel-btn');
 const confirmDeleteOkBtn = document.getElementById('confirm-delete-ok-btn');
 
+// Paste Import Modal elements
+const pasteImportModalScrim = document.getElementById('paste-import-modal-scrim');
+const pasteImportTextarea = document.getElementById('paste-import-textarea');
+const cancelPasteImportBtn = document.getElementById('cancel-paste-import-btn');
+const confirmPasteImportBtn = document.getElementById('confirm-paste-import-btn');
+
 /**
  * 初期化処理
  */
@@ -203,13 +209,18 @@ function setupEventListeners() {
   confirmDeleteCancelBtn.addEventListener('click', hideDeleteDialog);
   confirmDeleteOkBtn.addEventListener('click', handleConfirmDelete);
 
+  // ペーストインポートモーダル
+  cancelPasteImportBtn.addEventListener('click', hidePasteImportModal);
+  confirmPasteImportBtn.addEventListener('click', handleConfirmPasteImport);
+
   // モーダル外側クリック
-  [targetModalScrim, settingsModalScrim, deleteDialogScrim].forEach(scrim => {
+  [targetModalScrim, settingsModalScrim, deleteDialogScrim, pasteImportModalScrim].forEach(scrim => {
     scrim.addEventListener('click', (e) => {
       if (e.target === scrim) {
         if (scrim === targetModalScrim) hideTargetModal();
         if (scrim === settingsModalScrim) hideSettingsModal();
         if (scrim === deleteDialogScrim) hideDeleteDialog();
+        if (scrim === pasteImportModalScrim) hidePasteImportModal();
       }
     });
   });
@@ -327,21 +338,48 @@ async function importData(data) {
 }
 
 /**
+ * テキストペーストモーダルの表示/非表示
+ */
+function showPasteImportModal() {
+  if (pasteImportTextarea) pasteImportTextarea.value = '';
+  if (pasteImportModalScrim) pasteImportModalScrim.style.display = 'flex';
+}
+
+function hidePasteImportModal() {
+  if (pasteImportModalScrim) pasteImportModalScrim.style.display = 'none';
+}
+
+/**
+ * 手動ペーストモーダルからのインポート実行
+ */
+async function handleConfirmPasteImport() {
+  const text = pasteImportTextarea.value.trim();
+  if (!text) return;
+  try {
+    const data = JSON.parse(text);
+    await importData(data);
+    hidePasteImportModal();
+  } catch (err) {
+    showToast(chrome.i18n.getMessage('importError'));
+  }
+}
+
+/**
  * クリップボードからのインポート
- * ユーザーのボタン操作イベント内で safe に navigator.clipboard.readText() を呼び出す
+ * readText が使用できない、または権限エラーの場合手動ペーストダイアログを表示
  */
 async function handlePasteImport() {
   try {
     if (!navigator.clipboard || !navigator.clipboard.readText) {
-      showToast(chrome.i18n.getMessage('importError'));
+      showPasteImportModal();
       return;
     }
     const text = await navigator.clipboard.readText();
     const data = JSON.parse(text);
     await importData(data);
   } catch (err) {
-    console.warn('Clipboard read failed or permission denied:', err);
-    showToast(chrome.i18n.getMessage('importError'));
+    // 権限不足や API 未サポート時は手動ペースト用ダイアログを表示
+    showPasteImportModal();
   }
 }
 

@@ -191,6 +191,12 @@
   "pasteImport": {
     "message": "貼り付け (Import)"
   },
+  "pasteImportTitle": {
+    "message": "クリップボードからインポート"
+  },
+  "pasteImportPlaceholder": {
+    "message": "エクスポートされたJSONデータをここに貼り付けてください..."
+  },
   "fileExport": {
     "message": "ファイル出力"
   },

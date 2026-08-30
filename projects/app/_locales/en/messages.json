@@ -191,6 +191,12 @@
   "pasteImport": {
     "message": "Paste (Import)"
   },
+  "pasteImportTitle": {
+    "message": "Import from Clipboard"
+  },
+  "pasteImportPlaceholder": {
+    "message": "Paste exported JSON data here..."
+  },
   "fileExport": {
     "message": "File Export"
   },

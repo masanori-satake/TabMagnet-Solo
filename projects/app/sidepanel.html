@@ -968,6 +968,20 @@
     </div>
   </div>
 
+  <!-- Paste Import Modal -->
+  <div id="paste-import-modal-scrim" class="scrim">
+    <div class="modal">
+      <div class="modal-title" data-i18n="pasteImportTitle"></div>
+      <div class="modal-content">
+        <textarea id="paste-import-textarea" style="width: 100%; height: 120px; border: 1px solid var(--md-sys-color-outline); border-radius: 8px; padding: 8px; background: transparent; color: var(--md-sys-color-on-surface); font: var(--md-sys-typescale-body-medium); resize: vertical; box-sizing: border-box; outline: none;" data-i18n-placeholder="pasteImportPlaceholder"></textarea>
+      </div>
+      <div class="modal-actions">
+        <button id="cancel-paste-import-btn" class="text-button" data-i18n="cancel"></button>
+        <button id="confirm-paste-import-btn" class="text-button" data-i18n="pasteImport" style="background-color: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container);"></button>
+      </div>
+    </div>
+  </div>
+
   <input type="file" id="file-input" class="hidden" accept=".json">
   <div id="toast" class="toast"></div>
 
