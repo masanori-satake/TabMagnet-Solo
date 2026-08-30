@@ -4,15 +4,29 @@
 [![Coverage](https://img.shields.io/badge/coverage-50%25-red)](https://masanori-satake.github.io/TabMagnet-Solo/coverage/)
 [![Privacy-Local Only](https://img.shields.io/badge/Privacy-Local%20Only-brightgreen)](AGENTS.md)
 [![Manifest V3](https://img.shields.io/badge/Manifest-V3-orange)](projects/app/manifest.json)
+[![Chromebook Optimized](https://img.shields.io/badge/Chromebook-Optimized-skyblue)](#chromebook--mobile-environment-friendly)
+[![100% Offline](https://img.shields.io/badge/100%25-Offline%2FLocal--Only-success)](#chromebook--mobile-environment-friendly)
+[![Touch & Tablet Ready](https://img.shields.io/badge/Touch%20%26%20Tablet-Ready-purple)](#chromebook--mobile-environment-friendly)
+[![Pure Vanilla JS](https://img.shields.io/badge/Pure%20Vanilla%20JS-Zero%20Dependencies-informational)](#chromebook--mobile-environment-friendly)
 
 〜特定のタブを磁石のように現在のウィンドウへ一括集約するローカル完結型Chrome拡張機能〜
 
 ## プロジェクト概要
 
 TabMagnet-Soloは、プライバシーを最優先に設計された、タブ管理支援ツールです。
+WindowsやmacOSをはじめ、メモリ制限のあるChromebookやタブレット環境でも圧倒的に快適に動作します。
 複数のブラウザウィンドウに散らばった特定のタブ（例: Jira, Slack, 社内ツール等）を、磁石のように現在のウィンドウへ一括集約し、グループ化して管理します。
 
 設計思想や行動指針については [AGENTS.md](AGENTS.md) を参照してください。
+
+## Chromebook & Mobile Environment Friendly
+
+TabMagnet-Soloは、Pure Vanilla JS（ゼロ依存）とローカル完結設計を追求することで、あらゆるデバイスや動作環境でパフォーマンスと信頼性を発揮します。特に、教育・オフィス現場でのChromebook利用やタブレットモード等での快適な操作性を実現しています。
+
+* **低スペック・低メモリ環境での高速動作**: 外部ライブラリを一切排除した超軽量設計のため、メモリ制限のあるデバイスや教育用Chromebookでも負荷をかけずサクサク動作します。
+* **100% ローカル完結 & オフライン動作**: 外部サーバー通信を一切行わないため、学校やオフィスの帯域制限環境・オフライン環境でもすべての機能が確実に利用できます。
+* **タッチ＆モバイル操作への最適化**: タップ誤作動を防ぐ48x48pxの標準タッチターゲット設計や、OSの仮想キーボード表示時にも表示が崩れないレスポンシブUIを採用しています。
+* **組織管理（Chrome Enterprise）配慮**: 拡張機能に必要な権限を最小限（`tabs`, `tabGroups`, `storage`, `sidePanel`）に留めており、厳しい組織管理ポリシー配下でも安全に導入・利用できます。
 
 ## 特徴
 

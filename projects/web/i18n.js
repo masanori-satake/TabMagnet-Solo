@@ -8,11 +8,14 @@ const translations = {
     cta: "Add to Chrome Web Store",
     projectOverview: "Project Overview",
     overviewText:
-      "TabMagnet-Solo is a tab management tool designed with privacy as the top priority. It identifies specific tabs (e.g., Jira, Slack) scattered across multiple windows based on URL patterns and aggregates them into the current window as a group.",
+      "TabMagnet-Solo is a tab management tool engineered for high privacy and ultimate lightweight performance. It runs seamlessly on Windows, macOS, Chromebooks, and tablet environments alike. It identifies specific tabs (e.g., Jira, Slack) scattered across multiple windows based on URL patterns and aggregates them into the current window as a group.",
     features: "Features",
     featureAggregation: "Smart Aggregation",
     featureAggregationText:
       "Scans all windows and moves tabs matching specified URL patterns to the current window instantly.",
+    featureLightweight: "High Performance & Reliability",
+    featureLightweightText:
+      "Zero-dependency design with Pure Vanilla JS. Operates smoothly and stably even in low-memory Chromebooks, touch/tablet modes, and offline or bandwidth-restricted school/office environments.",
     featureLocal: "Complete Local Execution",
     featureLocalText:
       "All data is stored within the browser's chrome.storage.local. No data is ever sent to external servers, protecting your privacy.",
@@ -73,11 +76,14 @@ const translations = {
     cta: "Chrome ウェブストアで追加",
     projectOverview: "プロジェクト概要",
     overviewText:
-      "TabMagnet-Soloは、プライバシーを最優先に設計されたタブ管理ツールです。複数のウィンドウに散らばった特定のタブ（例: Jira, Slack, 社内ツール等）をURLパターンで識別し、磁石のように現在のウィンドウへ一括集約してグループ化します。",
+      "TabMagnet-Soloは、プライバシーと圧倒的な軽量さを追求して設計されたタブ管理ツールです。WindowsやmacOSはもちろん、低メモリなChromebookやタブレット環境でも快適に動作。複数のウィンドウに散らばった特定のタブ（例: Jira, Slack, 社内ツール等）をURLパターンで識別し、磁石のように現在のウィンドウへ一括集約してグループ化します。",
     features: "特徴",
     featureAggregation: "スマート集約",
     featureAggregationText:
       "全ウィンドウをスキャンし、指定したURLパターンに一致するタブを即座に現在のウィンドウへ移動します。",
+    featureLightweight: "圧倒的な軽さと信頼性",
+    featureLightweightText:
+      "Pure Vanilla JSによるゼロ依存設計。メモリ制限のあるChromebookや学校・オフィスの帯域制限・オフライン環境、タッチ操作でもスムーズかつ安定して動作します。",
     featureLocal: "完全ローカル実行",
     featureLocalText:
       "すべてのデータはブラウザ内の chrome.storage.local に保存されます。外部サーバーへの送信は一切行われず、プライバシーを強力に保護します。",
