@@ -328,13 +328,19 @@ async function importData(data) {
 
 /**
  * クリップボードからのインポート
+ * ユーザーのボタン操作イベント内で safe に navigator.clipboard.readText() を呼び出す
  */
 async function handlePasteImport() {
   try {
+    if (!navigator.clipboard || !navigator.clipboard.readText) {
+      showToast(chrome.i18n.getMessage('importError'));
+      return;
+    }
     const text = await navigator.clipboard.readText();
     const data = JSON.parse(text);
     await importData(data);
   } catch (err) {
+    console.warn('Clipboard read failed or permission denied:', err);
     showToast(chrome.i18n.getMessage('importError'));
   }
 }

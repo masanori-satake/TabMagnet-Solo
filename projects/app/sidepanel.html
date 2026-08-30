@@ -28,14 +28,14 @@
       --md-sys-color-inverse-surface: #313033;
       --md-sys-color-inverse-on-surface: #F4EFF4;
 
-      --md-sys-typescale-label-small: 500 11px/16px Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
-      --md-sys-typescale-label-medium: 500 12px/16px Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
-      --md-sys-typescale-label-large: 500 14px/20px Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
-      --md-sys-typescale-body-small: 400 12px/16px Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
-      --md-sys-typescale-body-medium: 400 14px/20px Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
-      --md-sys-typescale-title-small: 500 14px/20px Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
-      --md-sys-typescale-title-medium: 500 16px/24px Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
-      --md-sys-typescale-headline-small: 400 24px/32px Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+      --md-sys-typescale-label-small: 500 11px/16px Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+      --md-sys-typescale-label-medium: 500 12px/16px Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+      --md-sys-typescale-label-large: 500 14px/20px Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+      --md-sys-typescale-body-small: 400 12px/16px Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+      --md-sys-typescale-body-medium: 400 14px/20px Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+      --md-sys-typescale-title-small: 500 14px/20px Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+      --md-sys-typescale-title-medium: 500 16px/24px Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+      --md-sys-typescale-headline-small: 400 24px/32px Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
 
       /* Chrome Tab Group Colors (9 IDs) */
       --tg-color-grey: #5F6368;
@@ -75,7 +75,7 @@
       flex-direction: column;
       background-color: var(--md-sys-color-surface);
       color: var(--md-sys-color-on-surface);
-      font-family: Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+      font-family: Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
       overflow: hidden;
     }
 
@@ -133,12 +133,14 @@
       text-align: left;
     }
 
-    .icon-button:hover .tooltip,
-    .tab-item:hover .tooltip,
-    .switch-label:hover .tooltip,
-    .radio-option:hover .tooltip,
-    .color-option:hover .tooltip {
-      display: block;
+    @media (hover: hover) {
+      .icon-button:hover .tooltip,
+      .tab-item:hover .tooltip,
+      .switch-label:hover .tooltip,
+      .radio-option:hover .tooltip,
+      .color-option:hover .tooltip {
+        display: block;
+      }
     }
 
     #settings-btn .tooltip,
