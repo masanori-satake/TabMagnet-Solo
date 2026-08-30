@@ -1,4 +1,4 @@
-import { state } from './state.js';
+import { state, saveTargets } from './state.js';
 import { executeMagnet } from './utils.js';
 import { showToast } from './toast.js';
 
@@ -74,8 +74,57 @@ export function renderTargetList(onEdit) {
       }
     });
 
+    const dragHandle = item.querySelector('.drag-handle');
+    setupTouchDragList(dragHandle, item, targetListEl, onEdit);
+
     targetListEl.appendChild(item);
   });
+}
+
+/**
+ * タッチ操作用ドラッグ＆ドロップの設定（メインリスト用）
+ * @param {HTMLElement} handle - ドラッグハンドル要素
+ * @param {HTMLElement} item - リスト項目要素
+ * @param {HTMLElement} container - 親コンテナ要素
+ * @param {Function} onEdit - 編集コールバック
+ */
+function setupTouchDragList(handle, item, container, onEdit) {
+  let isDragging = false;
+
+  handle.addEventListener('touchstart', (e) => {
+    if (e.touches.length !== 1) return;
+    isDragging = true;
+    item.classList.add('dragging');
+  }, { passive: true });
+
+  handle.addEventListener('touchmove', (e) => {
+    if (!isDragging || e.touches.length !== 1) return;
+    e.preventDefault();
+    const touchY = e.touches[0].clientY;
+    const siblings = [...container.querySelectorAll('.target-list-item:not(.dragging)')];
+    const nextSibling = siblings.find(sibling => {
+      const rect = sibling.getBoundingClientRect();
+      return touchY <= rect.top + rect.height / 2;
+    });
+    if (nextSibling) {
+      container.insertBefore(item, nextSibling);
+    } else {
+      container.appendChild(item);
+    }
+  }, { passive: false });
+
+  const endDrag = async () => {
+    if (!isDragging) return;
+    isDragging = false;
+    item.classList.remove('dragging');
+    const items = [...container.querySelectorAll('.target-list-item')];
+    const newTargets = items.map(el => state.targets[parseInt(el.dataset.index)]);
+    await saveTargets(newTargets);
+    renderTargetList(onEdit);
+  };
+
+  handle.addEventListener('touchend', endDrag);
+  handle.addEventListener('touchcancel', endDrag);
 }
 
 /**
