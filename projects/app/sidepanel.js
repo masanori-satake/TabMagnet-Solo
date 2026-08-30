@@ -314,9 +314,28 @@ async function importData(data) {
     throw new Error('Invalid format');
   }
 
+  // targets が配列であること、および構造が正しいか検証
+  if (!Array.isArray(data.targets)) {
+    throw new Error('Invalid format: targets must be an array');
+  }
+
+  for (const target of data.targets) {
+    if (!target || typeof target !== 'object' || Array.isArray(target)) {
+      throw new Error('Invalid target element');
+    }
+    if (typeof target.name !== 'string' || target.name.trim() === '') {
+      throw new Error('Invalid target name');
+    }
+    const isValidPattern = typeof target.pattern === 'string'
+      ? target.pattern.trim() !== ''
+      : Array.isArray(target.pattern) && target.pattern.length > 0 && target.pattern.every(p => typeof p === 'string' && p.trim() !== '');
+    if (!isValidPattern) {
+      throw new Error('Invalid target pattern');
+    }
+  }
+
   // インポートするターゲットの取得とブラウザ互換色への変換
-  const targets = Array.isArray(data.targets) ? data.targets : [];
-  const importedTargets = targets.map(target => ({
+  const importedTargets = data.targets.map(target => ({
     ...target,
     color: target.color ? getCompatibleColor(target.color) : 'grey'
   }));
