@@ -12,7 +12,7 @@
 
 重要な実装ルールと背景
 
-1. 権限管理: 拡張機能が必要とする権限は最小限に留める。`tabs`, `tabGroups`, `storage`, `sidePanel`, `clipboardRead` を使用する。
+1. 権限管理: 拡張機能が必要とする権限は最小限に留める。`tabs`, `tabGroups`, `storage`, `sidePanel` を使用する。
 2. データ一貫性: 設定データのインポート時は、環境の違いによる不整合を防ぐためのバリデーションを徹底する。
 3. セキュリティ報告: 脆弱性が見つかった場合は、プライベートに報告すること。
 4. Tab Management Logic: `chrome.tabGroups` API を活用し、最新世代のグループを一つだけ維持する。

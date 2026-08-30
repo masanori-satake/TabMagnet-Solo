@@ -151,8 +151,52 @@ export function addPatternInput(value = '') {
   item.addEventListener('dragstart', () => item.classList.add('dragging'));
   item.addEventListener('dragend', () => item.classList.remove('dragging'));
 
+  const dragHandle = item.querySelector('.drag-handle');
+  setupTouchDragPattern(dragHandle, item, patternListContainer);
+
   patternListContainer.appendChild(item);
   applyI18n();
+}
+
+/**
+ * タッチ操作用パターン項目のドラッグ＆ドロップ設定
+ * @param {HTMLElement} handle - ドラッグハンドル要素
+ * @param {HTMLElement} item - パターン項目要素
+ * @param {HTMLElement} container - パターンリストコンテナ要素
+ */
+function setupTouchDragPattern(handle, item, container) {
+  let isDragging = false;
+
+  handle.addEventListener('touchstart', (e) => {
+    if (e.touches.length !== 1) return;
+    isDragging = true;
+    item.classList.add('dragging');
+  }, { passive: true });
+
+  handle.addEventListener('touchmove', (e) => {
+    if (!isDragging || e.touches.length !== 1) return;
+    e.preventDefault();
+    const touchY = e.touches[0].clientY;
+    const siblings = [...container.querySelectorAll('.pattern-item:not(.dragging)')];
+    const nextSibling = siblings.find(sibling => {
+      const rect = sibling.getBoundingClientRect();
+      return touchY <= rect.top + rect.height / 2;
+    });
+    if (nextSibling) {
+      container.insertBefore(item, nextSibling);
+    } else {
+      container.appendChild(item);
+    }
+  }, { passive: false });
+
+  const endDrag = () => {
+    if (!isDragging) return;
+    isDragging = false;
+    item.classList.remove('dragging');
+  };
+
+  handle.addEventListener('touchend', endDrag);
+  handle.addEventListener('touchcancel', endDrag);
 }
 
 /**
