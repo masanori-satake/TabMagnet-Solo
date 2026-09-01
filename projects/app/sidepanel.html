@@ -191,6 +191,7 @@
       flex-shrink: 0;
       min-width: 48px;
       min-height: 48px;
+      touch-action: none;
     }
 
     .drag-handle:active {
@@ -287,18 +288,24 @@
       flex-direction: column;
       gap: 16px;
       box-sizing: border-box;
-      overflow-y: auto;
+      overflow: hidden;
     }
 
     .modal-title {
       font: var(--md-sys-typescale-headline-small);
       color: var(--md-sys-color-on-surface);
+      flex-shrink: 0;
     }
 
     .modal-content {
       display: flex;
       flex-direction: column;
       gap: 16px;
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      padding-right: 4px;
     }
 
     .text-field {
@@ -396,6 +403,7 @@
       justify-content: flex-end;
       gap: 8px;
       margin-top: 8px;
+      flex-shrink: 0;
     }
 
     .text-button {
@@ -561,8 +569,11 @@
       display: flex;
       flex-direction: column;
       gap: 8px;
-      height: 194px;
+      max-height: 194px;
+      min-height: 60px;
+      flex: 1 1 auto;
       overflow-y: auto;
+      overscroll-behavior: contain;
       border: 1px solid var(--md-sys-color-outline-variant);
       border-radius: 8px;
       padding: 8px;
@@ -620,6 +631,7 @@
       gap: 16px;
       box-sizing: border-box;
       overflow-y: auto;
+      overscroll-behavior: contain;
     }
 
     .dialog-title {
@@ -823,14 +835,14 @@
   <!-- Settings Modal -->
   <div id="settings-modal-scrim" class="scrim">
     <div class="modal" style="width: 320px; padding: 16px 24px 24px 24px;">
-      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; margin-bottom: 8px;">
         <div class="modal-title" data-i18n="settings"></div>
         <button id="close-settings-btn" class="icon-button">
           <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="m256-200-56-56 224-224-224-224 56-56 224 224 224-224 56 56-224 224 224 224-56 56-224-224-224 224Z"/></svg>
         </button>
       </div>
 
-      <div class="modal-tabs">
+      <div class="modal-tabs" style="flex-shrink: 0;">
         <div class="tab-item active" data-tab="general">
           <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" fill="currentColor" aria-hidden="true" role="img"><path d="m370-80-16-128q-13-5-24.5-12T307-235l-119 50L78-375l103-78q-1-7-1-13.5v-27q0-6.5 1-13.5L78-585l110-190 119 50q11-8 23-15t24-12l16-128h220l16 128q13 5 24.5 12t22.5 15l119-50 110 190-103 78q1 7 1 13.5v27q0 6.5-2 13.5l103 78-110 190-118-50q-11 8-23 15t-24 12L590-80H370Zm70-80h79l14-106q31-8 57.5-23.5T639-327l99 41 39-68-86-65q5-14 7-29.5t2-31.5q0-16-2-31.5t-7-29.5l86-65-39-68-99 42q-22-23-48.5-38.5T533-694l-13-106h-79l-14 106q-31 8-57.5 23.5T321-633l-99-41-39 68 86 64q-5 15-7 30t-2 32q0 16 2 31t7 30l-86 65 39 68 99-42q22 23 48.5 38.5T427-266l13 106Zm42-180q58 0 99-41t41-99q0-58-41-99t-99-41q-59 0-99.5 41T342-480q0 58 40.5 99t99.5 41Zm-2-140Z"/></svg>
           <span class="tooltip" data-i18n="tabGeneral"></span>
@@ -841,7 +853,7 @@
         </div>
       </div>
 
-      <div id="settings-content">
+      <div id="settings-content" style="flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding-right: 4px;">
         <!-- General Tab Content -->
         <div id="tab-content-general" class="tab-pane">
           <div class="settings-section-title" data-i18n="sectionCommon"></div>
@@ -973,7 +985,7 @@
     <div class="modal">
       <div class="modal-title" data-i18n="pasteImportTitle"></div>
       <div class="modal-content">
-        <textarea id="paste-import-textarea" style="width: 100%; height: 120px; border: 1px solid var(--md-sys-color-outline); border-radius: 8px; padding: 8px; background: transparent; color: var(--md-sys-color-on-surface); font: var(--md-sys-typescale-body-medium); resize: vertical; box-sizing: border-box; outline: none;" data-i18n-placeholder="pasteImportPlaceholder"></textarea>
+        <textarea id="paste-import-textarea" style="width: 100%; min-height: 80px; max-height: 180px; height: 120px; border: 1px solid var(--md-sys-color-outline); border-radius: 8px; padding: 8px; background: transparent; color: var(--md-sys-color-on-surface); font: var(--md-sys-typescale-body-medium); resize: vertical; box-sizing: border-box; outline: none;" data-i18n-placeholder="pasteImportPlaceholder"></textarea>
       </div>
       <div class="modal-actions">
         <button id="cancel-paste-import-btn" class="text-button" data-i18n="cancel"></button>

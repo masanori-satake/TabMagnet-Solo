@@ -171,7 +171,7 @@ function setupTouchDragPattern(handle, item, container) {
     if (e.touches.length !== 1) return;
     isDragging = true;
     item.classList.add('dragging');
-  }, { passive: true });
+  }, { passive: false });
 
   handle.addEventListener('touchmove', (e) => {
     if (!isDragging || e.touches.length !== 1) return;
