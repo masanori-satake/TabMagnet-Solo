@@ -279,8 +279,9 @@
     .modal {
       background-color: var(--md-sys-color-surface-container-highest);
       border-radius: 28px;
-      width: 312px;
-      max-width: 100%;
+      width: calc(100% - 32px);
+      min-width: 280px;
+      max-width: 520px;
       max-height: calc(100vh - 32px);
       max-height: calc(100dvh - 32px);
       padding: 24px;
@@ -583,13 +584,20 @@
     .pattern-item {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 4px;
       background-color: var(--md-sys-color-surface-container-low);
+      border: 1px solid var(--md-sys-color-outline-variant);
       border-radius: 8px;
-      padding: 4px 8px;
+      padding: 0 4px 0 8px;
       height: 48px;
       min-height: 48px;
       box-sizing: border-box;
+      transition: border-color 0.2s ease;
+    }
+
+    .pattern-item:focus-within {
+      border: 2px solid var(--md-sys-color-primary);
+      padding: 0 3px 0 7px;
     }
 
     .execute-btn,
@@ -603,26 +611,23 @@
 
     .pattern-item input {
       flex: 1;
-      height: 32px;
-      border: 1px solid var(--md-sys-color-outline-variant);
-      border-radius: 4px;
-      padding: 0 8px;
+      height: 100%;
+      border: none;
       background-color: transparent;
       color: var(--md-sys-color-on-surface);
       font: var(--md-sys-typescale-body-medium);
       outline: none;
-    }
-
-    .pattern-item input:focus {
-      border-color: var(--md-sys-color-primary);
+      padding: 0 4px;
+      box-sizing: border-box;
     }
 
     /* Dialog */
     .dialog {
       background-color: var(--md-sys-color-surface-container-highest);
       border-radius: 28px;
-      width: 280px;
-      max-width: 100%;
+      width: calc(100% - 32px);
+      min-width: 280px;
+      max-width: 520px;
       max-height: calc(100vh - 32px);
       max-height: calc(100dvh - 32px);
       padding: 24px;
@@ -834,7 +839,7 @@
 
   <!-- Settings Modal -->
   <div id="settings-modal-scrim" class="scrim">
-    <div class="modal" style="width: 320px; padding: 16px 24px 24px 24px;">
+    <div class="modal" style="padding: 16px 24px 24px 24px;">
       <div style="display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; margin-bottom: 8px;">
         <div class="modal-title" data-i18n="settings"></div>
         <button id="close-settings-btn" class="icon-button">
