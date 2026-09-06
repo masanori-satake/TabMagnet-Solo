@@ -15,4 +15,11 @@ export function applyI18n() {
       el.placeholder = message;
     }
   });
+
+  document.querySelectorAll('[data-i18n-aria-label]').forEach(el => {
+    const message = chrome.i18n.getMessage(el.dataset.i18nAriaLabel);
+    if (message) {
+      el.setAttribute('aria-label', message);
+    }
+  });
 }

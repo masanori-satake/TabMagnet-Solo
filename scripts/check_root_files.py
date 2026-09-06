@@ -24,6 +24,7 @@ ALLOWED_DIRS = {
     "node_modules",
     ".git",
     "tests",
+    ".Jules",
 }
 
 
