@@ -14,6 +14,7 @@ describe('ui/i18n.js', () => {
     document.body.innerHTML = `
       <div data-i18n="testKey">Original</div>
       <input data-i18n-placeholder="placeholderKey" placeholder="Original">
+      <button data-i18n-aria-label="cancel" data-i18n-title="cancel"></button>
     `;
   });
 
@@ -21,6 +22,8 @@ describe('ui/i18n.js', () => {
     applyI18n();
     expect(document.querySelector('[data-i18n]').textContent).toBe('msg_testKey');
     expect(document.querySelector('[data-i18n-placeholder]').placeholder).toBe('msg_placeholderKey');
+    expect(document.querySelector('[data-i18n-aria-label]').getAttribute('aria-label')).toBe('msg_cancel');
+    expect(document.querySelector('[data-i18n-title]').getAttribute('title')).toBe('msg_cancel');
   });
 
   test('applyI18n handles missing messages', () => {
