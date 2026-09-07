@@ -45,6 +45,37 @@ export function getCompatibleColor(color) {
   return 'grey'; // フォールバック
 }
 
+// パターンからコンパイルされた正規表現のキャッシュ
+const patternRegexCache = new Map();
+
+/**
+ * URLパターンに応じた正規表現オブジェクトを取得（または生成してキャッシュ）する
+ * 多数のタブ走査時に同一パターンの正規表現再生成・文字列置換コストを削減するための最適化
+ *
+ * @param {string} pattern ユーザー定義のパターン
+ * @returns {RegExp} コンパイル済みの正規表現オブジェクト
+ */
+function getPatternRegex(pattern) {
+  let regex = patternRegexCache.get(pattern);
+  if (!regex) {
+    const normalize = (str) => str.replace(/^https?:\/\//, '').replace(/\/$/, '');
+    const normalizedPattern = normalize(pattern);
+
+    // エスケープ処理: 正規表現の特殊文字をエスケープ（"*" 以外）
+    const escapedPattern = normalizedPattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&');
+    let regexPattern = '^' + escapedPattern.replace(/\*/g, '.*');
+
+    // 末尾が "/*" で終わるパターンの場合、スラッシュなしのドメイン単体にもマッチするように調整
+    if (normalizedPattern.endsWith('/*')) {
+      regexPattern = regexPattern.slice(0, -3) + '(/.*)?';
+    }
+
+    regex = new RegExp(regexPattern);
+    patternRegexCache.set(pattern, regex);
+  }
+  return regex;
+}
+
 /**
  * URLパターンがマッチするか判定する
  *
@@ -60,24 +91,10 @@ export function getCompatibleColor(color) {
 export function matchUrl(url, pattern) {
   if (!url || !pattern) return false;
 
-  // プロトコルと末尾のスラッシュを除去して比較しやすくする
-  const normalize = (str) => str.replace(/^https?:\/\//, '').replace(/\/$/, '');
-  const normalizedUrl = normalize(url);
-  const normalizedPattern = normalize(pattern);
+  const normalizeUrl = (str) => str.replace(/^https?:\/\//, '').replace(/\/$/, '');
+  const normalizedUrl = normalizeUrl(url);
+  const regex = getPatternRegex(pattern);
 
-  // "*" を正規表現の ".*" に変換して判定
-  // エスケープ処理: 正規表現の特殊文字をエスケープ（"*" 以外）
-  const escapedPattern = normalizedPattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&');
-  let regexPattern = '^' + escapedPattern.replace(/\*/g, '.*');
-
-  // 末尾が "/*" で終わるパターンの場合、スラッシュなしのドメイン単体にもマッチするように調整
-  // 例: "example.com/*" が "example.com" (正規化済み) にもマッチするようにする
-  if (normalizedPattern.endsWith('/*')) {
-    // 末尾の "/.*" (3文字) を "(/.*)?" に置換
-    regexPattern = regexPattern.slice(0, -3) + '(/.*)?';
-  }
-
-  const regex = new RegExp(regexPattern);
   return regex.test(normalizedUrl);
 }
 
