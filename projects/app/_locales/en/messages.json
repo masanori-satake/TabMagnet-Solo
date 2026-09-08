@@ -274,5 +274,8 @@
   },
   "importError": {
     "message": "Import failed. Please select data in the correct format."
+  },
+  "syncError": {
+    "message": "Synchronization failed. Sync has been disabled."
   }
 }

@@ -11,6 +11,9 @@ describe('ui/state.js', () => {
         local: {
           get: jest.fn(),
           set: jest.fn().mockResolvedValue({})
+        },
+        sync: {
+          set: jest.fn().mockResolvedValue({})
         }
       }
     };
@@ -51,5 +54,18 @@ describe('ui/state.js', () => {
     expect(chromeMock.storage.local.set).toHaveBeenCalledWith({
       settings: expect.objectContaining({ collapseAfterCollect: true })
     });
+  });
+
+  test('saveTargets propagates sync storage failures', async () => {
+    state.settings.syncEnabled = true;
+    chromeMock.storage.sync.set.mockRejectedValue(new Error('sync failed'));
+
+    await expect(saveTargets([{ name: 'New' }])).rejects.toThrow('sync failed');
+  });
+
+  test('saveSettings propagates sync storage failures', async () => {
+    chromeMock.storage.sync.set.mockRejectedValue(new Error('sync failed'));
+
+    await expect(saveSettings({ syncEnabled: true })).rejects.toThrow('sync failed');
   });
 });

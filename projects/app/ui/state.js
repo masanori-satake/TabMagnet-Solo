@@ -32,6 +32,7 @@ export async function saveTargets(targets) {
       await chrome.storage.sync.set({ targets: state.targets });
     } catch (e) {
       console.warn('Failed to sync targets to chrome.storage.sync:', e);
+      throw e;
     }
   }
 }
@@ -48,6 +49,7 @@ export async function saveSettings(settings) {
       await chrome.storage.sync.set({ settings: state.settings });
     } catch (e) {
       console.warn('Failed to sync settings to chrome.storage.sync:', e);
+      throw e;
     }
   }
 }

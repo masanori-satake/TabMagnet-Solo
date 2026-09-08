@@ -25,6 +25,10 @@ describe('sidepanel logic', () => {
           get: jest.fn().mockResolvedValue({}),
           set: jest.fn().mockResolvedValue({})
         },
+        sync: {
+          get: jest.fn().mockResolvedValue({}),
+          set: jest.fn().mockResolvedValue({})
+        },
         onChanged: {
           addListener: jest.fn()
         }
@@ -107,5 +111,44 @@ describe('sidepanel logic', () => {
     expect(chromeMock.storage.local.set).toHaveBeenCalledWith(expect.objectContaining({
       targets: []
     }));
+  });
+
+  test('sync failure restores local data and disables sync', async () => {
+    const originalTargets = [{ name: 'Local', pattern: ['example.com'], color: 'blue' }];
+    const originalSettings = { collapseAfterCollect: true, syncEnabled: false };
+    chromeMock.storage.local.get.mockResolvedValue({
+      targets: originalTargets,
+      settings: originalSettings
+    });
+    chromeMock.storage.sync.get.mockResolvedValue({
+      targets: [{ name: 'Synced', pattern: ['synced.example'], color: 'red' }],
+      settings: { collapseAfterCollect: false }
+    });
+    chromeMock.storage.sync.set
+      .mockResolvedValueOnce({})
+      .mockResolvedValueOnce({})
+      .mockRejectedValueOnce(new Error('sync failed'));
+
+    const { init } = await import('../projects/app/sidepanel.js');
+    await init();
+
+    const syncSwitch = document.getElementById('sync-enabled-switch');
+    syncSwitch.checked = true;
+    syncSwitch.dispatchEvent(new Event('change'));
+    document.querySelector('input[name="sync-settings-option"][value="from_sync"]').checked = true;
+    document.querySelector('input[name="sync-targets-option"][value="from_sync"]').checked = true;
+    document.getElementById('confirm-sync-btn').click();
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    expect(chromeMock.storage.local.set).toHaveBeenLastCalledWith({
+      settings: expect.objectContaining(originalSettings),
+      targets: originalTargets
+    });
+    expect(chromeMock.storage.sync.set).toHaveBeenCalledTimes(3);
+    expect(syncSwitch.checked).toBe(false);
+    expect(document.getElementById('sync-modal-scrim').style.display).toBe('none');
+    expect(document.getElementById('toast').textContent).toBe('syncError');
+    expect(document.getElementById('target-list').textContent).toContain('Local');
+    expect(document.getElementById('target-list').textContent).not.toContain('Synced');
   });
 });
