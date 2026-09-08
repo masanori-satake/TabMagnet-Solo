@@ -505,8 +505,10 @@ describe('executeMagnet naming and protection', () => {
 
     // Grouping calls for both targets
     expect(chromeMock.tabs.group).toHaveBeenCalledTimes(2);
-    // maintainTMOrder calls tabGroups.move
-    expect(chromeMock.tabGroups.move).toHaveBeenCalled();
+    // maintainTMOrder moves the target groups in target-list order.
+    expect(chromeMock.tabGroups.move).toHaveBeenCalledTimes(2);
+    expect(chromeMock.tabGroups.move).toHaveBeenNthCalledWith(1, 100, { index: -1 });
+    expect(chromeMock.tabGroups.move).toHaveBeenNthCalledWith(2, 200, { index: -1 });
   });
 
   test('should handle dissolve error gracefully', async () => {
