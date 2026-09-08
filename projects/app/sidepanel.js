@@ -301,12 +301,6 @@ async function handleConfirmSync() {
 
   if (!selectedSettings || !selectedTargets) return;
 
-  const previousSettings = { ...state.settings };
-  const previousTargets = state.targets.map(target => ({
-    ...target,
-    pattern: Array.isArray(target.pattern) ? [...target.pattern] : target.pattern
-  }));
-
   try {
     const syncData = await chrome.storage.sync.get(['settings', 'targets']);
 
@@ -342,24 +336,7 @@ async function handleConfirmSync() {
     hideSyncModal();
   } catch (e) {
     console.error('Failed to initialize sync:', e);
-    const restoredSettings = { ...previousSettings, syncEnabled: false };
-    state.settings = restoredSettings;
-    state.targets = previousTargets;
-
-    try {
-      await chrome.storage.local.set({
-        settings: restoredSettings,
-        targets: previousTargets
-      });
-    } catch (rollbackError) {
-      console.error('Failed to restore local data after sync error:', rollbackError);
-    }
-
-    syncEnabledSwitch.checked = false;
-    renderSettingsUI();
-    renderTargetList(showTargetModal);
-    hideSyncModal();
-    showToast(chrome.i18n.getMessage('syncError'));
+    handleCancelSync();
   }
 }
 
