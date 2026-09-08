@@ -1,5 +1,5 @@
 import { state, saveTargets } from './state.js';
-import { executeMagnet } from './utils.js';
+import { executeMagnet, executeAllMagnets } from './utils.js';
 import { showToast } from './toast.js';
 
 /**
@@ -22,12 +22,54 @@ export function renderTargetList(onEdit) {
   const targetListEl = document.getElementById('target-list');
   targetListEl.innerHTML = '';
 
-  if (state.targets.length === 0) {
-    targetListEl.innerHTML = `<div style="padding: 32px; text-align: center; color: var(--md-sys-color-on-surface-variant); font: var(--md-sys-typescale-body-medium);">${chrome.i18n.getMessage('noTargets')}</div>`;
-    return;
+  const labelExecute = chrome.i18n.getMessage('summonMagnet');
+  const labelMagnetAll = chrome.i18n.getMessage('magnetAll');
+
+  // 1. 先頭に固定の "Magnet All" 行を追加
+  const allItem = document.createElement('div');
+  allItem.className = 'target-list-item magnet-all-item';
+  allItem.dataset.static = 'true';
+
+  const isAllDisabled = state.targets.length === 0;
+
+  allItem.innerHTML = `
+    <div class="drag-handle" style="visibility: hidden;"></div>
+    <div class="target-info">
+      <div class="target-color-chip" style="visibility: hidden;"></div>
+      <div class="target-name" style="font-weight: 500;">${escapeHtml(labelMagnetAll)}</div>
+    </div>
+    <div class="target-actions">
+      <button class="icon-button execute-all-btn ${isAllDisabled ? 'disabled' : ''}" ${isAllDisabled ? 'disabled' : ''}>
+        <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24" fill="currentColor">
+          <path d="M5 2h4v3H5V2zm10 0h4v3h-4V2zM5 6v8c0 3.87 3.13 7 7 7s7-3.13 7-7V6h-4v8c0 1.66-1.34 3-3 3s-3-1.34-3-3V6H5z"/>
+        </svg>
+        <span class="tooltip">${labelExecute}</span>
+      </button>
+    </div>
+  `;
+
+  const executeAllBtn = allItem.querySelector('.execute-all-btn');
+  if (!isAllDisabled) {
+    executeAllBtn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      try {
+        await executeAllMagnets(state.targets);
+      } catch (err) {
+        console.error('Magnet All execution failed:', err);
+        showToast(chrome.i18n.getMessage('errorExecutionFailed'));
+      }
+    });
   }
 
-  const labelExecute = chrome.i18n.getMessage('summonMagnet');
+  targetListEl.appendChild(allItem);
+
+  if (state.targets.length === 0) {
+    const noTargetsEl = document.createElement('div');
+    noTargetsEl.style.cssText = 'padding: 32px; text-align: center; color: var(--md-sys-color-on-surface-variant); font: var(--md-sys-typescale-body-medium);';
+    noTargetsEl.textContent = chrome.i18n.getMessage('noTargets');
+    targetListEl.appendChild(noTargetsEl);
+    return;
+  }
 
   state.targets.forEach((target, index) => {
     const item = document.createElement('div');
@@ -101,7 +143,7 @@ function setupTouchDragList(handle, item, container, onEdit) {
     if (!isDragging || e.touches.length !== 1) return;
     e.preventDefault();
     const touchY = e.touches[0].clientY;
-    const siblings = [...container.querySelectorAll('.target-list-item:not(.dragging)')];
+    const siblings = [...container.querySelectorAll('.target-list-item:not(.dragging):not([data-static="true"])')];
     const nextSibling = siblings.find(sibling => {
       const rect = sibling.getBoundingClientRect();
       return touchY <= rect.top + rect.height / 2;
@@ -117,7 +159,7 @@ function setupTouchDragList(handle, item, container, onEdit) {
     if (!isDragging) return;
     isDragging = false;
     item.classList.remove('dragging');
-    const items = [...container.querySelectorAll('.target-list-item')];
+    const items = [...container.querySelectorAll('.target-list-item:not([data-static="true"])')];
     const newTargets = items.map(el => state.targets[parseInt(el.dataset.index)]);
     await saveTargets(newTargets);
     renderTargetList(onEdit);
@@ -136,9 +178,13 @@ export function handleDragOver(e) {
   const draggingItem = document.querySelector('.target-list-item.dragging');
   if (!draggingItem) return;
 
-  const siblings = [...targetListEl.querySelectorAll('.target-list-item:not(.dragging)')];
+  const siblings = [...targetListEl.querySelectorAll('.target-list-item:not(.dragging):not([data-static="true"])')];
   const nextSibling = siblings.find(sibling => {
     return e.clientY <= sibling.offsetTop + sibling.offsetHeight / 2;
   });
-  targetListEl.insertBefore(draggingItem, nextSibling);
+  if (nextSibling) {
+    targetListEl.insertBefore(draggingItem, nextSibling);
+  } else {
+    targetListEl.appendChild(draggingItem);
+  }
 }

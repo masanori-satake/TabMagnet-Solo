@@ -35,6 +35,9 @@
   "noTargets": {
     "message": "No targets registered."
   },
+  "magnetAll": {
+    "message": "Magnet All"
+  },
   "summonMagnet": {
     "message": "Execute"
   },
