@@ -167,6 +167,9 @@
   "settingKeepTMOrder": {
     "message": "タブグループの順序を維持する"
   },
+  "settingSyncEnabled": {
+    "message": "端末間同期(Sync)(β)"
+  },
   "tooltipCollectFromAllGroups": {
     "message": "OFF: 🧲マークのない通常のグループ内のタブは無視されます。\nON: すべてのタブグループから該当するタブを収集します。\nリスク: 意図せず整理済みのグループからタブが移動する可能性があります。"
   },
@@ -181,6 +184,36 @@
   },
   "tooltipCloseDuplicateTabs": {
     "message": "OFF: 同一のURLでもすべてのタブを保持します。\nON: 重複したURLのタブは1つを残し、他は閉じます。\nリスク: 入力中のフォームなどがある場合、そのデータが失われる可能性があります。"
+  },
+  "tooltipSyncEnabled": {
+    "message": "※同一のアカウントでログインしている同一ブラウザ間でのみ同期されます（ChromeとEdge間での直接同期はできません）。"
+  },
+  "syncModalTitle": {
+    "message": "端末間同期の詳細設定"
+  },
+  "syncModalNote": {
+    "message": "※同一のアカウントでログインしている同一ブラウザ間でのみ同期されます（ChromeとEdge間での直接同期はできません）。"
+  },
+  "syncModalSettingsTitle": {
+    "message": "設定項目"
+  },
+  "syncOptionSettingsFromSync": {
+    "message": "アカウント情報で端末設定を更新"
+  },
+  "syncOptionSettingsToSync": {
+    "message": "アカウント情報をこの端末の設定で更新"
+  },
+  "syncModalTargetsTitle": {
+    "message": "タブグループ"
+  },
+  "syncOptionTargetsFromSync": {
+    "message": "アカウント情報でタブグループを更新"
+  },
+  "syncOptionTargetsToSync": {
+    "message": "アカウント情報をこの端末のタブグループで更新"
+  },
+  "confirm": {
+    "message": "確定"
   },
   "tooltipImportMode": {
     "message": "追記はターゲットリストのみを追加し、上書きはターゲットリストと共通設定の両方を置き換えます。"

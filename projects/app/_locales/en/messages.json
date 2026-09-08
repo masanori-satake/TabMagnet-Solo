@@ -167,6 +167,9 @@
   "settingKeepTMOrder": {
     "message": "Keep TabMagnet group order"
   },
+  "settingSyncEnabled": {
+    "message": "Device Sync (β)"
+  },
   "tooltipCollectFromAllGroups": {
     "message": "OFF: Tabs in regular groups without the 🧲 mark are ignored.\nON: Collects matching tabs from all tab groups.\nRisk: Tabs may be moved from your manually organized groups."
   },
@@ -181,6 +184,36 @@
   },
   "tooltipCloseDuplicateTabs": {
     "message": "OFF: Keeps all tabs even if they have the same URL.\nON: Keeps only one tab per URL and closes others.\nRisk: Data in unsubmitted forms may be lost."
+  },
+  "tooltipSyncEnabled": {
+    "message": "*Syncs only between the same browser signed into the same account (Direct sync between Chrome and Edge is not supported)."
+  },
+  "syncModalTitle": {
+    "message": "Device Sync Details"
+  },
+  "syncModalNote": {
+    "message": "*Syncs only between the same browser signed into the same account (Direct sync between Chrome and Edge is not supported)."
+  },
+  "syncModalSettingsTitle": {
+    "message": "Settings"
+  },
+  "syncOptionSettingsFromSync": {
+    "message": "Update device settings with account data"
+  },
+  "syncOptionSettingsToSync": {
+    "message": "Update account data with device settings"
+  },
+  "syncModalTargetsTitle": {
+    "message": "Tab Groups"
+  },
+  "syncOptionTargetsFromSync": {
+    "message": "Update tab groups with account data"
+  },
+  "syncOptionTargetsToSync": {
+    "message": "Update account data with device tab groups"
+  },
+  "confirm": {
+    "message": "Confirm"
   },
   "tooltipImportMode": {
     "message": "Append adds only to the target list, while Overwrite replaces both the target list and common settings."

@@ -19,7 +19,9 @@ import {
   renderSettingsUI,
   updateAboutInfo,
   showSettingsModal,
-  hideSettingsModal
+  hideSettingsModal,
+  showSyncModal,
+  hideSyncModal
 } from './ui/modal-settings.js';
 import {
   showDeleteDialog,
@@ -58,6 +60,7 @@ const collapseAfterCollectSwitch = document.getElementById('collapse-after-colle
 const discardTabsSwitch = document.getElementById('discard-tabs-switch');
 const closeDuplicateTabsSwitch = document.getElementById('close-duplicate-tabs-switch');
 const keepTMOrderSwitch = document.getElementById('keep-tm-order-switch');
+const syncEnabledSwitch = document.getElementById('sync-enabled-switch');
 const copyExportBtn = document.getElementById('copy-export-btn');
 const pasteImportBtn = document.getElementById('paste-import-btn');
 const fileExportBtn = document.getElementById('file-export-btn');
@@ -74,6 +77,11 @@ const pasteImportModalScrim = document.getElementById('paste-import-modal-scrim'
 const pasteImportTextarea = document.getElementById('paste-import-textarea');
 const cancelPasteImportBtn = document.getElementById('cancel-paste-import-btn');
 const confirmPasteImportBtn = document.getElementById('confirm-paste-import-btn');
+
+// Sync Modal elements
+const syncModalScrim = document.getElementById('sync-modal-scrim');
+const cancelSyncBtn = document.getElementById('cancel-sync-btn');
+const confirmSyncBtn = document.getElementById('confirm-sync-btn');
 
 /**
  * 初期化処理
@@ -93,20 +101,37 @@ export async function init() {
 
   // ストレージの変更を監視
   chrome.storage.onChanged.addListener((changes, area) => {
-    if (area !== 'local') return;
-    if (changes.targets) {
-      const nextTargets = changes.targets.newValue || [];
-      if (JSON.stringify(nextTargets) !== JSON.stringify(state.targets)) {
-        state.targets = nextTargets;
-        renderTargetList(showTargetModal);
-        updateAboutInfo();
+    if (area === 'local') {
+      if (changes.targets) {
+        const nextTargets = changes.targets.newValue || [];
+        if (JSON.stringify(nextTargets) !== JSON.stringify(state.targets)) {
+          state.targets = nextTargets;
+          renderTargetList(showTargetModal);
+          updateAboutInfo();
+        }
       }
-    }
-    if (changes.settings) {
-      const nextSettings = changes.settings.newValue || {};
-      if (JSON.stringify(nextSettings) !== JSON.stringify(state.settings)) {
+      if (changes.settings) {
+        const nextSettings = changes.settings.newValue || {};
+        if (JSON.stringify(nextSettings) !== JSON.stringify(state.settings)) {
+          state.settings = { ...state.settings, ...nextSettings };
+          renderSettingsUI();
+        }
+      }
+    } else if (area === 'sync' && state.settings.syncEnabled) {
+      if (changes.targets && changes.targets.newValue) {
+        const nextTargets = changes.targets.newValue;
+        state.targets = nextTargets;
+        chrome.storage.local.set({ targets: nextTargets }).then(() => {
+          renderTargetList(showTargetModal);
+          updateAboutInfo();
+        });
+      }
+      if (changes.settings && changes.settings.newValue) {
+        const nextSettings = { ...changes.settings.newValue, syncEnabled: true };
         state.settings = { ...state.settings, ...nextSettings };
-        renderSettingsUI();
+        chrome.storage.local.set({ settings: state.settings }).then(() => {
+          renderSettingsUI();
+        });
       }
     }
   });
@@ -189,6 +214,14 @@ function setupEventListeners() {
     saveSettings({ keepTMOrder: keepTMOrderSwitch.checked });
   });
 
+  syncEnabledSwitch.addEventListener('change', () => {
+    if (syncEnabledSwitch.checked) {
+      showSyncModal();
+    } else {
+      saveSettings({ syncEnabled: false });
+    }
+  });
+
   closeSettingsBtn.addEventListener('click', hideSettingsModal);
 
   tabItems.forEach(tab => {
@@ -213,17 +246,98 @@ function setupEventListeners() {
   cancelPasteImportBtn.addEventListener('click', hidePasteImportModal);
   confirmPasteImportBtn.addEventListener('click', handleConfirmPasteImport);
 
+  // 同期モーダル
+  cancelSyncBtn.addEventListener('click', handleCancelSync);
+  confirmSyncBtn.addEventListener('click', handleConfirmSync);
+
+  const syncOptionRadioInputs = document.querySelectorAll('input[name="sync-settings-option"], input[name="sync-targets-option"]');
+  syncOptionRadioInputs.forEach(input => {
+    input.addEventListener('change', updateSyncConfirmButtonState);
+  });
+
   // モーダル外側クリック
-  [targetModalScrim, settingsModalScrim, deleteDialogScrim, pasteImportModalScrim].forEach(scrim => {
+  [targetModalScrim, settingsModalScrim, deleteDialogScrim, pasteImportModalScrim, syncModalScrim].forEach(scrim => {
     scrim.addEventListener('click', (e) => {
       if (e.target === scrim) {
         if (scrim === targetModalScrim) hideTargetModal();
         if (scrim === settingsModalScrim) hideSettingsModal();
         if (scrim === deleteDialogScrim) hideDeleteDialog();
         if (scrim === pasteImportModalScrim) hidePasteImportModal();
+        if (scrim === syncModalScrim) handleCancelSync();
       }
     });
   });
+}
+
+/**
+ * 同期モーダルの確定ボタン活性状態を更新
+ */
+function updateSyncConfirmButtonState() {
+  const selectedSettings = document.querySelector('input[name="sync-settings-option"]:checked');
+  const selectedTargets = document.querySelector('input[name="sync-targets-option"]:checked');
+
+  if (selectedSettings && selectedTargets) {
+    confirmSyncBtn.classList.remove('disabled');
+  } else {
+    confirmSyncBtn.classList.add('disabled');
+  }
+}
+
+/**
+ * 同期設定モーダルのキャンセル処理
+ */
+function handleCancelSync() {
+  hideSyncModal();
+  syncEnabledSwitch.checked = false;
+  saveSettings({ syncEnabled: false });
+}
+
+/**
+ * 同期設定モーダルの確定処理
+ */
+async function handleConfirmSync() {
+  const selectedSettings = document.querySelector('input[name="sync-settings-option"]:checked')?.value;
+  const selectedTargets = document.querySelector('input[name="sync-targets-option"]:checked')?.value;
+
+  if (!selectedSettings || !selectedTargets) return;
+
+  try {
+    const syncData = await chrome.storage.sync.get(['settings', 'targets']);
+
+    // 1. 設定項目の同期処理
+    let finalSettings = { ...state.settings, syncEnabled: true };
+    if (selectedSettings === 'from_sync') {
+      if (syncData.settings) {
+        finalSettings = { ...DEFAULT_SETTINGS, ...syncData.settings, syncEnabled: true };
+      }
+    }
+    await saveSettings(finalSettings);
+
+    // 2. タブグループ（ターゲット）の同期処理
+    let finalTargets = [...state.targets];
+    if (selectedTargets === 'from_sync') {
+      if (syncData.targets) {
+        finalTargets = syncData.targets.map(t => ({
+          ...t,
+          color: t.color ? getCompatibleColor(t.color) : 'grey'
+        }));
+      }
+    }
+    await saveTargets(finalTargets);
+
+    // クラウド側へ最新のローカル状態をアップロードして同期を確定させる
+    await chrome.storage.sync.set({
+      settings: finalSettings,
+      targets: finalTargets
+    });
+
+    renderSettingsUI();
+    renderTargetList(showTargetModal);
+    hideSyncModal();
+  } catch (e) {
+    console.error('Failed to initialize sync:', e);
+    handleCancelSync();
+  }
 }
 
 /**
