@@ -20,18 +20,28 @@ describe('ui/list-renderer.js', () => {
     expect(escapeHtml('<>&"\'')).toBe('&lt;&gt;&amp;"\'');
   });
 
-  test('renderTargetList shows empty message when no targets', () => {
+  test('renderTargetList shows Magnet All row and empty message when no targets', () => {
     renderTargetList();
     const list = document.getElementById('target-list');
+    expect(list.textContent).toContain('magnetAll');
     expect(list.textContent).toContain('noTargets');
+
+    const executeAllBtn = list.querySelector('.execute-all-btn');
+    expect(executeAllBtn).toBeTruthy();
+    expect(executeAllBtn.disabled).toBe(true);
   });
 
-  test('renderTargetList renders items', () => {
+  test('renderTargetList renders items and enables Magnet All button', () => {
     state.targets = [{ name: 'Target 1', color: 'blue' }];
     const onEdit = jest.fn();
     renderTargetList(onEdit);
 
-    const item = document.querySelector('.target-list-item');
+    const staticItem = document.querySelector('.magnet-all-item');
+    expect(staticItem).toBeTruthy();
+    const executeAllBtn = staticItem.querySelector('.execute-all-btn');
+    expect(executeAllBtn.disabled).toBe(false);
+
+    const item = document.querySelector('.target-list-item:not([data-static="true"])');
     expect(item).toBeTruthy();
     expect(item.textContent).toContain('Target 1');
     expect(item.querySelector('.target-color-chip').classList.contains('bg-blue')).toBe(true);

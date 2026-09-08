@@ -141,7 +141,7 @@ function setupEventListeners() {
   targetListEl.addEventListener('dragover', handleDragOver);
   targetListEl.addEventListener('drop', async (e) => {
     e.preventDefault();
-    const items = [...targetListEl.querySelectorAll('.target-list-item')];
+    const items = [...targetListEl.querySelectorAll('.target-list-item:not([data-static="true"])')];
     const newTargets = items.map(item => state.targets[parseInt(item.dataset.index)]);
     await saveTargets(newTargets);
     renderTargetList(showTargetModal);

@@ -467,6 +467,50 @@ describe('executeMagnet naming and protection', () => {
     expect(chromeMock.tabGroups.move).toHaveBeenCalled();
   });
 
+  test('executeAllMagnets should execute all targets and call maintainTMOrder once at the end', async () => {
+    const { executeAllMagnets } = await import('../projects/app/ui/utils.js');
+    const targets = [
+      { name: 'Jira', pattern: 'jira.example.com/*' },
+      { name: 'Github', pattern: 'github.com/*' }
+    ];
+
+    chromeMock.storage.local.get.mockResolvedValue({
+      settings: { keepTMOrder: true },
+      targets
+    });
+
+    chromeMock.tabs.query.mockImplementation(async (query) => {
+      if (Object.keys(query).length === 0) {
+        return [
+          { id: 10, url: 'https://jira.example.com/1', groupId: -1 },
+          { id: 20, url: 'https://github.com/1', groupId: -1 }
+        ];
+      }
+      return [];
+    });
+
+    chromeMock.tabGroups.query.mockImplementation(async (query) => {
+      if (query && query.windowId === 1) {
+        return [
+          { id: 100, title: '🧲Jira', windowId: 1 },
+          { id: 200, title: '🧲Github', windowId: 1 }
+        ];
+      }
+      return [];
+    });
+
+    chromeMock.tabGroups.move = jest.fn().mockResolvedValue();
+
+    await executeAllMagnets(targets);
+
+    // Grouping calls for both targets
+    expect(chromeMock.tabs.group).toHaveBeenCalledTimes(2);
+    // maintainTMOrder moves the target groups in target-list order.
+    expect(chromeMock.tabGroups.move).toHaveBeenCalledTimes(2);
+    expect(chromeMock.tabGroups.move).toHaveBeenNthCalledWith(1, 100, { index: -1 });
+    expect(chromeMock.tabGroups.move).toHaveBeenNthCalledWith(2, 200, { index: -1 });
+  });
+
   test('should handle dissolve error gracefully', async () => {
     const { executeMagnet } = await import('../projects/app/ui/utils.js');
     const target = { name: 'Jira', pattern: 'jira.example.com/*' };

@@ -97,8 +97,8 @@ describe('sidepanel logic', () => {
     const { init } = await import('../projects/app/sidepanel.js');
     await init();
 
-    // Click item to edit
-    document.querySelector('.target-list-item').click();
+    // Click item to edit (skipping static Magnet All row)
+    document.querySelector('.target-list-item:not([data-static="true"])').click();
     // Click delete in modal
     document.getElementById('delete-target-btn').click();
     // Click confirm in dialog

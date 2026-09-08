@@ -153,9 +153,27 @@ let executionQueue = Promise.resolve();
  *
  * @param {Object} target ターゲット設定 { name, pattern, color }
  */
-export function executeMagnet(target) {
-  const currentTask = executionQueue.then(() => _executeMagnetInternal(target));
+export function executeMagnet(target, options = {}) {
+  const currentTask = executionQueue.then(() => _executeMagnetInternal(target, options));
   // 次のタスクのために、エラーが発生してもキューが止まらないようにする
+  executionQueue = currentTask.catch(() => {});
+  return currentTask;
+}
+
+/**
+ * 登録されているすべてのターゲットに対して一括でタブを集約（Magnet All発動）する
+ * 途中のターゲットごとの再整列はスキップし、最後に一度だけ再整列を行う
+ *
+ * @param {Array<Object>} targets ターゲット設定の配列
+ */
+export function executeAllMagnets(targets) {
+  const currentTask = executionQueue.then(async () => {
+    for (const target of targets) {
+      await _executeMagnetInternal(target, { skipMaintainTMOrder: true });
+    }
+    const currentWindow = await chrome.windows.getCurrent();
+    await maintainTMOrder(currentWindow.id);
+  });
   executionQueue = currentTask.catch(() => {});
   return currentTask;
 }
@@ -163,8 +181,10 @@ export function executeMagnet(target) {
 /**
  * 実際の磁石処理の内部実装
  * @param {Object} target
+ * @param {Object} [options]
+ * @param {boolean} [options.skipMaintainTMOrder]
  */
-async function _executeMagnetInternal(target) {
+async function _executeMagnetInternal(target, options = {}) {
   const currentWindow = await chrome.windows.getCurrent();
   // タブをウィンドウID、次いでインデックス順にソートして一貫性を確保
   const allTabs = (await chrome.tabs.query({})).sort((a, b) => {
@@ -312,7 +332,7 @@ async function _executeMagnetInternal(target) {
   }
 
   // 6. 順序/位置の維持設定が有効な場合、並べ替えを行う
-  if (settings.keepTMOrder) {
+  if (settings.keepTMOrder && !options.skipMaintainTMOrder) {
     await maintainTMOrder(currentWindow.id);
   }
 }
