@@ -1,6 +1,6 @@
 # TabMagnet-Solo
 
-[![version](https://img.shields.io/badge/version-1.13.0-blue)](projects/app/manifest.json)
+[![version](https://img.shields.io/badge/version-1.14.0-blue)](projects/app/manifest.json)
 [![Coverage](https://img.shields.io/badge/coverage-51%25-red)](https://masanori-satake.github.io/TabMagnet-Solo/coverage/)
 [![Privacy-Local Only](https://img.shields.io/badge/Privacy-Local%20Only-brightgreen)](AGENTS.md)
 [![Manifest V3](https://img.shields.io/badge/Manifest-V3-orange)](projects/app/manifest.json)
@@ -34,7 +34,7 @@ TabMagnet-Soloは、Pure Vanilla JS（ゼロ依存）とローカル完結設計
 * **Singleton Management**: 同一ターゲットに対して常に一つのグループのみを維持。再実行時には既存グループを自動更新。
 * **Automatic Protection**: ユーザーが手動で作成した既存のタブグループを破壊しないよう、接頭辞 `🧲` のないグループは自動的に保護されます。
 * **Add from Domain**: 現在開いているタブのドメインから、ワンクリックで新しい集約ターゲットを作成可能。
-* **完全ローカル実行**: すべてのデータはブラウザ内の `chrome.storage.local` に保存されます。外部サーバーへの送信は一切行われず、プライバシーを強力に保護します。
+* **完全ローカル実行**: デフォルトではすべてのデータがブラウザ内の `chrome.storage.local` に保存されます（外部サーバーへの送信は行われません）。端末間同期機能を有効にした場合は、ブラウザのアカウント同期（`chrome.storage.sync`）経由で同一アカウント・同一ブラウザ間にのみデータが保存・同期されます。
 * **Vanilla JS & ゼロ依存**: 外部ライブラリを一切使用せず、ブラウザ標準のAPIのみで構築。軽量かつ高速に動作します。
 * **Material 3 デザイン**: Google Material 3 (M3) に準拠した、直感的でモダンなUI。
 * **ポータビリティ**: 設定データをJSON形式でクリップボードまたはファイル経由でエクスポート/インポート可能。

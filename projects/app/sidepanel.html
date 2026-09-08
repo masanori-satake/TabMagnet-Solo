@@ -912,6 +912,16 @@
               <span class="slider"></span>
             </label>
           </div>
+          <div class="switch-container">
+            <span class="switch-label">
+              <span data-i18n="settingSyncEnabled"></span>
+              <span class="tooltip" data-i18n="tooltipSyncEnabled"></span>
+            </span>
+            <label class="switch">
+              <input type="checkbox" id="sync-enabled-switch">
+              <span class="slider"></span>
+            </label>
+          </div>
 
           <div class="settings-section-title" data-i18n="sectionSettingsData" style="margin-top: 16px;"></div>
           <div class="settings-grid">
@@ -969,6 +979,48 @@
           <div class="about-text" style="margin-top: 12px;" data-i18n="materialDesignCredit"></div>
           <div class="about-footer" data-i18n="disclaimer"></div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sync Settings Modal -->
+  <div id="sync-modal-scrim" class="scrim">
+    <div class="modal">
+      <div class="modal-title" data-i18n="syncModalTitle"></div>
+      <div class="modal-content">
+        <div style="font: var(--md-sys-typescale-body-small); color: var(--md-sys-color-on-surface-variant);" data-i18n="syncModalNote"></div>
+
+        <div style="margin-top: 8px;">
+          <div style="font: var(--md-sys-typescale-title-small); color: var(--md-sys-color-primary);" data-i18n="syncModalSettingsTitle"></div>
+          <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">
+            <label class="radio-option">
+              <input type="radio" name="sync-settings-option" value="from_sync">
+              <span data-i18n="syncOptionSettingsFromSync"></span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="sync-settings-option" value="to_sync">
+              <span data-i18n="syncOptionSettingsToSync"></span>
+            </label>
+          </div>
+        </div>
+
+        <div style="margin-top: 8px;">
+          <div style="font: var(--md-sys-typescale-title-small); color: var(--md-sys-color-primary);" data-i18n="syncModalTargetsTitle"></div>
+          <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">
+            <label class="radio-option">
+              <input type="radio" name="sync-targets-option" value="from_sync">
+              <span data-i18n="syncOptionTargetsFromSync"></span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="sync-targets-option" value="to_sync">
+              <span data-i18n="syncOptionTargetsToSync"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button id="cancel-sync-btn" class="text-button" data-i18n="cancel"></button>
+        <button id="confirm-sync-btn" class="text-button disabled" data-i18n="confirm" style="background-color: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container);"></button>
       </div>
     </div>
   </div>

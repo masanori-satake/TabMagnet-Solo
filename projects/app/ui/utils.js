@@ -14,7 +14,8 @@ export const DEFAULT_SETTINGS = {
   collapseAfterCollect: false,
   discardTabsAfterCollect: false,
   closeDuplicateTabs: false,
-  keepTMOrder: false
+  keepTMOrder: false,
+  syncEnabled: false
 };
 
 /**

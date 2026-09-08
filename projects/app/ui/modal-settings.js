@@ -10,12 +10,14 @@ export function renderSettingsUI() {
   const discardTabsSwitch = document.getElementById('discard-tabs-switch');
   const closeDuplicateTabsSwitch = document.getElementById('close-duplicate-tabs-switch');
   const keepTMOrderSwitch = document.getElementById('keep-tm-order-switch');
+  const syncEnabledSwitch = document.getElementById('sync-enabled-switch');
 
   if (collectAllGroupsSwitch) collectAllGroupsSwitch.checked = !!state.settings.collectFromAllGroups;
   if (collapseAfterCollectSwitch) collapseAfterCollectSwitch.checked = !!state.settings.collapseAfterCollect;
   if (discardTabsSwitch) discardTabsSwitch.checked = !!state.settings.discardTabsAfterCollect;
   if (closeDuplicateTabsSwitch) closeDuplicateTabsSwitch.checked = !!state.settings.closeDuplicateTabs;
   if (keepTMOrderSwitch) keepTMOrderSwitch.checked = !!state.settings.keepTMOrder;
+  if (syncEnabledSwitch) syncEnabledSwitch.checked = !!state.settings.syncEnabled;
 
   if (state.settings.collapseAfterCollect) {
     if (discardTabsContainer) discardTabsContainer.classList.remove('disabled');
@@ -55,4 +57,27 @@ export function showSettingsModal() {
 export function hideSettingsModal() {
   const settingsModalScrim = document.getElementById('settings-modal-scrim');
   if (settingsModalScrim) settingsModalScrim.style.display = 'none';
+}
+
+/**
+ * 同期詳細設定モーダルを表示
+ */
+export function showSyncModal() {
+  const syncModalScrim = document.getElementById('sync-modal-scrim');
+  const confirmBtn = document.getElementById('confirm-sync-btn');
+
+  // ラジオボタンの未選択状態をセット
+  document.querySelectorAll('input[name="sync-settings-option"]').forEach(r => r.checked = false);
+  document.querySelectorAll('input[name="sync-targets-option"]').forEach(r => r.checked = false);
+
+  if (confirmBtn) confirmBtn.classList.add('disabled');
+  if (syncModalScrim) syncModalScrim.style.display = 'flex';
+}
+
+/**
+ * 同期詳細設定モーダルを非表示
+ */
+export function hideSyncModal() {
+  const syncModalScrim = document.getElementById('sync-modal-scrim');
+  if (syncModalScrim) syncModalScrim.style.display = 'none';
 }

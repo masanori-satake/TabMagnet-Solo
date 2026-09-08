@@ -27,6 +27,13 @@ export async function loadState() {
 export async function saveTargets(targets) {
   state.targets = targets;
   await chrome.storage.local.set({ targets: state.targets });
+  if (state.settings.syncEnabled) {
+    try {
+      await chrome.storage.sync.set({ targets: state.targets });
+    } catch (e) {
+      console.warn('Failed to sync targets to chrome.storage.sync:', e);
+    }
+  }
 }
 
 /**
@@ -36,4 +43,11 @@ export async function saveTargets(targets) {
 export async function saveSettings(settings) {
   state.settings = { ...state.settings, ...settings };
   await chrome.storage.local.set({ settings: state.settings });
+  if (state.settings.syncEnabled) {
+    try {
+      await chrome.storage.sync.set({ settings: state.settings });
+    } catch (e) {
+      console.warn('Failed to sync settings to chrome.storage.sync:', e);
+    }
+  }
 }
