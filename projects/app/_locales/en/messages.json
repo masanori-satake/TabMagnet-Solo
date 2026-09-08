@@ -12,13 +12,13 @@
     "message": "Target List"
   },
   "addNew": {
-    "message": "New Target"
+    "message": "New Group"
   },
   "addPattern": {
     "message": "Add Pattern"
   },
   "addFromDomain": {
-    "message": "From Tab Domain"
+    "message": "Active Tab Group"
   },
   "placeholderGroupName": {
     "message": "Group name (e.g. Google)"

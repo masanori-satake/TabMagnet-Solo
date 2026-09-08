@@ -12,13 +12,13 @@
     "message": "ターゲットリスト"
   },
   "addNew": {
-    "message": "新規作成"
+    "message": "新規グループ"
   },
   "addPattern": {
     "message": "パターン追加"
   },
   "addFromDomain": {
-    "message": "タブのドメインで作成"
+    "message": "表示中タブのグループ"
   },
   "placeholderGroupName": {
     "message": "グループ名 (例: Google)"
