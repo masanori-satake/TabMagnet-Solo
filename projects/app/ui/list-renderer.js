@@ -51,6 +51,7 @@ export function renderTargetList(onEdit) {
   `;
 
   const executeAllBtn = allItem.querySelector('.execute-all-btn');
+  executeAllBtn.disabled = isAllDisabled;
   if (!isAllDisabled) {
     executeAllBtn.addEventListener('click', async (e) => {
       e.stopPropagation();

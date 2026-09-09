@@ -33,7 +33,10 @@
     "message": "キャンセル"
   },
   "noTargets": {
-    "message": "登録されたターゲットはありません。"
+    "message": "登録されたグループがありません。"
+  },
+  "syncActiveTooltip": {
+    "message": "端末間で設定を同期中"
   },
   "magnetAll": {
     "message": "Magnet All"
