@@ -17,7 +17,14 @@ describe('background auto-cleanup and renaming', () => {
       },
       storage: {
         local: {
-          get: jest.fn()
+          get: jest.fn().mockResolvedValue({}),
+          remove: jest.fn().mockResolvedValue({})
+        },
+        sync: {
+          get: jest.fn().mockResolvedValue({})
+        },
+        onChanged: {
+          addListener: jest.fn()
         }
       },
       runtime: {
@@ -227,5 +234,66 @@ describe('background auto-cleanup and renaming', () => {
     chromeMock.tabGroups.update.mockClear();
     await onUpdated();
     expect(chromeMock.tabGroups.update).toHaveBeenCalledWith(1, { title: '🧲Jira' });
+  });
+
+  test('chrome.storage.onChanged handles sync area changes in background when syncEnabled', async () => {
+    chromeMock.storage.local.set = jest.fn().mockResolvedValue({});
+    chromeMock.storage.local.get.mockResolvedValue({
+      settings: { syncEnabled: true }
+    });
+
+    await import('../projects/app/background.js');
+    const onChangedListener = chromeMock.storage.onChanged.addListener.mock.calls[0][0];
+
+    const changes = {
+      targets: { newValue: [{ name: 'SyncedTarget', pattern: ['example.com/*'], color: 'blue' }] },
+      settings: { newValue: { collectFromAllGroups: true } }
+    };
+
+    await onChangedListener(changes, 'sync');
+
+    expect(chromeMock.storage.local.set).toHaveBeenCalledWith({
+      targets: [{ name: 'SyncedTarget', pattern: ['example.com/*'], color: 'blue' }],
+      settings: expect.objectContaining({
+        collectFromAllGroups: true,
+        syncEnabled: true
+      })
+    });
+  });
+
+  test('chrome.storage.onChanged ignores sync area changes when syncEnabled is false', async () => {
+    chromeMock.storage.local.set = jest.fn().mockResolvedValue({});
+    chromeMock.storage.local.get.mockResolvedValue({
+      settings: { syncEnabled: false }
+    });
+
+    await import('../projects/app/background.js');
+    const onChangedListener = chromeMock.storage.onChanged.addListener.mock.calls[0][0];
+
+    const changes = {
+      targets: { newValue: [{ name: 'SyncedTarget' }] }
+    };
+
+    await onChangedListener(changes, 'sync');
+
+    expect(chromeMock.storage.local.set).not.toHaveBeenCalled();
+  });
+
+  test('chrome.storage.onChanged removes local keys deleted from sync storage', async () => {
+    chromeMock.storage.local.set = jest.fn().mockResolvedValue({});
+    chromeMock.storage.local.get.mockResolvedValue({
+      settings: { syncEnabled: true }
+    });
+
+    await import('../projects/app/background.js');
+    const onChangedListener = chromeMock.storage.onChanged.addListener.mock.calls[0][0];
+
+    await onChangedListener({
+      targets: { newValue: undefined },
+      settings: { newValue: undefined }
+    }, 'sync');
+
+    expect(chromeMock.storage.local.remove).toHaveBeenCalledWith(['targets', 'settings']);
+    expect(chromeMock.storage.local.set).not.toHaveBeenCalled();
   });
 });
