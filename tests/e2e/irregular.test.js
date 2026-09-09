@@ -25,7 +25,7 @@ test.describe('Irregular and Edge Cases', () => {
     await page.click('#save-target-btn');
 
     // Verify target was saved
-    await expect(page.locator('.target-name')).toHaveText('Google');
+    await expect(page.locator('.target-list-item:not(.magnet-all-item) .target-name')).toHaveText('Google');
   });
 
   test('handling duplicate target names', async ({ page, extensionId }) => {
@@ -45,7 +45,7 @@ test.describe('Irregular and Edge Cases', () => {
 
     // Verify both exist (current implementation allows duplicates,
     // which might be a bug or intended, but we test current behavior)
-    const targets = page.locator('.target-name');
+    const targets = page.locator('.target-list-item:not(.magnet-all-item) .target-name');
     await expect(targets).toHaveCount(2);
     await expect(targets.first()).toHaveText('Duplicate');
     await expect(targets.last()).toHaveText('Duplicate');
@@ -87,15 +87,15 @@ test.describe('Irregular and Edge Cases', () => {
     await page1.click('#save-target-btn');
 
     // 2. Check if page2 reflects the change
-    await expect(page2.locator('.target-name')).toHaveText('SyncTest');
+    await expect(page2.locator('.target-list-item:not(.magnet-all-item) .target-name')).toHaveText('SyncTest');
 
     // 3. Delete in page2
-    await page2.click('.target-list-item');
+    await page2.click('.target-list-item:not(.magnet-all-item)');
     await page2.click('#delete-target-btn');
     await page2.click('#confirm-delete-ok-btn');
 
     // 4. Check if page1 reflects the deletion
-    await expect(page1.locator('.target-list-item')).toHaveCount(0);
+    await expect(page1.locator('.target-list-item:not(.magnet-all-item)')).toHaveCount(0);
   });
 
   test('race condition: simultaneous execution', async ({ context, extensionId }) => {

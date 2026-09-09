@@ -727,7 +727,8 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      height: 48px;
+      min-height: 48px;
+      gap: 12px;
     }
 
     .switch-container.indent {
@@ -744,6 +745,9 @@
       color: var(--md-sys-color-on-surface);
       position: relative;
       cursor: help;
+      flex: 1;
+      min-width: 0;
+      word-break: break-word;
     }
 
     .switch {
@@ -751,6 +755,7 @@
       display: inline-block;
       width: 52px;
       height: 32px;
+      flex-shrink: 0;
     }
 
     .switch input {
@@ -879,7 +884,7 @@
         </div>
       </div>
 
-      <div id="settings-content" style="flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding-right: 4px;">
+      <div id="settings-content" style="flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding-right: 16px; scrollbar-gutter: stable;">
         <!-- General Tab Content -->
         <div id="tab-content-general" class="tab-pane">
           <div class="settings-section-title" data-i18n="sectionCommon"></div>

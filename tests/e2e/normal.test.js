@@ -11,19 +11,19 @@ test.describe('Normal Operations', () => {
     await page.fill('#new-name', 'Test Target');
     await page.fill('.pattern-input', 'example.com');
     await page.click('#save-target-btn');
-    await expect(page.locator('.target-name')).toHaveText('Test Target');
+    await expect(page.locator('.target-list-item:not(.magnet-all-item) .target-name')).toHaveText('Test Target');
 
     // 2. Edit
-    await page.click('.target-list-item');
+    await page.click('.target-list-item:not(.magnet-all-item)');
     await page.fill('#new-name', 'Updated Target');
     await page.click('#save-target-btn');
-    await expect(page.locator('.target-name')).toHaveText('Updated Target');
+    await expect(page.locator('.target-list-item:not(.magnet-all-item) .target-name')).toHaveText('Updated Target');
 
     // 3. Delete
-    await page.click('.target-list-item');
+    await page.click('.target-list-item:not(.magnet-all-item)');
     await page.click('#delete-target-btn');
     await page.click('#confirm-delete-ok-btn');
-    await expect(page.locator('.target-list-item')).toHaveCount(0);
+    await expect(page.locator('.target-list-item:not(.magnet-all-item)')).toHaveCount(0);
   });
 
   test('should toggle settings', async ({ page }) => {
