@@ -388,18 +388,27 @@ export async function syncFromCloudIfNeeded() {
 
     const syncData = await chrome.storage.sync.get(['settings', 'targets']);
     const updates = {};
+    const keysToRemove = [];
 
-    if (syncData.targets) {
+    if (syncData.targets === undefined) {
+      keysToRemove.push('targets');
+    } else {
       updates.targets = syncData.targets;
     }
 
-    if (syncData.settings) {
+    if (syncData.settings === undefined) {
+      keysToRemove.push('settings');
+    } else {
       const currentLocalSettings = local.settings || {};
       updates.settings = {
         ...DEFAULT_SETTINGS,
         ...syncData.settings,
         syncEnabled: currentLocalSettings.syncEnabled ?? true
       };
+    }
+
+    if (keysToRemove.length > 0) {
+      await chrome.storage.local.remove(keysToRemove);
     }
 
     if (Object.keys(updates).length > 0) {

@@ -59,7 +59,8 @@ describe('syncFromCloudIfNeeded', () => {
       storage: {
         local: {
           get: jest.fn(),
-          set: jest.fn().mockResolvedValue({})
+          set: jest.fn().mockResolvedValue({}),
+          remove: jest.fn().mockResolvedValue({})
         },
         sync: {
           get: jest.fn()
@@ -116,6 +117,17 @@ describe('syncFromCloudIfNeeded', () => {
     await syncFromCloudIfNeeded();
 
     expect(console.warn).toHaveBeenCalledWith('Failed to sync from cloud:', expect.any(Error));
+  });
+
+  test('should remove local keys missing from cloud when syncEnabled is true', async () => {
+    const { syncFromCloudIfNeeded } = await import('../projects/app/ui/utils.js');
+    chromeMock.storage.local.get.mockResolvedValue({ settings: { syncEnabled: true } });
+    chromeMock.storage.sync.get.mockResolvedValue({});
+
+    await syncFromCloudIfNeeded();
+
+    expect(chromeMock.storage.local.remove).toHaveBeenCalledWith(['targets', 'settings']);
+    expect(chromeMock.storage.local.set).not.toHaveBeenCalled();
   });
 });
 

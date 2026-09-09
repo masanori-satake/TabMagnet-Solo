@@ -37,16 +37,29 @@ chrome.storage.onChanged.addListener(async (changes, area) => {
     if (!isSyncEnabled) return;
 
     const updates = {};
-    if (changes.targets && changes.targets.newValue) {
-      updates.targets = changes.targets.newValue;
+    const keysToRemove = [];
+    if (changes.targets) {
+      if (changes.targets.newValue === undefined) {
+        keysToRemove.push('targets');
+      } else {
+        updates.targets = changes.targets.newValue;
+      }
     }
-    if (changes.settings && changes.settings.newValue) {
-      const currentLocalSettings = local.settings || {};
-      updates.settings = {
-        ...DEFAULT_SETTINGS,
-        ...changes.settings.newValue,
-        syncEnabled: currentLocalSettings.syncEnabled ?? true
-      };
+    if (changes.settings) {
+      if (changes.settings.newValue === undefined) {
+        keysToRemove.push('settings');
+      } else {
+        const currentLocalSettings = local.settings || {};
+        updates.settings = {
+          ...DEFAULT_SETTINGS,
+          ...changes.settings.newValue,
+          syncEnabled: currentLocalSettings.syncEnabled ?? true
+        };
+      }
+    }
+
+    if (keysToRemove.length > 0) {
+      await chrome.storage.local.remove(keysToRemove);
     }
 
     if (Object.keys(updates).length > 0) {
