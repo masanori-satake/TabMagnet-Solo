@@ -103,6 +103,42 @@ describe('sidepanel logic', () => {
     expect(svgPath.getAttribute('d')).toContain('M150-760h220q20');
   });
 
+  test('importData validation rejects excessive targets or pattern length', async () => {
+    const { init } = await import('../projects/app/sidepanel.js');
+    await init();
+
+    // Trigger file import change event with excessive targets
+    const fileInput = document.getElementById('file-input');
+    const excessiveTargets = Array.from({ length: 101 }, (_, i) => ({
+      name: `Target ${i}`,
+      pattern: 'example.com'
+    }));
+
+    const file = new Blob([JSON.stringify({ targets: excessiveTargets })], { type: 'application/json' });
+    const event = { target: { files: [file] } };
+
+    // Mock FileReader
+    class MockFileReader {
+      readAsText(fileBlob) {
+        setTimeout(() => {
+          this.result = JSON.stringify({ targets: excessiveTargets });
+          if (this.onload) this.onload({ target: { result: this.result } });
+        }, 0);
+      }
+    }
+    global.FileReader = jest.fn(() => new MockFileReader());
+
+    Object.defineProperty(fileInput, 'files', {
+      value: [file],
+      writable: false
+    });
+    fileInput.dispatchEvent(new Event('change'));
+
+    // Verify error toast or handling
+    await new Promise(resolve => setTimeout(resolve, 50));
+    expect(chromeMock.i18n.getMessage).toHaveBeenCalledWith('importError');
+  });
+
   test('Delete target interaction', async () => {
     chromeMock.storage.local.get.mockResolvedValue({
       targets: [{ name: 'ToDelete', pattern: ['delete.me'] }]

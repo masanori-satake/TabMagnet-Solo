@@ -431,22 +431,30 @@ async function importData(data) {
     throw new Error('Invalid format');
   }
 
-  // targets が配列であること、および構造が正しいか検証
+  // targets が配列であること、および構造・入力長が正しいか検証（DoS・メモリ過大消費の防止）
   if (!Array.isArray(data.targets)) {
     throw new Error('Invalid format: targets must be an array');
+  }
+  if (data.targets.length > 100) {
+    throw new Error('Invalid format: targets array exceeds limit');
   }
 
   for (const target of data.targets) {
     if (!target || typeof target !== 'object' || Array.isArray(target)) {
       throw new Error('Invalid target element');
     }
-    if (typeof target.name !== 'string' || target.name.trim() === '') {
+    if (typeof target.name !== 'string' || target.name.trim() === '' || target.name.length > 100) {
       throw new Error('Invalid target name');
     }
-    const isValidPattern = typeof target.pattern === 'string'
-      ? target.pattern.trim() !== ''
-      : Array.isArray(target.pattern) && target.pattern.length > 0 && target.pattern.every(p => typeof p === 'string' && p.trim() !== '');
-    if (!isValidPattern) {
+    const isPatternStringValid = typeof target.pattern === 'string' &&
+      target.pattern.trim() !== '' &&
+      target.pattern.length <= 500;
+    const isPatternArrayValid = Array.isArray(target.pattern) &&
+      target.pattern.length > 0 &&
+      target.pattern.length <= 50 &&
+      target.pattern.every(p => typeof p === 'string' && p.trim() !== '' && p.length <= 500);
+
+    if (!isPatternStringValid && !isPatternArrayValid) {
       throw new Error('Invalid target pattern');
     }
   }
