@@ -278,6 +278,24 @@ describe('executeMagnet naming and protection', () => {
     expect(chromeMock.tabs.group).not.toHaveBeenCalled();
   });
 
+  test.each([
+    ['', 'empty string'],
+    [null, 'null'],
+    [undefined, 'undefined']
+  ])('should reject a %s pattern during collection', async (pattern) => {
+    const { executeMagnet } = await import('../projects/app/ui/utils.js');
+    const target = { name: 'Jira', pattern };
+
+    chromeMock.tabs.query.mockResolvedValue([
+      { id: 10, url: 'https://jira.example.com/1', groupId: -1 }
+    ]);
+    chromeMock.tabGroups.query.mockResolvedValue([]);
+
+    await executeMagnet(target);
+
+    expect(chromeMock.tabs.group).not.toHaveBeenCalled();
+  });
+
   test('should handle error in executeMagnet gracefully', async () => {
     const { executeMagnet } = await import('../projects/app/ui/utils.js');
     const target = { name: 'Jira', pattern: 'jira.example.com/*' };
