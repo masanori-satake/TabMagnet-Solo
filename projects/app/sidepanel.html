@@ -163,6 +163,14 @@
       transform: none;
     }
 
+    #sync-indicator {
+      cursor: help;
+    }
+
+    #sync-indicator:hover {
+      background-color: transparent;
+    }
+
     #sync-indicator .tooltip {
       left: 0;
       right: auto;
@@ -807,8 +815,8 @@
 </head>
 <body>
   <header>
-    <div id="sync-indicator" class="icon-button hidden" style="cursor: help;">
-      <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M160-160v-200h200v80h-84q46 62 115 97t149 35q107 0 190.5-62.5T824-370h82q-15 137-111.5 223.5T540-60q-97 0-180.5-43.5T216-220v60h-56Zm380-580q-107 0-190.5 62.5T256-590h-82q15-137 111.5-223.5T540-900q97 0 180.5 43.5T836-740v-60h56v200H692v-80h84q-46-62-115-97t-149-35Z"/></svg>
+    <div id="sync-indicator" class="icon-button hidden">
+      <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path fill-rule="evenodd" d="M150-760h220q20 0 35 15t15 35v210H100v-210q0-20 15-35t35-15Zm-10 40v130h240v-130H140ZM80-460h360q17 0 28.5 11.5T460-420v10q0 17-11.5 28.5T420-370H80q-17 0-28.5-11.5T40-400v-10q0-17 11.5-28.5T80-460Zm560-300h140q25 0 42.5 17.5T840-700v440q0 25-17.5 42.5T780-200H640q-25 0-42.5-17.5T580-260v-440q0-25 17.5-42.5T640-760Zm-20 80v380h180v-380H620Zm-190 50h75v-30l50 45-50 45v-30h-75v-30Zm125 150h-75v-30l-50 45 50 45v-30h75v-30Z"/></svg>
       <span class="tooltip" data-i18n="syncActiveTooltip"></span>
     </div>
     <button id="settings-btn" class="icon-button">
