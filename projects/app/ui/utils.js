@@ -215,7 +215,7 @@ async function _executeMagnetInternal(target, options = {}) {
     // パフォーマンス最適化: 各タブにつき URL の正規化とコンパイル済み正規表現のテストを効率的に実行
     if (!tab.url) continue;
     const normUrl = normalizeUrl(tab.url);
-    const isMatched = patterns.some(p => getPatternRegex(p).test(normUrl));
+    const isMatched = patterns.some(p => p && getPatternRegex(p).test(normUrl));
 
     let isProtected = false;
     let isTMGroup = false;
