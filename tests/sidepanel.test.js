@@ -90,6 +90,19 @@ describe('sidepanel logic', () => {
     }));
   });
 
+  test('header layout and sync icon elements exist', () => {
+    const settingsBtn = document.getElementById('settings-btn');
+    expect(settingsBtn).not.toBeNull();
+    expect(getComputedStyle(settingsBtn).marginLeft).toBe('auto');
+
+    const syncIndicator = document.getElementById('sync-indicator');
+    expect(syncIndicator).not.toBeNull();
+    const svgPath = syncIndicator.querySelector('svg path');
+    expect(svgPath).not.toBeNull();
+    // Verify sync icon path is used (starts with M160-160v-200h200v80h-84q46)
+    expect(svgPath.getAttribute('d')).toContain('M160-160v-200h200v80h-84q46');
+  });
+
   test('Delete target interaction', async () => {
     chromeMock.storage.local.get.mockResolvedValue({
       targets: [{ name: 'ToDelete', pattern: ['delete.me'] }]
