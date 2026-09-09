@@ -103,6 +103,79 @@ describe('sidepanel logic', () => {
     expect(svgPath.getAttribute('d')).toContain('M150-760h220q20');
   });
 
+  test('インポートデータは許可された target と settings のみ受け付ける', async () => {
+    const { validateImportData } = await import('../projects/app/sidepanel.js');
+
+    expect(() => validateImportData({
+      targets: [{ name: 'Allowed', pattern: ['example.com/*'], color: 'blue' }],
+      settings: { collapseAfterCollect: true, syncEnabled: false }
+    })).not.toThrow();
+    expect(() => validateImportData({
+      targets: [{ name: 'Unknown', pattern: 'example.com', note: 'not allowed' }]
+    })).toThrow('Invalid target property');
+    expect(() => validateImportData({
+      metadata: 'not allowed',
+      targets: [{ name: 'Unknown top level', pattern: 'example.com' }]
+    })).toThrow('Invalid import property');
+    expect(() => validateImportData({
+      targets: Array.from({ length: 101 }, (_, index) => ({
+        name: `Target ${index}`,
+        pattern: 'example.com'
+      }))
+    })).toThrow('targets array exceeds limit');
+    expect(() => validateImportData({
+      targets: [{ name: 'x'.repeat(101), pattern: 'example.com' }]
+    })).toThrow('Invalid target name');
+    expect(() => validateImportData({
+      targets: [{ name: 'Huge pattern', pattern: 'x'.repeat(501) }]
+    })).toThrow('Invalid target pattern');
+    expect(() => validateImportData({
+      targets: [{ name: 'Huge color', pattern: 'example.com', color: 'x'.repeat(21) }]
+    })).toThrow('Invalid target color');
+    expect(() => validateImportData({
+      targets: [{ name: 'Unknown color', pattern: 'example.com', color: 'navy' }]
+    })).toThrow('Invalid target color');
+    expect(() => validateImportData({
+      targets: [{ name: 'Unknown setting', pattern: 'example.com' }],
+      settings: { arbitrarySetting: true }
+    })).toThrow('Invalid settings property');
+    expect(() => validateImportData({
+      targets: [{ name: 'Wrong setting type', pattern: 'example.com' }],
+      settings: { collapseAfterCollect: 'true' }
+    })).toThrow('Invalid settings value');
+  });
+
+  test('貼り付けテキストは JSON.parse 前に全体サイズを検証する', async () => {
+    const { init, MAX_IMPORT_DATA_SIZE } = await import('../projects/app/sidepanel.js');
+    await init();
+
+    document.getElementById('paste-import-textarea').value = 'x'.repeat(MAX_IMPORT_DATA_SIZE + 1);
+    const parseSpy = jest.spyOn(JSON, 'parse');
+    document.getElementById('confirm-paste-import-btn').click();
+
+    expect(parseSpy).not.toHaveBeenCalled();
+    expect(chromeMock.i18n.getMessage).toHaveBeenCalledWith('importError');
+    parseSpy.mockRestore();
+  });
+
+  test('ファイルは FileReader.readAsText 前に全体サイズを検証する', async () => {
+    const { init, MAX_IMPORT_DATA_SIZE } = await import('../projects/app/sidepanel.js');
+    await init();
+
+    const fileInput = document.getElementById('file-input');
+    const file = new Blob(['x'.repeat(MAX_IMPORT_DATA_SIZE + 1)], { type: 'application/json' });
+    global.FileReader = jest.fn();
+
+    Object.defineProperty(fileInput, 'files', {
+      value: [file],
+      writable: false
+    });
+    fileInput.dispatchEvent(new Event('change'));
+
+    expect(global.FileReader).not.toHaveBeenCalled();
+    expect(chromeMock.i18n.getMessage).toHaveBeenCalledWith('importError');
+  });
+
   test('Delete target interaction', async () => {
     chromeMock.storage.local.get.mockResolvedValue({
       targets: [{ name: 'ToDelete', pattern: ['delete.me'] }]
