@@ -26,6 +26,7 @@ describe('ui/modal-settings.js', () => {
       <input type="checkbox" id="close-duplicate-tabs-switch">
       <input type="checkbox" id="keep-tm-order-switch">
       <input type="checkbox" id="sync-enabled-switch">
+      <div id="sync-indicator" class="hidden"></div>
       <div id="about-version"></div>
       <div id="about-developer"></div>
       <div id="about-target-count"></div>
@@ -56,11 +57,16 @@ describe('ui/modal-settings.js', () => {
     expect(document.getElementById('sync-modal-scrim').style.display).toBe('none');
   });
 
-  test('renderSettingsUI updates switches', () => {
+  test('renderSettingsUI updates switches and sync indicator', () => {
     renderSettingsUI();
     expect(document.getElementById('collect-all-groups-switch').checked).toBe(true);
     expect(document.getElementById('collapse-after-collect-switch').checked).toBe(false);
     expect(document.getElementById('discard-tabs-container').classList.contains('disabled')).toBe(true);
+    expect(document.getElementById('sync-indicator').classList.contains('hidden')).toBe(true);
+
+    state.settings.syncEnabled = true;
+    renderSettingsUI();
+    expect(document.getElementById('sync-indicator').classList.contains('hidden')).toBe(false);
   });
 
   test('updateAboutInfo updates info', () => {

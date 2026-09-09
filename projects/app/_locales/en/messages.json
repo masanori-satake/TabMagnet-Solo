@@ -33,7 +33,10 @@
     "message": "Cancel"
   },
   "noTargets": {
-    "message": "No targets registered."
+    "message": "No groups registered."
+  },
+  "syncActiveTooltip": {
+    "message": "Syncing settings across devices"
   },
   "magnetAll": {
     "message": "Magnet All"

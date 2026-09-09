@@ -85,7 +85,7 @@
       padding: 0 16px;
       display: flex;
       align-items: center;
-      justify-content: flex-end;
+      justify-content: space-between;
       flex-shrink: 0;
     }
 
@@ -107,6 +107,13 @@
 
     .icon-button:hover {
       background-color: rgba(0, 0, 0, 0.08);
+    }
+
+    .icon-button.disabled,
+    .icon-button:disabled {
+      opacity: 0.38;
+      cursor: default;
+      pointer-events: none;
     }
 
     .icon-button svg {
@@ -149,6 +156,12 @@
     .execute-btn .tooltip {
       left: auto;
       right: 0;
+      transform: none;
+    }
+
+    #sync-indicator .tooltip {
+      left: 0;
+      right: auto;
       transform: none;
     }
 
@@ -785,6 +798,10 @@
 </head>
 <body>
   <header>
+    <div id="sync-indicator" class="icon-button hidden" style="cursor: help;">
+      <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M260-160q-91 0-155.5-63T40-377q0-78 47-139t123-78q25-92 100-149t170-57q117 0 198.5 81.5T760-520q69 8 114.5 59.5T920-340q0 75-52.5 127.5T740-160H260Zm0-80h480q42 0 71-29t29-71q0-42-29-71t-71-29h-60v-80q0-83-58.5-141.5T480-720q-83 0-141.5 58.5T280-520v20h-20q-58 0-99 41t-41 99q0 58 41 99t99 41Z"/></svg>
+      <span class="tooltip" data-i18n="syncActiveTooltip"></span>
+    </div>
     <button id="settings-btn" class="icon-button">
       <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="m370-80-16-128q-13-5-24.5-12T307-235l-119 50L78-375l103-78q-1-7-1-13.5v-27q0-6.5 1-13.5L78-585l110-190 119 50q11-8 23-15t24-12l16-128h220l16 128q13 5 24.5 12t22.5 15l119-50 110 190-103 78q1 7 1 13.5v27q0 6.5-2 13.5l103 78-110 190-118-50q-11 8-23 15t-24 12L590-80H370Zm70-80h79l14-106q31-8 57.5-23.5T639-327l99 41 39-68-86-65q5-14 7-29.5t2-31.5q0-16-2-31.5t-7-29.5l86-65-39-68-99 42q-22-23-48.5-38.5T533-694l-13-106h-79l-14 106q-31 8-57.5 23.5T321-633l-99-41-39 68 86 64q-5 15-7 30t-2 32q0 16 2 31t7 30l-86 65 39 68 99-42q22 23 48.5 38.5T427-266l13 106Zm42-180q58 0 99-41t41-99q0-58-41-99t-99-41q-59 0-99.5 41T342-480q0 58 40.5 99t99.5 41Zm-2-140Z"/></svg>
       <span class="tooltip" data-i18n="settings"></span>

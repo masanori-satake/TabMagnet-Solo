@@ -11,6 +11,7 @@ export function renderSettingsUI() {
   const closeDuplicateTabsSwitch = document.getElementById('close-duplicate-tabs-switch');
   const keepTMOrderSwitch = document.getElementById('keep-tm-order-switch');
   const syncEnabledSwitch = document.getElementById('sync-enabled-switch');
+  const syncIndicator = document.getElementById('sync-indicator');
 
   if (collectAllGroupsSwitch) collectAllGroupsSwitch.checked = !!state.settings.collectFromAllGroups;
   if (collapseAfterCollectSwitch) collapseAfterCollectSwitch.checked = !!state.settings.collapseAfterCollect;
@@ -18,6 +19,10 @@ export function renderSettingsUI() {
   if (closeDuplicateTabsSwitch) closeDuplicateTabsSwitch.checked = !!state.settings.closeDuplicateTabs;
   if (keepTMOrderSwitch) keepTMOrderSwitch.checked = !!state.settings.keepTMOrder;
   if (syncEnabledSwitch) syncEnabledSwitch.checked = !!state.settings.syncEnabled;
+
+  if (syncIndicator) {
+    syncIndicator.classList.toggle('hidden', !state.settings.syncEnabled);
+  }
 
   if (state.settings.collapseAfterCollect) {
     if (discardTabsContainer) discardTabsContainer.classList.remove('disabled');

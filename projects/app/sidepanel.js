@@ -214,11 +214,12 @@ function setupEventListeners() {
     saveSettings({ keepTMOrder: keepTMOrderSwitch.checked });
   });
 
-  syncEnabledSwitch.addEventListener('change', () => {
+  syncEnabledSwitch.addEventListener('change', async () => {
     if (syncEnabledSwitch.checked) {
       showSyncModal();
     } else {
-      saveSettings({ syncEnabled: false });
+      await saveSettings({ syncEnabled: false });
+      renderSettingsUI();
     }
   });
 
@@ -290,6 +291,7 @@ function handleCancelSync() {
   hideSyncModal();
   syncEnabledSwitch.checked = false;
   saveSettings({ syncEnabled: false });
+  renderSettingsUI();
 }
 
 /**
