@@ -46,6 +46,13 @@ export function getCompatibleColor(color) {
   return 'grey'; // フォールバック
 }
 
+/**
+ * URLからプロトコル（http/https）と末尾スラッシュを除去して正規化する
+ * @param {string} str - 対象URL文字列
+ * @returns {string} 正規化済み文字列
+ */
+const normalizeUrl = (str) => str.replace(/^https?:\/\//, '').replace(/\/$/, '');
+
 // パターンからコンパイルされた正規表現のキャッシュ
 const patternRegexCache = new Map();
 
@@ -59,8 +66,7 @@ const patternRegexCache = new Map();
 function getPatternRegex(pattern) {
   let regex = patternRegexCache.get(pattern);
   if (!regex) {
-    const normalize = (str) => str.replace(/^https?:\/\//, '').replace(/\/$/, '');
-    const normalizedPattern = normalize(pattern);
+    const normalizedPattern = normalizeUrl(pattern);
 
     // エスケープ処理: 正規表現の特殊文字をエスケープ（"*" 以外）
     const escapedPattern = normalizedPattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&');
@@ -85,14 +91,13 @@ function getPatternRegex(pattern) {
  * - "*" によるワイルドカード（途中または末尾）をサポート
  * - "http://" や "https://" は含まなくてもマッチするように扱う
  *
- * @param {string} url 判定対象のURL
+ * @param {string} url 判定対象のURL（または事前に正規化済みのURL文字列）
  * @param {string} pattern ユーザー定義のパターン
  * @returns {boolean} マッチした場合はtrue
  */
 export function matchUrl(url, pattern) {
   if (!url || !pattern) return false;
 
-  const normalizeUrl = (str) => str.replace(/^https?:\/\//, '').replace(/\/$/, '');
   const normalizedUrl = normalizeUrl(url);
   const regex = getPatternRegex(pattern);
 
@@ -207,7 +212,10 @@ async function _executeMagnetInternal(target, options = {}) {
   const patterns = Array.isArray(target.pattern) ? target.pattern : [target.pattern];
 
   for (const tab of allTabs) {
-    const isMatched = patterns.some(p => matchUrl(tab.url, p));
+    // パフォーマンス最適化: 各タブにつき URL の正規化とコンパイル済み正規表現のテストを効率的に実行
+    if (!tab.url) continue;
+    const normUrl = normalizeUrl(tab.url);
+    const isMatched = patterns.some(p => getPatternRegex(p).test(normUrl));
 
     let isProtected = false;
     let isTMGroup = false;
