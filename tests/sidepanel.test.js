@@ -93,6 +93,7 @@ describe('sidepanel logic', () => {
   test('header layout and sync icon elements exist', () => {
     const settingsBtn = document.getElementById('settings-btn');
     expect(settingsBtn).not.toBeNull();
+    expect(getComputedStyle(settingsBtn).marginLeft).toBe('auto');
 
     const syncIndicator = document.getElementById('sync-indicator');
     expect(syncIndicator).not.toBeNull();
