@@ -51,6 +51,74 @@ describe('getExportTimestamp', () => {
   });
 });
 
+describe('syncFromCloudIfNeeded', () => {
+  let chromeMock;
+
+  beforeEach(() => {
+    chromeMock = {
+      storage: {
+        local: {
+          get: jest.fn(),
+          set: jest.fn().mockResolvedValue({})
+        },
+        sync: {
+          get: jest.fn()
+        }
+      }
+    };
+    global.chrome = chromeMock;
+  });
+
+  afterEach(() => {
+    delete global.chrome;
+  });
+
+  test('should do nothing if syncEnabled is false', async () => {
+    const { syncFromCloudIfNeeded } = await import('../projects/app/ui/utils.js');
+    chromeMock.storage.local.get.mockResolvedValue({
+      settings: { syncEnabled: false }
+    });
+
+    await syncFromCloudIfNeeded();
+
+    expect(chromeMock.storage.sync.get).not.toHaveBeenCalled();
+    expect(chromeMock.storage.local.set).not.toHaveBeenCalled();
+  });
+
+  test('should sync targets and settings from cloud if syncEnabled is true without overwriting syncEnabled', async () => {
+    const { syncFromCloudIfNeeded } = await import('../projects/app/ui/utils.js');
+    chromeMock.storage.local.get.mockResolvedValue({
+      settings: { syncEnabled: true }
+    });
+    chromeMock.storage.sync.get.mockResolvedValue({
+      targets: [{ name: 'CloudTarget' }],
+      settings: { collectFromAllGroups: true, syncEnabled: false } // Cloud says false, but local stays true
+    });
+
+    await syncFromCloudIfNeeded();
+
+    expect(chromeMock.storage.local.set).toHaveBeenCalledWith({
+      targets: [{ name: 'CloudTarget' }],
+      settings: expect.objectContaining({
+        collectFromAllGroups: true,
+        syncEnabled: true
+      })
+    });
+  });
+
+  test('should handle sync errors gracefully', async () => {
+    const { syncFromCloudIfNeeded } = await import('../projects/app/ui/utils.js');
+    console.warn = jest.fn();
+
+    chromeMock.storage.local.get.mockResolvedValue({ settings: { syncEnabled: true } });
+    chromeMock.storage.sync.get.mockRejectedValue(new Error('Sync get error'));
+
+    await syncFromCloudIfNeeded();
+
+    expect(console.warn).toHaveBeenCalledWith('Failed to sync from cloud:', expect.any(Error));
+  });
+});
+
 describe('executeMagnet naming and protection', () => {
   let chromeMock;
 

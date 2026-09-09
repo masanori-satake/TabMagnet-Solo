@@ -127,7 +127,8 @@ export async function init() {
         });
       }
       if (changes.settings && changes.settings.newValue) {
-        const nextSettings = { ...changes.settings.newValue, syncEnabled: true };
+        const currentSyncEnabled = state.settings.syncEnabled;
+        const nextSettings = { ...DEFAULT_SETTINGS, ...changes.settings.newValue, syncEnabled: currentSyncEnabled };
         state.settings = { ...state.settings, ...nextSettings };
         chrome.storage.local.set({ settings: state.settings }).then(() => {
           renderSettingsUI();

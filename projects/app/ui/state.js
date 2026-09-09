@@ -1,4 +1,4 @@
-import { DEFAULT_SETTINGS } from './utils.js';
+import { DEFAULT_SETTINGS, syncFromCloudIfNeeded } from './utils.js';
 
 /**
  * アプリケーションのグローバル状態管理
@@ -15,6 +15,7 @@ export const state = {
  * ストレージから最新のデータをロードする
  */
 export async function loadState() {
+  await syncFromCloudIfNeeded();
   const data = await chrome.storage.local.get(['targets', 'settings']);
   state.targets = data.targets || [];
   state.settings = { ...DEFAULT_SETTINGS, ...(data.settings || {}) };

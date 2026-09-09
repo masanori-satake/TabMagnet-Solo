@@ -376,6 +376,41 @@ export async function checkAndRenameCollectingGroups() {
 }
 
 /**
+ * 端末間同期が有効な場合、クラウド(chrome.storage.sync)から最新データを取得して
+ * ローカルストレージ(chrome.storage.local)に反映する
+ * (端末間同期のON/OFFフラグ syncEnabled はローカル端末の値を保持する)
+ */
+export async function syncFromCloudIfNeeded() {
+  try {
+    const local = await chrome.storage.local.get(['settings']);
+    const isSyncEnabled = local.settings?.syncEnabled ?? false;
+    if (!isSyncEnabled) return;
+
+    const syncData = await chrome.storage.sync.get(['settings', 'targets']);
+    const updates = {};
+
+    if (syncData.targets) {
+      updates.targets = syncData.targets;
+    }
+
+    if (syncData.settings) {
+      const currentLocalSettings = local.settings || {};
+      updates.settings = {
+        ...DEFAULT_SETTINGS,
+        ...syncData.settings,
+        syncEnabled: currentLocalSettings.syncEnabled ?? true
+      };
+    }
+
+    if (Object.keys(updates).length > 0) {
+      await chrome.storage.local.set(updates);
+    }
+  } catch (e) {
+    console.warn('Failed to sync from cloud:', e);
+  }
+}
+
+/**
  * 重複するターゲットグループのクリーンアップ
  */
 export async function performAutoCleanup() {
