@@ -99,8 +99,8 @@ describe('sidepanel logic', () => {
     expect(syncIndicator).not.toBeNull();
     const svgPath = syncIndicator.querySelector('svg path');
     expect(svgPath).not.toBeNull();
-    // Verify sync icon path is used (starts with M160-160v-200h200v80h-84q46)
-    expect(svgPath.getAttribute('d')).toContain('M160-160v-200h200v80h-84q46');
+    // Verify device sync icon path is used
+    expect(svgPath.getAttribute('d')).toContain('M150-760h220q20');
   });
 
   test('Delete target interaction', async () => {
