@@ -34,6 +34,39 @@ describe('matchUrl', () => {
     // Regression test for: notebooklm.google.com/* should match https://notebooklm.google.com/
     expect(matchUrl('https://notebooklm.google.com/', 'notebooklm.google.com/*')).toBe(true);
   });
+
+  test('ReDoS prevention and consecutive wildcard handling', () => {
+    expect(matchUrl('https://jira.example.com/browse/PROJ-1', 'jira.example.com/***browse/PROJ-***')).toBe(true);
+  });
+
+  test('matches a long near-miss without wildcard backtracking', () => {
+    const pattern = 'example.com/' + 'a*'.repeat(30) + 'z';
+    const url = 'https://example.com/' + 'a'.repeat(20000) + 'y';
+
+    expect(matchUrl(url, pattern)).toBe(false);
+  });
+
+  test('pattern parts cache limit test', () => {
+    const maximumCacheSize = 500;
+    const cacheSizes = [];
+    const originalMapSet = Map.prototype.set;
+    const mapSetSpy = jest.spyOn(Map.prototype, 'set').mockImplementation(function(...args) {
+      const result = originalMapSet.apply(this, args);
+      cacheSizes.push(this.size);
+      return result;
+    });
+
+    try {
+      for (let i = 0; i < 500; i++) {
+        matchUrl('https://example.com/cache-limit-page' + i, 'example.com/cache-limit-page' + i);
+      }
+
+      expect(mapSetSpy).toHaveBeenCalledTimes(500);
+      expect(Math.max(...cacheSizes)).toBeLessThanOrEqual(maximumCacheSize);
+    } finally {
+      mapSetSpy.mockRestore();
+    }
+  });
 });
 
 describe('getTimestamp', () => {

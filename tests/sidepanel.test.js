@@ -90,6 +90,28 @@ describe('sidepanel logic', () => {
     }));
   });
 
+  test('Add new target modal boundary check prevents saving invalid inputs', async () => {
+    const { init } = await import('../projects/app/sidepanel.js');
+    await init();
+
+    document.getElementById('add-new-btn').click();
+
+    // Oversized target name
+    document.getElementById('new-name').value = 'A'.repeat(101);
+    document.querySelector('.pattern-input').value = 'example.com';
+    document.getElementById('save-target-btn').click();
+
+    const feedbackEl = document.getElementById('modal-feedback');
+    expect(feedbackEl.classList.contains('hidden')).toBe(false);
+
+    // Oversized pattern
+    document.getElementById('new-name').value = 'Valid Name';
+    document.querySelector('.pattern-input').value = 'B'.repeat(501);
+    document.getElementById('save-target-btn').click();
+
+    expect(feedbackEl.classList.contains('hidden')).toBe(false);
+  });
+
   test('header layout and sync icon elements exist', () => {
     const settingsBtn = document.getElementById('settings-btn');
     expect(settingsBtn).not.toBeNull();
