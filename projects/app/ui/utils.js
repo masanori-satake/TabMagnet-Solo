@@ -53,41 +53,84 @@ export function getCompatibleColor(color) {
  */
 const normalizeUrl = (str) => str.replace(/^https?:\/\//, '').replace(/\/$/, '');
 
-// パターンからコンパイルされた正規表現のキャッシュ
-const patternRegexCache = new Map();
-const MAX_PATTERN_REGEX_CACHE_SIZE = 500;
+// パターンを照合するためのリテラル部分のキャッシュ
+const patternPartsCache = new Map();
+const MAX_PATTERN_PARTS_CACHE_SIZE = 500;
 
 /**
- * URLパターンに応じた正規表現オブジェクトを取得（または生成してキャッシュ）する
- * 多数のタブ走査時に同一パターンの正規表現再生成・文字列置換コストを削減するための最適化
+ * 連続するワイルドカードを1つに統合する
+ * 正規表現を使わずに処理し、パターンの長さに比例した時間で完了させる。
  *
  * @param {string} pattern ユーザー定義のパターン
- * @returns {RegExp} コンパイル済みの正規表現オブジェクト
+ * @returns {string} 連続するワイルドカードを統合したパターン
  */
-function getPatternRegex(pattern) {
-  let regex = patternRegexCache.get(pattern);
-  if (!regex) {
-    if (patternRegexCache.size >= MAX_PATTERN_REGEX_CACHE_SIZE) {
-      patternRegexCache.clear();
+function collapseWildcards(pattern) {
+  let collapsedPattern = '';
+  let previousWasWildcard = false;
+
+  for (const character of pattern) {
+    if (character !== '*' || !previousWasWildcard) {
+      collapsedPattern += character;
+    }
+    previousWasWildcard = character === '*';
+  }
+
+  return collapsedPattern;
+}
+
+/**
+ * URLパターンのリテラル部分を取得（または生成してキャッシュ）する
+ * ワイルドカードを区切りとして扱うことで、正規表現のバックトラッキングを発生させずに照合できる。
+ *
+ * @param {string} pattern ユーザー定義のパターン
+ * @returns {string[]} ワイルドカードで分割したリテラル部分
+ */
+function getPatternParts(pattern) {
+  let parts = patternPartsCache.get(pattern);
+  if (!parts) {
+    if (patternPartsCache.size >= MAX_PATTERN_PARTS_CACHE_SIZE) {
+      patternPartsCache.clear();
     }
     const normalizedPattern = normalizeUrl(pattern);
+    const collapsedPattern = collapseWildcards(normalizedPattern);
 
-    // 連続するワイルドカード "*" を単一の "*" に統合して ReDoS (正規表現 DoS) を防止
-    const collapsedPattern = normalizedPattern.replace(/\*+/g, '*');
+    // 末尾の "/*" はドメイン単体にもマッチする従来仕様を維持する
+    const matchPattern = collapsedPattern.endsWith('/*')
+      ? collapsedPattern.slice(0, -2)
+      : collapsedPattern;
 
-    // エスケープ処理: 正規表現の特殊文字をエスケープ（"*" 以外）
-    const escapedPattern = collapsedPattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&');
-    let regexPattern = '^' + escapedPattern.replace(/\*/g, '.*');
+    parts = matchPattern.split('*');
+    patternPartsCache.set(pattern, parts);
+  }
+  return parts;
+}
 
-    // 末尾が "/*" で終わるパターンの場合、スラッシュなしのドメイン単体にもマッチするように調整
-    if (collapsedPattern.endsWith('/*')) {
-      regexPattern = regexPattern.slice(0, -3) + '(/.*)?';
+/**
+ * ワイルドカードで分割されたリテラル部分とURLの前方一致を判定する
+ *
+ * @param {string} url 正規化済みのURL文字列
+ * @param {string[]} parts ワイルドカードで分割したリテラル部分
+ * @returns {boolean} リテラル部分がワイルドカードの順序で一致する場合はtrue
+ */
+function matchesPatternParts(url, parts) {
+  let searchStart = 0;
+
+  for (let index = 0; index < parts.length; index++) {
+    const part = parts[index];
+    if (!part) continue;
+
+    if (index === 0) {
+      if (!url.startsWith(part)) return false;
+      searchStart = part.length;
+      continue;
     }
 
-    regex = new RegExp(regexPattern);
-    patternRegexCache.set(pattern, regex);
+    const partIndex = url.indexOf(part, searchStart);
+    if (partIndex === -1) return false;
+    searchStart = partIndex + part.length;
   }
-  return regex;
+
+  return true;
 }
 
 /**
@@ -106,9 +149,7 @@ export function matchUrl(url, pattern) {
   if (!url || !pattern) return false;
 
   const normalizedUrl = normalizeUrl(url);
-  const regex = getPatternRegex(pattern);
-
-  return regex.test(normalizedUrl);
+  return matchesPatternParts(normalizedUrl, getPatternParts(pattern));
 }
 
 /**
@@ -219,10 +260,10 @@ async function _executeMagnetInternal(target, options = {}) {
   const patterns = Array.isArray(target.pattern) ? target.pattern : [target.pattern];
 
   for (const tab of allTabs) {
-    // パフォーマンス最適化: 各タブにつき URL の正規化とコンパイル済み正規表現のテストを効率的に実行
+    // パフォーマンス最適化: 各タブにつき URL の正規化とキャッシュ済みパターンの照合を効率的に実行
     if (!tab.url) continue;
     const normUrl = normalizeUrl(tab.url);
-    const isMatched = patterns.some(p => p && getPatternRegex(p).test(normUrl));
+    const isMatched = patterns.some(p => p && matchesPatternParts(normUrl, getPatternParts(p)));
 
     let isProtected = false;
     let isTMGroup = false;

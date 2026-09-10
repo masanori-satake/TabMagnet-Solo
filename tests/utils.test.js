@@ -39,7 +39,14 @@ describe('matchUrl', () => {
     expect(matchUrl('https://jira.example.com/browse/PROJ-1', 'jira.example.com/***browse/PROJ-***')).toBe(true);
   });
 
-  test('patternRegexCache limit test', () => {
+  test('matches a long near-miss without wildcard backtracking', () => {
+    const pattern = 'example.com/' + 'a*'.repeat(30) + 'z';
+    const url = 'https://example.com/' + 'a'.repeat(20000) + 'y';
+
+    expect(matchUrl(url, pattern)).toBe(false);
+  });
+
+  test('pattern parts cache limit test', () => {
     for (let i = 0; i < 550; i++) {
       matchUrl('https://example.com/page' + i, 'example.com/page' + i);
     }
