@@ -55,6 +55,7 @@ const normalizeUrl = (str) => str.replace(/^https?:\/\//, '').replace(/\/$/, '')
 
 // パターンからコンパイルされた正規表現のキャッシュ
 const patternRegexCache = new Map();
+const MAX_PATTERN_REGEX_CACHE_SIZE = 500;
 
 /**
  * URLパターンに応じた正規表現オブジェクトを取得（または生成してキャッシュ）する
@@ -66,14 +67,20 @@ const patternRegexCache = new Map();
 function getPatternRegex(pattern) {
   let regex = patternRegexCache.get(pattern);
   if (!regex) {
+    if (patternRegexCache.size >= MAX_PATTERN_REGEX_CACHE_SIZE) {
+      patternRegexCache.clear();
+    }
     const normalizedPattern = normalizeUrl(pattern);
 
+    // 連続するワイルドカード "*" を単一の "*" に統合して ReDoS (正規表現 DoS) を防止
+    const collapsedPattern = normalizedPattern.replace(/\*+/g, '*');
+
     // エスケープ処理: 正規表現の特殊文字をエスケープ（"*" 以外）
-    const escapedPattern = normalizedPattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&');
+    const escapedPattern = collapsedPattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&');
     let regexPattern = '^' + escapedPattern.replace(/\*/g, '.*');
 
     // 末尾が "/*" で終わるパターンの場合、スラッシュなしのドメイン単体にもマッチするように調整
-    if (normalizedPattern.endsWith('/*')) {
+    if (collapsedPattern.endsWith('/*')) {
       regexPattern = regexPattern.slice(0, -3) + '(/.*)?';
     }
 

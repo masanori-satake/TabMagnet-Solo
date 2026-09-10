@@ -366,6 +366,17 @@ async function handleSaveTarget() {
     return;
   }
 
+  // 多層防御: UI入力の境界条件（名前長、パターン長・件数、ターゲット上限）を検証
+  if (name.length > 100 || rawPatterns.length > 50 || rawPatterns.some(p => p.length > 500)) {
+    showModalFeedback(chrome.i18n.getMessage('errorInputRequired'));
+    return;
+  }
+
+  if (state.currentEditIndex === null && state.targets.length >= 100) {
+    showModalFeedback(chrome.i18n.getMessage('errorInputRequired'));
+    return;
+  }
+
   const patterns = [];
   let hasSpecialPage = false;
 

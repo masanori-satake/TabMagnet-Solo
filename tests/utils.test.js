@@ -34,6 +34,18 @@ describe('matchUrl', () => {
     // Regression test for: notebooklm.google.com/* should match https://notebooklm.google.com/
     expect(matchUrl('https://notebooklm.google.com/', 'notebooklm.google.com/*')).toBe(true);
   });
+
+  test('ReDoS prevention and consecutive wildcard handling', () => {
+    expect(matchUrl('https://jira.example.com/browse/PROJ-1', 'jira.example.com/***browse/PROJ-***')).toBe(true);
+  });
+
+  test('patternRegexCache limit test', () => {
+    for (let i = 0; i < 550; i++) {
+      matchUrl('https://example.com/page' + i, 'example.com/page' + i);
+    }
+    // Should operate smoothly without throwing or memory issues
+    expect(matchUrl('https://example.com/final', 'example.com/final')).toBe(true);
+  });
 });
 
 describe('getTimestamp', () => {
