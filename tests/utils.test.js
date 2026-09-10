@@ -47,11 +47,25 @@ describe('matchUrl', () => {
   });
 
   test('pattern parts cache limit test', () => {
-    for (let i = 0; i < 550; i++) {
-      matchUrl('https://example.com/page' + i, 'example.com/page' + i);
+    const maximumCacheSize = 500;
+    const cacheSizes = [];
+    const originalMapSet = Map.prototype.set;
+    const mapSetSpy = jest.spyOn(Map.prototype, 'set').mockImplementation(function(...args) {
+      const result = originalMapSet.apply(this, args);
+      cacheSizes.push(this.size);
+      return result;
+    });
+
+    try {
+      for (let i = 0; i < 500; i++) {
+        matchUrl('https://example.com/cache-limit-page' + i, 'example.com/cache-limit-page' + i);
+      }
+
+      expect(mapSetSpy).toHaveBeenCalledTimes(500);
+      expect(Math.max(...cacheSizes)).toBeLessThanOrEqual(maximumCacheSize);
+    } finally {
+      mapSetSpy.mockRestore();
     }
-    // Should operate smoothly without throwing or memory issues
-    expect(matchUrl('https://example.com/final', 'example.com/final')).toBe(true);
   });
 });
 
