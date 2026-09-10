@@ -1,7 +1,7 @@
 # TabMagnet-Solo
 
 [![version](https://img.shields.io/badge/version-1.17.4-blue)](projects/app/manifest.json)
-[![Coverage](https://img.shields.io/badge/coverage-57%25-red)](https://masanori-satake.github.io/TabMagnet-Solo/coverage/)
+[![Coverage](https://img.shields.io/badge/coverage-58%25-red)](https://masanori-satake.github.io/TabMagnet-Solo/coverage/)
 [![Privacy-Local Only](https://img.shields.io/badge/Privacy-Local%20Only-brightgreen)](AGENTS.md)
 [![Manifest V3](https://img.shields.io/badge/Manifest-V3-orange)](projects/app/manifest.json)
 [![Chromebook Optimized](https://img.shields.io/badge/Chromebook-Optimized-skyblue)](#chromebook--mobile-environment-friendly)
