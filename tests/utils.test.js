@@ -125,14 +125,14 @@ describe('syncFromCloudIfNeeded', () => {
       settings: { syncEnabled: true }
     });
     chromeMock.storage.sync.get.mockResolvedValue({
-      targets: [{ name: 'CloudTarget' }],
+      targets: [{ name: 'CloudTarget', pattern: 'cloud.example.com' }],
       settings: { collectFromAllGroups: true, syncEnabled: false } // Cloud says false, but local stays true
     });
 
     await syncFromCloudIfNeeded();
 
     expect(chromeMock.storage.local.set).toHaveBeenCalledWith({
-      targets: [{ name: 'CloudTarget' }],
+      targets: [{ name: 'CloudTarget', pattern: 'cloud.example.com' }],
       settings: expect.objectContaining({
         collectFromAllGroups: true,
         syncEnabled: true
@@ -161,6 +161,22 @@ describe('syncFromCloudIfNeeded', () => {
 
     expect(chromeMock.storage.local.remove).toHaveBeenCalledWith(['targets', 'settings']);
     expect(chromeMock.storage.local.set).not.toHaveBeenCalled();
+  });
+
+  test('should reject malformed cloud data and avoid updating local storage', async () => {
+    const { syncFromCloudIfNeeded } = await import('../projects/app/ui/utils.js');
+    console.warn = jest.fn();
+
+    chromeMock.storage.local.get.mockResolvedValue({ settings: { syncEnabled: true } });
+    chromeMock.storage.sync.get.mockResolvedValue({
+      targets: [{ name: 'Invalid', pattern: 'test.com', extraProp: 'malicious' }]
+    });
+
+    await syncFromCloudIfNeeded();
+
+    expect(chromeMock.storage.local.set).not.toHaveBeenCalled();
+    expect(chromeMock.storage.local.remove).not.toHaveBeenCalled();
+    expect(console.warn).toHaveBeenCalledWith('Failed to sync from cloud:', expect.any(Error));
   });
 });
 

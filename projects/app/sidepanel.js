@@ -32,17 +32,15 @@ import {
   DEFAULT_SETTINGS,
   isSpecialPage,
   getCompatibleColor,
-  isEdge
+  isEdge,
+  validateImportData
 } from './ui/utils.js';
-import { ALL_COLORS, COLOR_COMPATIBILITY_MAP } from './ui/constants.js';
+
+export { validateImportData };
 
 // JSON 解析前に巨大な入力を拒否し、メモリの過剰消費を防ぐ。
 export const MAX_IMPORT_DATA_SIZE = 1024 * 1024;
-const ALLOWED_IMPORT_PROPERTIES = new Set(['targets', 'settings']);
-const ALLOWED_TARGET_PROPERTIES = new Set(['name', 'pattern', 'color']);
 const ALLOWED_SETTINGS_PROPERTIES = new Set(Object.keys(DEFAULT_SETTINGS));
-const ALLOWED_TARGET_COLORS = new Set([...ALL_COLORS, ...Object.keys(COLOR_COMPATIBILITY_MAP)]);
-const MAX_TARGET_COLOR_LENGTH = 20;
 
 // DOM elements
 const targetListEl = document.getElementById('target-list');
@@ -127,6 +125,15 @@ export async function init() {
         }
       }
     } else if (area === 'sync' && state.settings.syncEnabled) {
+      try {
+        const syncData = {};
+        if (changes.targets) syncData.targets = changes.targets.newValue;
+        if (changes.settings) syncData.settings = changes.settings.newValue;
+        validateImportData(syncData);
+      } catch (e) {
+        console.warn('Invalid sync data received in sidepanel:', e);
+        return;
+      }
       if (changes.targets && changes.targets.newValue) {
         const nextTargets = changes.targets.newValue;
         state.targets = nextTargets;
@@ -442,73 +449,6 @@ async function handleAddFromDomain() {
   }
 }
 
-/**
- * オブジェクトが許可されたプロパティだけを持つことを確認する
- * @param {Object} value - 検証対象
- * @param {Set<string>} allowedProperties - 許可するプロパティ名
- * @param {string} errorMessage - 不正時のエラーメッセージ
- * @throws {Error} 許可されていないプロパティが存在する場合
- */
-function validateAllowedProperties(value, allowedProperties, errorMessage) {
-  if (Object.keys(value).some(key => !allowedProperties.has(key))) {
-    throw new Error(errorMessage);
-  }
-}
-
-/**
- * インポートデータの構造・型・入力長を検証する
- * @param {Object} data - インポートする JSON データ
- * @throws {Error} インポートデータが許可スキーマに適合しない場合
- */
-export function validateImportData(data) {
-  if (!data || typeof data !== 'object' || Array.isArray(data)) {
-    throw new Error('Invalid format');
-  }
-  validateAllowedProperties(data, ALLOWED_IMPORT_PROPERTIES, 'Invalid import property');
-
-  if (!Array.isArray(data.targets)) {
-    throw new Error('Invalid format: targets must be an array');
-  }
-  if (data.targets.length > 100) {
-    throw new Error('Invalid format: targets array exceeds limit');
-  }
-
-  for (const target of data.targets) {
-    if (!target || typeof target !== 'object' || Array.isArray(target)) {
-      throw new Error('Invalid target element');
-    }
-    validateAllowedProperties(target, ALLOWED_TARGET_PROPERTIES, 'Invalid target property');
-    if (typeof target.name !== 'string' || target.name.trim() === '' || target.name.length > 100) {
-      throw new Error('Invalid target name');
-    }
-    const isPatternStringValid = typeof target.pattern === 'string' &&
-      target.pattern.trim() !== '' &&
-      target.pattern.length <= 500;
-    const isPatternArrayValid = Array.isArray(target.pattern) &&
-      target.pattern.length > 0 &&
-      target.pattern.length <= 50 &&
-      target.pattern.every(p => typeof p === 'string' && p.trim() !== '' && p.length <= 500);
-
-    if (!isPatternStringValid && !isPatternArrayValid) {
-      throw new Error('Invalid target pattern');
-    }
-    if (Object.prototype.hasOwnProperty.call(target, 'color') &&
-        (typeof target.color !== 'string' || target.color.trim() === '' ||
-         target.color.length > MAX_TARGET_COLOR_LENGTH || !ALLOWED_TARGET_COLORS.has(target.color))) {
-      throw new Error('Invalid target color');
-    }
-  }
-
-  if (data.settings !== undefined) {
-    if (!data.settings || typeof data.settings !== 'object' || Array.isArray(data.settings)) {
-      throw new Error('Invalid settings');
-    }
-    validateAllowedProperties(data.settings, ALLOWED_SETTINGS_PROPERTIES, 'Invalid settings property');
-    if (Object.values(data.settings).some(value => typeof value !== 'boolean')) {
-      throw new Error('Invalid settings value');
-    }
-  }
-}
 
 /**
  * サイズ検証後にインポートテキストを JSON として解析する
@@ -529,6 +469,10 @@ export function parseImportText(text) {
  */
 async function importData(data) {
   validateImportData(data);
+  // 同期では部分データを許可するが、インポートではターゲット一覧が必須である。
+  if (!Array.isArray(data.targets)) {
+    throw new Error('Invalid import data: targets must be an array');
+  }
 
   // 検証済みの許可プロパティだけから保存用データを再構築する。
   const importedTargets = data.targets.map(target => ({

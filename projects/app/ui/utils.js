@@ -3,6 +3,7 @@ import {
   SUFFIX_COLLECTING,
   COLORS_CHROME,
   COLORS_EDGE,
+  ALL_COLORS,
   COLOR_COMPATIBILITY_MAP
 } from './constants.js';
 
@@ -160,6 +161,76 @@ export function matchUrl(url, pattern) {
 export function isSpecialPage(url) {
   if (!url) return true;
   return !url.startsWith('http://') && !url.startsWith('https://');
+}
+
+const ALLOWED_IMPORT_PROPERTIES = new Set(['targets', 'settings']);
+const ALLOWED_TARGET_PROPERTIES = new Set(['name', 'pattern', 'color']);
+const ALLOWED_SETTINGS_PROPERTIES = new Set(Object.keys(DEFAULT_SETTINGS));
+const ALLOWED_TARGET_COLORS = new Set([...ALL_COLORS, ...Object.keys(COLOR_COMPATIBILITY_MAP)]);
+const MAX_TARGET_COLOR_LENGTH = 20;
+
+/**
+ * オブジェクトが許可されたプロパティだけを持つことを確認する
+ */
+function validateAllowedProperties(value, allowedProperties, errorMessage) {
+  if (Object.keys(value).some(key => !allowedProperties.has(key))) {
+    throw new Error(errorMessage);
+  }
+}
+
+/**
+ * インポート・同期データの構造・型・入力長を検証する
+ */
+export function validateImportData(data) {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) {
+    throw new Error('Invalid format');
+  }
+  validateAllowedProperties(data, ALLOWED_IMPORT_PROPERTIES, 'Invalid import property');
+
+  if (data.targets !== undefined) {
+    if (!Array.isArray(data.targets)) {
+      throw new Error('Invalid format: targets must be an array');
+    }
+    if (data.targets.length > 100) {
+      throw new Error('Invalid format: targets array exceeds limit');
+    }
+
+    for (const target of data.targets) {
+      if (!target || typeof target !== 'object' || Array.isArray(target)) {
+        throw new Error('Invalid target element');
+      }
+      validateAllowedProperties(target, ALLOWED_TARGET_PROPERTIES, 'Invalid target property');
+      if (typeof target.name !== 'string' || target.name.trim() === '' || target.name.length > 100) {
+        throw new Error('Invalid target name');
+      }
+      const isPatternStringValid = typeof target.pattern === 'string' &&
+        target.pattern.trim() !== '' &&
+        target.pattern.length <= 500;
+      const isPatternArrayValid = Array.isArray(target.pattern) &&
+        target.pattern.length > 0 &&
+        target.pattern.length <= 50 &&
+        target.pattern.every(p => typeof p === 'string' && p.trim() !== '' && p.length <= 500);
+
+      if (!isPatternStringValid && !isPatternArrayValid) {
+        throw new Error('Invalid target pattern');
+      }
+      if (Object.prototype.hasOwnProperty.call(target, 'color') &&
+          (typeof target.color !== 'string' || target.color.trim() === '' ||
+           target.color.length > MAX_TARGET_COLOR_LENGTH || !ALLOWED_TARGET_COLORS.has(target.color))) {
+        throw new Error('Invalid target color');
+      }
+    }
+  }
+
+  if (data.settings !== undefined) {
+    if (!data.settings || typeof data.settings !== 'object' || Array.isArray(data.settings)) {
+      throw new Error('Invalid settings');
+    }
+    validateAllowedProperties(data.settings, ALLOWED_SETTINGS_PROPERTIES, 'Invalid settings property');
+    if (Object.values(data.settings).some(value => typeof value !== 'boolean')) {
+      throw new Error('Invalid settings value');
+    }
+  }
 }
 
 /**
@@ -443,6 +514,8 @@ export async function syncFromCloudIfNeeded() {
     if (!isSyncEnabled) return;
 
     const syncData = await chrome.storage.sync.get(['settings', 'targets']);
+    validateImportData(syncData);
+
     const updates = {};
     const keysToRemove = [];
 

@@ -6,7 +6,7 @@
  * 2. ブラウザ起動時の初期化処理
  * 3. 収集完了待ちグループの自動リネーム
  */
-import { checkAndRenameCollectingGroups, performAutoCleanup, syncFromCloudIfNeeded, DEFAULT_SETTINGS } from './ui/utils.js';
+import { checkAndRenameCollectingGroups, performAutoCleanup, syncFromCloudIfNeeded, DEFAULT_SETTINGS, validateImportData } from './ui/utils.js';
 
 /**
  * 拡張機能起動時またはブラウザ起動時に実行
@@ -35,6 +35,16 @@ chrome.storage.onChanged.addListener(async (changes, area) => {
     const local = await chrome.storage.local.get(['settings']);
     const isSyncEnabled = local.settings?.syncEnabled ?? false;
     if (!isSyncEnabled) return;
+
+    try {
+      const syncData = {};
+      if (changes.targets) syncData.targets = changes.targets.newValue;
+      if (changes.settings) syncData.settings = changes.settings.newValue;
+      validateImportData(syncData);
+    } catch (e) {
+      console.warn('Invalid sync data received:', e);
+      return;
+    }
 
     const updates = {};
     const keysToRemove = [];
