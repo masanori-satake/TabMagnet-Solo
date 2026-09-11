@@ -469,6 +469,10 @@ export function parseImportText(text) {
  */
 async function importData(data) {
   validateImportData(data);
+  // 同期では部分データを許可するが、インポートではターゲット一覧が必須である。
+  if (!Array.isArray(data.targets)) {
+    throw new Error('Invalid import data: targets must be an array');
+  }
 
   // 検証済みの許可プロパティだけから保存用データを再構築する。
   const importedTargets = data.targets.map(target => ({

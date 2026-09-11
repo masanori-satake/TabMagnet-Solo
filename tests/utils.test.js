@@ -175,6 +175,7 @@ describe('syncFromCloudIfNeeded', () => {
     await syncFromCloudIfNeeded();
 
     expect(chromeMock.storage.local.set).not.toHaveBeenCalled();
+    expect(chromeMock.storage.local.remove).not.toHaveBeenCalled();
     expect(console.warn).toHaveBeenCalledWith('Failed to sync from cloud:', expect.any(Error));
   });
 });
