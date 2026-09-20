@@ -1,5 +1,39 @@
 import { jest } from '@jest/globals';
-import { matchUrl, getTimestamp, getExportTimestamp } from '../projects/app/ui/utils.js';
+import { matchUrl, validateImportData, getTimestamp, getExportTimestamp } from '../projects/app/ui/utils.js';
+
+describe('validateImportData pattern validation', () => {
+  test('should accept valid http and https pattern URLs', () => {
+    expect(() => validateImportData({
+      targets: [{ name: 'Test', pattern: 'http://example.com/*' }]
+    })).not.toThrow();
+
+    expect(() => validateImportData({
+      targets: [{ name: 'Test', pattern: ['https://example.com/*', 'example.org/*'] }]
+    })).not.toThrow();
+  });
+
+  test('should reject dangerous/special scheme pattern URLs', () => {
+    expect(() => validateImportData({
+      targets: [{ name: 'Test', pattern: 'javascript:alert(1)' }]
+    })).toThrow('Invalid target pattern');
+
+    expect(() => validateImportData({
+      targets: [{ name: 'Test', pattern: 'data:text/html,<h1>test</h1>' }]
+    })).toThrow('Invalid target pattern');
+
+    expect(() => validateImportData({
+      targets: [{ name: 'Test', pattern: 'file:///C:/Windows/System32' }]
+    })).toThrow('Invalid target pattern');
+
+    expect(() => validateImportData({
+      targets: [{ name: 'Test', pattern: 'chrome://settings' }]
+    })).toThrow('Invalid target pattern');
+
+    expect(() => validateImportData({
+      targets: [{ name: 'Test', pattern: ['https://valid.com/*', 'about:blank'] }]
+    })).toThrow('Invalid target pattern');
+  });
+});
 
 describe('matchUrl', () => {
   test('basic prefix match', () => {
