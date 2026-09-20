@@ -203,13 +203,24 @@ export function validateImportData(data) {
       if (typeof target.name !== 'string' || target.name.trim() === '' || target.name.length > 100) {
         throw new Error('Invalid target name');
       }
-      const isPatternStringValid = typeof target.pattern === 'string' &&
-        target.pattern.trim() !== '' &&
-        target.pattern.length <= 500;
+      // 非 http(s) 特殊スキームや危険なスキームを含むパターンを拒否する
+      const isValidPatternStr = (p) => {
+        if (typeof p !== 'string' || p.trim() === '' || p.length > 500) return false;
+        // スキーム判定前に制御文字を除外し、スキーム名の分断による回避を防ぐ
+        if (/[\u0000-\u001F\u007F]/.test(p)) return false;
+        const lower = p.trim().toLowerCase();
+        const scheme = lower.match(/^([a-z][a-z0-9+.-]*):/)?.[1];
+        if (scheme && scheme !== 'http' && scheme !== 'https') {
+          return false;
+        }
+        return true;
+      };
+
+      const isPatternStringValid = isValidPatternStr(target.pattern);
       const isPatternArrayValid = Array.isArray(target.pattern) &&
         target.pattern.length > 0 &&
         target.pattern.length <= 50 &&
-        target.pattern.every(p => typeof p === 'string' && p.trim() !== '' && p.length <= 500);
+        target.pattern.every(isValidPatternStr);
 
       if (!isPatternStringValid && !isPatternArrayValid) {
         throw new Error('Invalid target pattern');

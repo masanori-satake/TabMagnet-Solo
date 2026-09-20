@@ -1,5 +1,73 @@
 import { jest } from '@jest/globals';
-import { matchUrl, getTimestamp, getExportTimestamp } from '../projects/app/ui/utils.js';
+import { matchUrl, validateImportData, getTimestamp, getExportTimestamp } from '../projects/app/ui/utils.js';
+
+describe('validateImportData pattern validation', () => {
+  test('should accept valid http and https pattern URLs', () => {
+    expect(() => validateImportData({
+      targets: [{ name: 'Test', pattern: 'http://example.com/*' }]
+    })).not.toThrow();
+
+    expect(() => validateImportData({
+      targets: [{ name: 'Test', pattern: ['https://example.com/*', 'example.org/*'] }]
+    })).not.toThrow();
+  });
+
+  test('should reject dangerous/special scheme pattern URLs', () => {
+    expect(() => validateImportData({
+      targets: [{ name: 'Test', pattern: 'javascript:alert(1)' }]
+    })).toThrow('Invalid target pattern');
+
+    expect(() => validateImportData({
+      targets: [{ name: 'Test', pattern: 'data:text/html,<h1>test</h1>' }]
+    })).toThrow('Invalid target pattern');
+
+    expect(() => validateImportData({
+      targets: [{ name: 'Test', pattern: 'file:///C:/Windows/System32' }]
+    })).toThrow('Invalid target pattern');
+
+    expect(() => validateImportData({
+      targets: [{ name: 'Test', pattern: 'chrome://settings' }]
+    })).toThrow('Invalid target pattern');
+
+    expect(() => validateImportData({
+      targets: [{ name: 'Test', pattern: ['https://valid.com/*', 'about:blank'] }]
+    })).toThrow('Invalid target pattern');
+  });
+
+  test('should reject every C0 control character and DEL in string and array patterns', () => {
+    const controlCharacters = [
+      ...Array.from({ length: 0x20 }, (_, index) => String.fromCharCode(index)),
+      '\u007F'
+    ];
+
+    for (const controlCharacter of controlCharacters) {
+      expect(() => validateImportData({
+        targets: [{ name: 'Test', pattern: `java${controlCharacter}script:alert(1)` }]
+      })).toThrow('Invalid target pattern');
+
+      expect(() => validateImportData({
+        targets: [{
+          name: 'Test',
+          pattern: ['https://valid.com/*', `java${controlCharacter}script:alert(1)`]
+        }]
+      })).toThrow('Invalid target pattern');
+    }
+  });
+
+  test.each([
+    'mailto:user@example.com',
+    'chrome:settings',
+    'JaVaScRiPt:alert(1)'
+  ])('should reject non-http explicit scheme %s in string and array patterns', (pattern) => {
+    expect(() => validateImportData({
+      targets: [{ name: 'Test', pattern }]
+    })).toThrow('Invalid target pattern');
+
+    expect(() => validateImportData({
+      targets: [{ name: 'Test', pattern: ['https://valid.com/*', pattern] }]
+    })).toThrow('Invalid target pattern');
+  });
+});
 
 describe('matchUrl', () => {
   test('basic prefix match', () => {
