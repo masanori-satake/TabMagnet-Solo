@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "__MSG_extensionName__",
-  "version": "1.17.7",
+  "version": "1.17.8",
   "author": "Masanori SATAKE",
   "description": "__MSG_extensionDescription__",
   "default_locale": "en",

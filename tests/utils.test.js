@@ -33,6 +33,40 @@ describe('validateImportData pattern validation', () => {
       targets: [{ name: 'Test', pattern: ['https://valid.com/*', 'about:blank'] }]
     })).toThrow('Invalid target pattern');
   });
+
+  test('should reject every C0 control character and DEL in string and array patterns', () => {
+    const controlCharacters = [
+      ...Array.from({ length: 0x20 }, (_, index) => String.fromCharCode(index)),
+      '\u007F'
+    ];
+
+    for (const controlCharacter of controlCharacters) {
+      expect(() => validateImportData({
+        targets: [{ name: 'Test', pattern: `java${controlCharacter}script:alert(1)` }]
+      })).toThrow('Invalid target pattern');
+
+      expect(() => validateImportData({
+        targets: [{
+          name: 'Test',
+          pattern: ['https://valid.com/*', `java${controlCharacter}script:alert(1)`]
+        }]
+      })).toThrow('Invalid target pattern');
+    }
+  });
+
+  test.each([
+    'mailto:user@example.com',
+    'chrome:settings',
+    'JaVaScRiPt:alert(1)'
+  ])('should reject non-http explicit scheme %s in string and array patterns', (pattern) => {
+    expect(() => validateImportData({
+      targets: [{ name: 'Test', pattern }]
+    })).toThrow('Invalid target pattern');
+
+    expect(() => validateImportData({
+      targets: [{ name: 'Test', pattern: ['https://valid.com/*', pattern] }]
+    })).toThrow('Invalid target pattern');
+  });
 });
 
 describe('matchUrl', () => {

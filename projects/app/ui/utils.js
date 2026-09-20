@@ -206,11 +206,11 @@ export function validateImportData(data) {
       // 非 http(s) 特殊スキームや危険なスキームを含むパターンを拒否する
       const isValidPatternStr = (p) => {
         if (typeof p !== 'string' || p.trim() === '' || p.length > 500) return false;
+        // スキーム判定前に制御文字を除外し、スキーム名の分断による回避を防ぐ
+        if (/[\u0000-\u001F\u007F]/.test(p)) return false;
         const lower = p.trim().toLowerCase();
-        if (/^[a-z0-9-]+:\/\//i.test(lower) && !lower.startsWith('http://') && !lower.startsWith('https://')) {
-          return false;
-        }
-        if (lower.startsWith('javascript:') || lower.startsWith('data:') || lower.startsWith('vbscript:') || lower.startsWith('about:') || lower.startsWith('file:')) {
+        const scheme = lower.match(/^([a-z][a-z0-9+.-]*):/)?.[1];
+        if (scheme && scheme !== 'http' && scheme !== 'https') {
           return false;
         }
         return true;
