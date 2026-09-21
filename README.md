@@ -3,10 +3,10 @@
 [![Chrome Web Store](https://img.shields.io/badge/Chrome%20Web%20Store-TabMagnet--Solo-blue?logo=googlechrome)](https://chromewebstore.google.com/detail/tabmagnet-solo/lffgddghjafcjpfjdpknhfbonhnkdlmc)
 [![version](https://img.shields.io/badge/version-1.17.9-blue)](projects/app/manifest.json)
 [![Coverage](https://img.shields.io/badge/coverage-59%25-red)](https://masanori-satake.github.io/TabMagnet-Solo/coverage/)
-[![Privacy: 100% Local](https://img.shields.io/badge/Privacy-100%25%20Local-brightgreen)](AGENTS.md)
+[![Privacy: Local by Default + Optional Sync](https://img.shields.io/badge/Privacy-Local%20by%20Default%20%2B%20Optional%20Sync-brightgreen)](#-privacy--security)
 [![Manifest V3](https://img.shields.io/badge/Manifest-V3-orange)](projects/app/manifest.json)
 [![Chromebook Optimized](https://img.shields.io/badge/Chromebook-Optimized-skyblue)](#chromebook--mobile-environment-friendly)
-[![100% Offline](https://img.shields.io/badge/100%25-Offline%2FLocal--Only-success)](#chromebook--mobile-environment-friendly)
+[![Offline Capable](https://img.shields.io/badge/Offline-Capable-success)](#chromebook--mobile-environment-friendly)
 [![Touch & Tablet Ready](https://img.shields.io/badge/Touch%20%26%20Tablet-Ready-purple)](#chromebook--mobile-environment-friendly)
 [![Pure Vanilla JS](https://img.shields.io/badge/Pure%20Vanilla%20JS-Zero%20Dependencies-informational)](#chromebook--mobile-environment-friendly)
 
@@ -29,8 +29,8 @@ Are you struggling with dozens of open tabs scattered across multiple browser wi
 
 ## 🔒 Privacy & Security
 
-- **100% Local Execution**: All settings and tab configurations are stored strictly within `chrome.storage.local`. No external API calls or tracking servers.
-- **Zero Data Collection**: We do not collect, track, or transmit any user data or browsing history.
+- **Local by Default, Optional Device Sync**: Settings and target definitions (names, URL patterns, and group colors) are stored in `chrome.storage.local` by default. If you explicitly enable sync, those target definitions and extension settings are also stored in `chrome.storage.sync`, Chrome-managed sync storage associated with your browser profile, so they can be shared with other Chrome browsers signed in to the same profile. No external API calls or tracking servers are used.
+- **Zero Developer Data Collection**: We do not collect, track, or transmit user data or browsing history to the developer or third-party servers. When optional sync is enabled, Chrome synchronizes only the configuration data described above through `chrome.storage.sync`.
 - **Pure Vanilla JS (Zero Dependencies)**: Developed without third-party external npm/JS libraries, keeping the extension lightweight, secure, and easily verifiable.
 
 ## Chromebook & Mobile Environment Friendly
@@ -80,9 +80,9 @@ TabMagnet-Solo は、ドメイン・URLでタブを自動集約・整理するCh
 
 ### 🔒 プライバシー & セキュリティ
 
-- **100% ローカル完結**: 外部API通信やトラッキングは一切行いません。データはブラウザ内（`chrome.storage.local`）にのみ保持されます。
+- **標準はローカル保存、端末間同期は任意**: 設定と集約ターゲット情報（名前、URLパターン、グループ色）は、標準では `chrome.storage.local` に保存されます。同期を明示的に有効にした場合のみ、これらのターゲット情報と拡張機能の設定が、ブラウザプロフィールに関連付けられた Chrome 管理の同期ストレージ `chrome.storage.sync` にも保存され、同じプロフィールでログインしている他の Chrome ブラウザと共有されます。外部APIやトラッキングサーバーは使用しません。
 - **外部依存ライブラリなし (Pure Vanilla JS)**: 外部ライブラリを一切不使用。高い透明性と安全性を確保しています。
-- **ユーザーデータ収集ゼロ**: 閲覧履歴や個人情報を外部に送信・保存することは一切ありません。
+- **開発者によるユーザーデータ収集ゼロ**: 開発者や第三者のサーバーへユーザーデータや閲覧履歴を収集・追跡・送信することはありません。任意の同期を有効にした場合、Chrome は上記の設定データのみを `chrome.storage.sync` 経由で同期します。
 
 ### インストール方法
 
