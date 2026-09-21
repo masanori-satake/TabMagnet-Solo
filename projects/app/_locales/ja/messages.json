@@ -1,9 +1,9 @@
 {
   "extensionName": {
-    "message": "TabMagnet-Solo"
+    "message": "TabMagnet-Solo - ドメイン・URLでタブを自動集約・整理"
   },
   "extensionDescription": {
-    "message": "特定のタブを現在のウィンドウに磁石のように集約し、重複を防ぐローカル完結型ツール"
+    "message": "100%ローカル＆プライバシー重視。散らかったタブを磁石のように同じドメイン・サイトごとに一瞬で集約・整理し、作業効率を大幅向上。"
   },
   "addCurrentTabTitle": {
     "message": "現在のタブを登録"

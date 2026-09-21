@@ -1,58 +1,91 @@
-# TabMagnet-Solo
+# TabMagnet-Solo - Smart Tab Manager & Domain Organizer
 
-[![version](https://img.shields.io/badge/version-1.17.8-blue)](projects/app/manifest.json)
+[![Chrome Web Store](https://img.shields.io/badge/Chrome%20Web%20Store-TabMagnet--Solo-blue?logo=googlechrome)](https://chromewebstore.google.com/detail/tabmagnet-solo/lffgddghjafcjpfjdpknhfbonhnkdlmc)
+[![version](https://img.shields.io/badge/version-1.17.9-blue)](projects/app/manifest.json)
 [![Coverage](https://img.shields.io/badge/coverage-59%25-red)](https://masanori-satake.github.io/TabMagnet-Solo/coverage/)
-[![Privacy-Local Only](https://img.shields.io/badge/Privacy-Local%20Only-brightgreen)](AGENTS.md)
+[![Privacy: 100% Local](https://img.shields.io/badge/Privacy-100%25%20Local-brightgreen)](AGENTS.md)
 [![Manifest V3](https://img.shields.io/badge/Manifest-V3-orange)](projects/app/manifest.json)
 [![Chromebook Optimized](https://img.shields.io/badge/Chromebook-Optimized-skyblue)](#chromebook--mobile-environment-friendly)
 [![100% Offline](https://img.shields.io/badge/100%25-Offline%2FLocal--Only-success)](#chromebook--mobile-environment-friendly)
 [![Touch & Tablet Ready](https://img.shields.io/badge/Touch%20%26%20Tablet-Ready-purple)](#chromebook--mobile-environment-friendly)
 [![Pure Vanilla JS](https://img.shields.io/badge/Pure%20Vanilla%20JS-Zero%20Dependencies-informational)](#chromebook--mobile-environment-friendly)
 
-〜特定のタブを磁石のように現在のウィンドウへ一括集約するローカル完結型Chrome拡張機能〜
+~ A lightweight, privacy-focused Chrome extension that magnetically aggregates cluttered tabs across multiple windows into dedicated domain groups ~
 
-## プロジェクト概要
+## Overview
 
-TabMagnet-Soloは、プライバシーを最優先に設計された、タブ管理支援ツールです。
-WindowsやmacOSをはじめ、メモリ制限のあるChromebookやタブレット環境でも圧倒的に快適に動作します。
-複数のブラウザウィンドウに散らばった特定のタブ（例: Jira, Slack, 社内ツール等）を、磁石のように現在のウィンドウへ一括集約し、グループ化して管理します。
+Are you struggling with dozens of open tabs scattered across multiple browser windows? **TabMagnet-Solo** is a privacy-first `chrome-extension` designed to instantly pull and organize your tabs by domain or URL pattern into a single window. Boost your `browser-productivity` with a clean, clutter-free tab bar in just one click.
 
-設計思想や行動指針については [AGENTS.md](AGENTS.md) を参照してください。
+## Key Features
+
+- **Domain Grouper (`domain-grouper`)**: Automatically gather tabs matching designated domains or URL patterns across all browser windows into one place.
+- **Smart Tab Organizer (`tab-organizer`)**: Singleton tab group management ensures each target domain maintains only one organized group, updating existing groups on execution.
+- **Automatic Protection**: Keeps your manually organized tab groups safe—only groups prefixed with `🧲` are aggregated.
+- **Add from Domain**: Quickly register a new aggregation target from your active tab's domain with one click.
+- **Memory & Speed Saver**: Option to auto-collapse and discard collected tabs from memory to keep low-spec devices fast.
+- **Duplicate Tab Cleaner**: Close duplicate URL tabs during aggregation to keep your tab bar lean.
+- **Material 3 Design**: Built with Google Material Design 3 tokens for a clean, modern, and responsive user experience.
+- **Easy Import / Export**: Backup or sync your tab manager (`tab-manager`) configuration via JSON files or clipboard.
+
+## 🔒 Privacy & Security
+
+- **100% Local Execution**: All settings and tab configurations are stored strictly within `chrome.storage.local`. No external API calls or tracking servers.
+- **Zero Data Collection**: We do not collect, track, or transmit any user data or browsing history.
+- **Pure Vanilla JS (Zero Dependencies)**: Developed without third-party external npm/JS libraries, keeping the extension lightweight, secure, and easily verifiable.
 
 ## Chromebook & Mobile Environment Friendly
 
-TabMagnet-Soloは、Pure Vanilla JS（ゼロ依存）とローカル完結設計を追求することで、あらゆるデバイスや動作環境でパフォーマンスと信頼性を発揮します。特に、教育・オフィス現場でのChromebook利用やタブレットモード等での快適な操作性を実現しています。
+TabMagnet-Solo is optimized for performance and reliability across all devices, including low-spec Chromebooks and tablet screens:
 
-* **低スペック・低メモリ環境での高速動作**: 外部ライブラリを一切排除した超軽量設計のため、メモリ制限のあるデバイスや教育用Chromebookでも負荷をかけずサクサク動作します。
-* **100% ローカル完結 & オフライン動作**: 外部サーバー通信を一切行わないため、学校やオフィスの帯域制限環境・オフライン環境でもすべての機能が確実に利用できます。
-* **タッチ＆モバイル操作への最適化**: タップ誤作動を防ぐ48x48pxの標準タッチターゲット設計や、OSの仮想キーボード表示時にも表示が崩れないレスポンシブUIを採用しています。
-* **組織管理（Chrome Enterprise）配慮**: 拡張機能に必要な権限を最小限（`tabs`, `tabGroups`, `storage`, `sidePanel`）に留めており、厳しい組織管理ポリシー配下でも安全に導入・利用できます。
+- **Ultra-lightweight Execution**: Zero external dependencies ensure minimal RAM usage and instant response times.
+- **100% Offline Capable**: Works reliably in restricted networks, enterprise environments, or offline modes.
+- **Touch & Mobile Ready**: 48x48px touch targets and responsive UI layout prevent accidental clicks on touchscreens and Chromebooks.
+- **Minimal Permissions**: Uses only necessary extension permissions (`tabs`, `tabGroups`, `storage`, `sidePanel`) for easy enterprise deployment (Chrome Enterprise).
 
-## 特徴
+## Installation
 
-* **Smart Aggregation**: 全ウィンドウを走査し、指定URLパターンのタブを現在のウィンドウに一括集約。
-* **Singleton Management**: 同一ターゲットに対して常に一つのグループのみを維持。再実行時には既存グループを自動更新。
-* **Automatic Protection**: ユーザーが手動で作成した既存のタブグループを破壊しないよう、接頭辞 `🧲` のないグループは自動的に保護されます。
-* **Add from Domain**: 現在開いているタブのドメインから、ワンクリックで新しい集約ターゲットを作成可能。
-* **完全ローカル実行**: デフォルトではすべてのデータがブラウザ内の `chrome.storage.local` に保存されます（外部サーバーへの送信は行われません）。端末間同期機能を有効にした場合は、ブラウザのアカウント同期（`chrome.storage.sync`）経由で同一アカウント・同一ブラウザ間にのみデータが保存・同期されます。
-* **Vanilla JS & ゼロ依存**: 外部ライブラリを一切使用せず、ブラウザ標準のAPIのみで構築。軽量かつ高速に動作します。
-* **Material 3 デザイン**: Google Material 3 (M3) に準拠した、直感的でモダンなUI。
-* **ポータビリティ**: 設定データをJSON形式でクリップボードまたはファイル経由でエクスポート/インポート可能。
-* **多言語対応**: 日本語と英語をサポート。
+### Install from Chrome Web Store (Recommended)
 
-## インストール方法
+Get the extension directly from the [Chrome Web Store](https://chromewebstore.google.com/detail/tabmagnet-solo/lffgddghjafcjpfjdpknhfbonhnkdlmc).
 
-### Chrome ウェブストアからインストール（推奨）
+### Install from Source Code
 
-[Chrome ウェブストア](https://chromewebstore.google.com/detail/tabmagnet-solo/lffgddghjafcjpfjdpknhfbonhnkdlmc) からインストールしてください。
+1. Download or clone this repository.
+2. Open Chrome and navigate to `chrome://extensions`.
+3. Enable "Developer mode" in the top right corner.
+4. Click "Load unpacked" and select the `projects/app` directory.
 
-### ソースコードからインストール
+## Disclaimer
 
-1. このリポジトリからソースコードをダウンロードまたはクローンします。
-2. ブラウザで拡張機能管理ページを開きます（Chrome: `chrome://extensions`）。
-3. 「デベロッパー モード」をオンにします。
-4. 「パッケージ化されていない拡張機能を読み込む」ボタンをクリックし、`projects/app` フォルダを選択します。
+This software is an open-source project by an individual developer and is provided "as is" without warranty. The developer assumes no responsibility for any damages arising from its use.
 
-## 免責事項
+---
 
+## 🇯🇵 日本語
+
+# TabMagnet-Solo - ドメイン・URLでタブを自動集約・整理
+
+散らかったタブを磁石のように同じドメイン・サイトごとに一瞬で集約・整理。開いたままの大量のタブをすっきりまとめて作業効率を大幅に向上させます。
+
+### 概要
+複数のブラウザウィンドウに散らばった特定サイトのタブ（Jira、Slack、GitHub、社内ツールなど）を、ワンクリックで現在のウィンドウに集約・グループ化するプライバシー重視のタブ管理支援ツールです。
+
+### 主な機能
+- **ドメイン自動集約**: 全ウィンドウを走査し、指定ドメイン・URLパターンのタブを現在のウィンドウに一括集約。
+- **ワンクリック追加**: 現在開いているタブのドメインからワンクリックで新しいターゲットを作成可能。
+- **重複タブの自動クローズ**: 集約時に同じURLの重複タブをクローズし、タブバーをすっきり整理。
+- **メモリ節約機能**: 集約後にタブグループを自動折りたたみ＆メモリ解放（Discard）し、動作を軽量化。
+- **既存グループの自動保護**: 接頭辞 `🧲` のない手動作成グループは自動的に保護され、崩されません。
+- **設定データの入出力**: 設定をJSON形式でクリップボードやファイル経由で簡単にバックアップ・復元可能。
+
+### 🔒 プライバシー & セキュリティ
+- **100% ローカル完結**: 外部API通信やトラッキングは一切行いません。データはブラウザ内（`chrome.storage.local`）にのみ保持されます。
+- **外部依存ライブラリなし (Pure Vanilla JS)**: 外部ライブラリを一切不使用。高い透明性と安全性を確保しています。
+- **ユーザーデータ収集ゼロ**: 閲覧履歴や個人情報を外部に送信・保存することは一切ありません。
+
+### インストール方法
+- **Chrome ウェブストア（推奨）**: [Chrome ウェブストア](https://chromewebstore.google.com/detail/tabmagnet-solo/lffgddghjafcjpfjdpknhfbonhnkdlmc) からインストールしてください。
+- **ソースコードから（デベロッパーモード）**: リポジトリをクローンまたはダウンロードし、`chrome://extensions` で「デベロッパーモード」をONにして `projects/app` フォルダを読み込んでください。
+
+### 免責事項
 本ソフトウェアは個人開発によるオープンソースプロジェクトであり、無保証です。利用により生じたいかなる損害についても、開発者は一切の責任を負いません。自己責任でご利用ください。

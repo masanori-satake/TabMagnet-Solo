@@ -1,9 +1,9 @@
 {
   "extensionName": {
-    "message": "TabMagnet-Solo"
+    "message": "TabMagnet-Solo - Smart Tab & Domain Organizer"
   },
   "extensionDescription": {
-    "message": "A local-only tool that magnetically aggregates specific tabs into the current window and prevents duplicates."
+    "message": "Instantly group cluttered tabs by domain. 100% local & privacy-first tab manager to boost browser speed and focus. Zero tracking."
   },
   "addCurrentTabTitle": {
     "message": "Register current tab"
