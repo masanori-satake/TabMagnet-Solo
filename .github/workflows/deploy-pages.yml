@@ -1,0 +1,22 @@
+name: 'Pagesデプロイ (Deploy Pages)'
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'projects/web/**'
+      - '.github/workflows/deploy-pages.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: '共通Pagesデプロイ実行 (Execute Base Deploy Pages)'
+    uses: masanori-satake/common-workflows/.github/workflows/base-deploy-pages.yml@v1
+    # 呼び出し側でも最小権限を明示する（GitHub Pages デプロイに必要な権限のみ）
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    # publish_dir=projects/web は base 側のデフォルトに閉じ込め済み。
+    # 従来 audit.yml で行っていたカバレッジHTMLの Pages 公開は廃止し、
+    # カバレッジは coverage.yml による PR コメントに一本化した。

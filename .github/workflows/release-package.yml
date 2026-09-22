@@ -1,0 +1,23 @@
+name: 'リリースパッケージ公開 (Release Package)'
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  release:
+    name: '共通リリース処理実行 (Execute Base Release)'
+    uses: masanori-satake/common-workflows/.github/workflows/base-release.yml@v1
+    permissions:
+      contents: write
+    with:
+      # SVG からのアイコン生成は共通 action (generate-icons) に委譲する。
+      # 生成後に npm run build (= python3 scripts/build.py) が releases/*.zip を作成。
+      generate_icons: true
+    # SVG パス/出力先は base 既定 (projects/app/assets/icon.svg → projects/app/icons) と一致するため指定不要。

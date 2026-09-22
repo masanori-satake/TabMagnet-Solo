@@ -1,0 +1,29 @@
+name: 'コード品質検証 (Code Quality)'
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    name: '共通品質チェック実行 (Execute Base CI)'
+    uses: masanori-satake/common-workflows/.github/workflows/base-ci.yml@v1
+    with:
+      # Vanilla JS プロジェクトのため型チェックは不要
+      run_typecheck: false
+      # lint(markdownlint)は pre-commit.ci が担保するため base CI では実行しない
+      # （npm run lint は node_modules まで走査するため CI では無効化）
+      run_lint: false
+    # test(jest)はブラウザ不要のため base CI で実行する。
+    # 統一パラメータ（Node=lts/*, Python=3.12, npm ci, scripts/ci_checks.py 実行）は
+    # base 側のデフォルトに閉じ込められているため、その他の with: は不要。

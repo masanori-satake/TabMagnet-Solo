@@ -1,0 +1,19 @@
+name: 'カバレッジ (Coverage)'
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  coverage:
+    name: '共通カバレッジ計測実行 (Execute Base Coverage)'
+    uses: masanori-satake/common-workflows/.github/workflows/base-coverage.yml@v1
+    # npm run coverage (= jest --coverage) が coverage/coverage-summary.json を出力し、
+    # 共通ワークフローが PR に sticky コメントを投稿する。
+    # 将来カバレッジ下限を強制する場合のみ:
+    # with:
+    #   min_coverage: '80'
