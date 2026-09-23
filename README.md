@@ -6,7 +6,7 @@
 [![Privacy: Local-First](https://img.shields.io/badge/Privacy-Local--First-brightgreen)](#-privacy--security)
 [![Manifest V3](https://img.shields.io/badge/Manifest-V3-orange)](projects/app/manifest.json)
 [![Tests](https://img.shields.io/github/actions/workflow/status/masanori-satake/TabMagnet-Solo/code-quality.yml?branch=main&label=Tests)](https://github.com/masanori-satake/TabMagnet-Solo/actions/workflows/code-quality.yml)
-[![Coverage](https://img.shields.io/github/actions/workflow/status/masanori-satake/TabMagnet-Solo/coverage.yml?branch=main&label=Coverage)](https://github.com/masanori-satake/TabMagnet-Solo/actions/workflows/coverage.yml)
+[![Coverage](https://img.shields.io/github/actions/workflow/status/masanori-satake/TabMagnet-Solo/coverage.yml?label=Coverage)](https://github.com/masanori-satake/TabMagnet-Solo/actions/workflows/coverage.yml)
 [![Pure Vanilla JS](https://img.shields.io/badge/Pure%20Vanilla%20JS-Zero%20Dependencies-informational?logo=javascript&logoColor=white)](#-privacy--security)
 
 [![Chromebook Optimized](https://img.shields.io/badge/Chromebook-Optimized-skyblue)](#chromebook--mobile-environment-friendly)
