@@ -1,14 +1,17 @@
 # TabMagnet-Solo - Smart Tab Manager & Domain Organizer
 
-[![Chrome Web Store](https://img.shields.io/badge/Chrome%20Web%20Store-TabMagnet--Solo-blue?logo=googlechrome)](https://chromewebstore.google.com/detail/tabmagnet-solo/lffgddghjafcjpfjdpknhfbonhnkdlmc)
+[![Chrome Web Store](https://img.shields.io/chrome-web-store/v/lffgddghjafcjpfjdpknhfbonhnkdlmc?logo=google-chrome&logoColor=white&label=Chrome%20Web%20Store)](https://chromewebstore.google.com/detail/tabmagnet-solo/lffgddghjafcjpfjdpknhfbonhnkdlmc)
 [![version](https://img.shields.io/badge/version-1.17.9-blue)](projects/app/manifest.json)
-[![Coverage](https://img.shields.io/badge/coverage-59%25-red)](https://masanori-satake.github.io/TabMagnet-Solo/coverage/)
-[![Privacy: Local by Default + Optional Sync](https://img.shields.io/badge/Privacy-Local%20by%20Default%20%2B%20Optional%20Sync-brightgreen)](#-privacy--security)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![Privacy: Local-First](https://img.shields.io/badge/Privacy-Local--First-brightgreen)](#-privacy--security)
 [![Manifest V3](https://img.shields.io/badge/Manifest-V3-orange)](projects/app/manifest.json)
+[![Tests](https://img.shields.io/github/actions/workflow/status/masanori-satake/TabMagnet-Solo/code-quality.yml?branch=main&label=Tests)](https://github.com/masanori-satake/TabMagnet-Solo/actions/workflows/code-quality.yml)
+[![Coverage](https://img.shields.io/github/actions/workflow/status/masanori-satake/TabMagnet-Solo/coverage.yml?label=Coverage)](https://github.com/masanori-satake/TabMagnet-Solo/actions/workflows/coverage.yml)
+[![Pure Vanilla JS](https://img.shields.io/badge/Pure%20Vanilla%20JS-Zero%20Dependencies-informational?logo=javascript&logoColor=white)](#-privacy--security)
+
 [![Chromebook Optimized](https://img.shields.io/badge/Chromebook-Optimized-skyblue)](#chromebook--mobile-environment-friendly)
 [![Offline Capable](https://img.shields.io/badge/Offline-Capable-success)](#chromebook--mobile-environment-friendly)
 [![Touch & Tablet Ready](https://img.shields.io/badge/Touch%20%26%20Tablet-Ready-purple)](#chromebook--mobile-environment-friendly)
-[![Pure Vanilla JS](https://img.shields.io/badge/Pure%20Vanilla%20JS-Zero%20Dependencies-informational)](#chromebook--mobile-environment-friendly)
 
 ~ A lightweight, privacy-focused Chrome extension that magnetically aggregates cluttered tabs across multiple windows into dedicated domain groups ~
 
