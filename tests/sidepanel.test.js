@@ -259,10 +259,10 @@ describe('sidepanel logic', () => {
     expect(soloPane).not.toBeNull();
 
     const links = soloPane.querySelectorAll('a');
-    expect(links.length).toBe(7);
+    expect(links.length).toBe(8);
 
     const images = soloPane.querySelectorAll('img');
-    expect(images.length).toBe(7);
+    expect(images.length).toBe(8);
 
     images.forEach(img => {
       expect(img.getAttribute('src')).toMatch(/^assets\/badges\/solo\/badge-.*\.svg$/);
