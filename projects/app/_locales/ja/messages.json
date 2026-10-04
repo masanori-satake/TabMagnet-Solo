@@ -255,7 +255,7 @@
     "message": "ファイル読込"
   },
   "importSettings": {
-    "message": "インポート設定"
+    "message": "インポート設定(タブグループ)"
   },
   "append": {
     "message": "追記"

@@ -503,8 +503,10 @@ async function importData(data) {
     color: target.color ? getCompatibleColor(target.color) : 'grey'
   }));
 
-  const importedSettings = { ...DEFAULT_SETTINGS };
+  // 端末間同期（syncEnabled）は現在の端末の設定値を保持し、インポートデータには左右されないようにする。
+  const importedSettings = { ...DEFAULT_SETTINGS, syncEnabled: state.settings.syncEnabled };
   for (const key of ALLOWED_SETTINGS_PROPERTIES) {
+    if (key === 'syncEnabled') continue;
     if (data.settings && Object.prototype.hasOwnProperty.call(data.settings, key)) {
       importedSettings[key] = data.settings[key];
     }
@@ -513,6 +515,7 @@ async function importData(data) {
   const mode = document.querySelector('input[name="import-mode"]:checked').value;
   if (mode === 'append') {
     await saveTargets([...state.targets, ...importedTargets]);
+    await saveSettings(importedSettings);
   } else {
     await saveTargets(importedTargets);
     await saveSettings(importedSettings);
@@ -574,7 +577,9 @@ async function handlePasteImport() {
  */
 async function handleCopyExport() {
   try {
-    const exportData = { targets: state.targets, settings: state.settings };
+    // 利用者の明示的な選択を保護するため、エクスポートデータ内の syncEnabled は常に false とする。
+    const exportSettings = { ...state.settings, syncEnabled: false };
+    const exportData = { targets: state.targets, settings: exportSettings };
     const json = JSON.stringify(exportData, null, 2);
     await navigator.clipboard.writeText(json);
     showToast(chrome.i18n.getMessage('copied'));
@@ -587,7 +592,9 @@ async function handleCopyExport() {
  * ファイルへのエクスポート
  */
 function handleFileExport() {
-  const exportData = { targets: state.targets, settings: state.settings };
+  // 利用者の明示的な選択を保護するため、エクスポートデータ内の syncEnabled は常に false とする。
+  const exportSettings = { ...state.settings, syncEnabled: false };
+  const exportData = { targets: state.targets, settings: exportSettings };
   const json = JSON.stringify(exportData, null, 2);
   const blob = new Blob([json], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
