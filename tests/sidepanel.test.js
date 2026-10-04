@@ -23,7 +23,13 @@ describe('sidepanel logic', () => {
       storage: {
         local: {
           get: jest.fn().mockResolvedValue({}),
-          set: jest.fn().mockResolvedValue({})
+          set: jest.fn().mockResolvedValue({}),
+          remove: jest.fn().mockResolvedValue({})
+        },
+        sync: {
+          get: jest.fn().mockResolvedValue({}),
+          set: jest.fn().mockResolvedValue({}),
+          remove: jest.fn().mockResolvedValue({})
         },
         onChanged: {
           addListener: jest.fn()
@@ -261,5 +267,97 @@ describe('sidepanel logic', () => {
     images.forEach(img => {
       expect(img.getAttribute('src')).toMatch(/^assets\/badges\/solo\/badge-.*\.svg$/);
     });
+  });
+
+  test('エクスポート処理において syncEnabled は常に false に設定される', async () => {
+    chromeMock.storage.local.get.mockResolvedValue({
+      targets: [{ name: 'Test', pattern: ['example.com/*'], color: 'grey' }],
+      settings: { collectFromAllGroups: true, syncEnabled: true }
+    });
+    const { init } = await import('../projects/app/sidepanel.js');
+    await init();
+
+    let writeTextArg = null;
+    Object.assign(navigator, {
+      clipboard: {
+        writeText: jest.fn(async (text) => {
+          writeTextArg = text;
+        })
+      }
+    });
+
+    document.getElementById('copy-export-btn').click();
+    await Promise.resolve();
+
+    expect(navigator.clipboard.writeText).toHaveBeenCalled();
+    const exportedData = JSON.parse(writeTextArg);
+    expect(exportedData.settings.syncEnabled).toBe(false);
+    expect(exportedData.settings.collectFromAllGroups).toBe(true);
+  });
+
+  test('ファイルエクスポート処理においても syncEnabled は常に false に設定される', async () => {
+    chromeMock.storage.local.get.mockResolvedValue({
+      targets: [{ name: 'Test', pattern: ['example.com/*'], color: 'grey' }],
+      settings: { collectFromAllGroups: true, syncEnabled: true }
+    });
+    const { init } = await import('../projects/app/sidepanel.js');
+    await init();
+
+    const clickSpy = jest.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+    let createdContent = null;
+    const originalBlob = global.Blob;
+    global.Blob = jest.fn((content, options) => {
+      createdContent = content[0];
+      return new originalBlob(content, options);
+    });
+    global.URL.createObjectURL = jest.fn(() => 'blob:dummy');
+    global.URL.revokeObjectURL = jest.fn();
+
+    document.getElementById('file-export-btn').click();
+
+    expect(createdContent).not.toBeNull();
+    const exportedData = JSON.parse(createdContent);
+    expect(exportedData.settings.syncEnabled).toBe(false);
+    clickSpy.mockRestore();
+  });
+
+  test('インポート処理（追記・上書き両モード）において共通設定が保存され、syncEnabled は現在の端末状態を維持する', async () => {
+    chromeMock.storage.local.get.mockResolvedValue({
+      targets: [],
+      settings: { collectFromAllGroups: false, syncEnabled: true }
+    });
+    const { init } = await import('../projects/app/sidepanel.js');
+    await init();
+
+    const importDataObj = {
+      targets: [{ name: 'ImportedTarget', pattern: ['imported.com/*'], color: 'blue' }],
+      settings: { collectFromAllGroups: true, syncEnabled: false }
+    };
+
+    // モード: 追記 (append)
+    document.querySelector('input[name="import-mode"][value="append"]').checked = true;
+    document.getElementById('paste-import-textarea').value = JSON.stringify(importDataObj);
+    document.getElementById('confirm-paste-import-btn').click();
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    expect(chromeMock.storage.local.set).toHaveBeenCalledWith(expect.objectContaining({
+      settings: expect.objectContaining({
+        collectFromAllGroups: true,
+        syncEnabled: true // インポート前の true を維持
+      })
+    }));
+
+    // モード: 上書き (overwrite)
+    document.querySelector('input[name="import-mode"][value="overwrite"]').checked = true;
+    document.getElementById('paste-import-textarea').value = JSON.stringify(importDataObj);
+    document.getElementById('confirm-paste-import-btn').click();
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    expect(chromeMock.storage.local.set).toHaveBeenCalledWith(expect.objectContaining({
+      settings: expect.objectContaining({
+        collectFromAllGroups: true,
+        syncEnabled: true // インポート前の true を維持
+      })
+    }));
   });
 });
