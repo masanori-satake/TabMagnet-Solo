@@ -1,7 +1,7 @@
 # TabMagnet-Solo - Smart Tab Manager & Domain Organizer
 
 [![Chrome Web Store](https://img.shields.io/chrome-web-store/v/lffgddghjafcjpfjdpknhfbonhnkdlmc?logo=google-chrome&logoColor=white&label=Chrome%20Web%20Store)](https://chromewebstore.google.com/detail/tabmagnet-solo/lffgddghjafcjpfjdpknhfbonhnkdlmc)
-[![version](https://img.shields.io/badge/version-1.17.9-blue)](projects/app/manifest.json)
+[![version](https://img.shields.io/badge/version-1.18.0-blue)](projects/app/manifest.json)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Privacy: Local-First](https://img.shields.io/badge/Privacy-Local--First-brightgreen)](#-privacy--security)
 [![Manifest V3](https://img.shields.io/badge/Manifest-V3-orange)](projects/app/manifest.json)

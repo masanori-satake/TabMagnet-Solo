@@ -149,8 +149,20 @@
   "tabGeneral": {
     "message": "一般"
   },
+  "tabSolo": {
+    "message": "Solo"
+  },
   "tabAbout": {
     "message": "About"
+  },
+  "categoryProductivity": {
+    "message": "作業効率化"
+  },
+  "categoryMeetingEducation": {
+    "message": "会議/授業支援"
+  },
+  "categoryDevelopers": {
+    "message": "開発者向け"
   },
   "sectionCommon": {
     "message": "共通"

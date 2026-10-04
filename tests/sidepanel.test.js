@@ -216,4 +216,33 @@ describe('sidepanel logic', () => {
       targets: []
     }));
   });
+
+  test('Solo tab interaction', async () => {
+    const { init } = await import('../projects/app/sidepanel.js');
+    await init();
+
+    const soloTabBtn = document.querySelector('.tab-item[data-tab="solo"]');
+    expect(soloTabBtn).not.toBeNull();
+
+    soloTabBtn.click();
+
+    expect(soloTabBtn.classList.contains('active')).toBe(true);
+    expect(document.getElementById('tab-content-solo').classList.contains('hidden')).toBe(false);
+    expect(document.getElementById('tab-content-general').classList.contains('hidden')).toBe(true);
+  });
+
+  test('Solo tab contains all badge images and links', () => {
+    const soloPane = document.getElementById('tab-content-solo');
+    expect(soloPane).not.toBeNull();
+
+    const links = soloPane.querySelectorAll('a');
+    expect(links.length).toBe(7);
+
+    const images = soloPane.querySelectorAll('img');
+    expect(images.length).toBe(7);
+
+    images.forEach(img => {
+      expect(img.getAttribute('src')).toMatch(/^assets\/badges\/solo\/badge-.*\.svg$/);
+    });
+  });
 });
