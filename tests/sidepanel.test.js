@@ -217,18 +217,35 @@ describe('sidepanel logic', () => {
     }));
   });
 
-  test('Solo tab interaction', async () => {
+  test('Solo tab interaction and keyboard navigation', async () => {
     const { init } = await import('../projects/app/sidepanel.js');
     await init();
 
+    const generalTabBtn = document.querySelector('.tab-item[data-tab="general"]');
     const soloTabBtn = document.querySelector('.tab-item[data-tab="solo"]');
+    const aboutTabBtn = document.querySelector('.tab-item[data-tab="about"]');
+
     expect(soloTabBtn).not.toBeNull();
 
     soloTabBtn.click();
 
     expect(soloTabBtn.classList.contains('active')).toBe(true);
+    expect(soloTabBtn.getAttribute('aria-selected')).toBe('true');
+    expect(soloTabBtn.getAttribute('tabindex')).toBe('0');
+    expect(generalTabBtn.getAttribute('aria-selected')).toBe('false');
+    expect(generalTabBtn.getAttribute('tabindex')).toBe('-1');
     expect(document.getElementById('tab-content-solo').classList.contains('hidden')).toBe(false);
     expect(document.getElementById('tab-content-general').classList.contains('hidden')).toBe(true);
+
+    // Keyboard navigation: ArrowRight from Solo to About
+    soloTabBtn.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+    expect(aboutTabBtn.classList.contains('active')).toBe(true);
+    expect(aboutTabBtn.getAttribute('aria-selected')).toBe('true');
+
+    // Keyboard navigation: ArrowLeft from About back to Solo
+    aboutTabBtn.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+    expect(soloTabBtn.classList.contains('active')).toBe(true);
+    expect(soloTabBtn.getAttribute('aria-selected')).toBe('true');
   });
 
   test('Solo tab contains all badge images and links', () => {
