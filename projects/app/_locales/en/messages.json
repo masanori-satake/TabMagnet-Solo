@@ -149,8 +149,20 @@
   "tabGeneral": {
     "message": "General"
   },
+  "tabSolo": {
+    "message": "Solo"
+  },
   "tabAbout": {
     "message": "About"
+  },
+  "categoryProductivity": {
+    "message": "Productivity"
+  },
+  "categoryMeetingEducation": {
+    "message": "Meetings & Classes"
+  },
+  "categoryDevelopers": {
+    "message": "For Developers"
   },
   "sectionCommon": {
     "message": "Common"

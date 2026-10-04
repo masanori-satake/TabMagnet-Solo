@@ -242,11 +242,33 @@ function setupEventListeners() {
 
   closeSettingsBtn.addEventListener('click', hideSettingsModal);
 
-  tabItems.forEach(tab => {
-    tab.addEventListener('click', () => {
+  const tabList = [...tabItems];
+  tabItems.forEach((tab, index) => {
+    const activateTab = () => {
       const targetTab = tab.dataset.tab;
-      tabItems.forEach(t => t.classList.toggle('active', t.dataset.tab === targetTab));
+      tabItems.forEach(t => {
+        const isActive = t.dataset.tab === targetTab;
+        t.classList.toggle('active', isActive);
+        t.setAttribute('aria-selected', isActive ? 'true' : 'false');
+        t.setAttribute('tabindex', isActive ? '0' : '-1');
+      });
       tabPanes.forEach(p => p.classList.toggle('hidden', p.id !== `tab-content-${targetTab}`));
+    };
+
+    tab.addEventListener('click', activateTab);
+
+    tab.addEventListener('keydown', (e) => {
+      let nextIndex = null;
+      if (e.key === 'ArrowRight') {
+        nextIndex = (index + 1) % tabList.length;
+      } else if (e.key === 'ArrowLeft') {
+        nextIndex = (index - 1 + tabList.length) % tabList.length;
+      }
+      if (nextIndex !== null) {
+        e.preventDefault();
+        tabList[nextIndex].focus();
+        tabList[nextIndex].click();
+      }
     });
   });
 
