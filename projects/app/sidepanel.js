@@ -503,8 +503,12 @@ async function importData(data) {
     color: target.color ? getCompatibleColor(target.color) : 'grey'
   }));
 
+  const mode = document.querySelector('input[name="import-mode"]:checked').value;
   // 端末間同期（syncEnabled）は現在の端末の設定値を保持し、インポートデータには左右されないようにする。
-  const importedSettings = { ...DEFAULT_SETTINGS, syncEnabled: state.settings.syncEnabled };
+  // 追記モード（append）の場合は現在の端末設定をベースにし、上書きモード（overwrite）の場合は初期設定をベースにする。
+  const importedSettings = mode === 'append'
+    ? { ...state.settings }
+    : { ...DEFAULT_SETTINGS, syncEnabled: state.settings.syncEnabled };
   for (const key of ALLOWED_SETTINGS_PROPERTIES) {
     if (key === 'syncEnabled') continue;
     if (data.settings && Object.prototype.hasOwnProperty.call(data.settings, key)) {
@@ -512,7 +516,6 @@ async function importData(data) {
     }
   }
 
-  const mode = document.querySelector('input[name="import-mode"]:checked').value;
   if (mode === 'append') {
     await saveTargets([...state.targets, ...importedTargets]);
     await saveSettings(importedSettings);
