@@ -2,6 +2,9 @@
   "extensionName": {
     "message": "TabMagnet-Solo - Smart Tab & Domain Organizer"
   },
+  "extensionShortName": {
+    "message": "TabMagnet"
+  },
   "extensionDescription": {
     "message": "Instantly group cluttered tabs by domain. 100% local & privacy-first tab manager to boost browser speed and focus. Zero tracking."
   },

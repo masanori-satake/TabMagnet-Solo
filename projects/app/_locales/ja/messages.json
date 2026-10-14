@@ -2,6 +2,9 @@
   "extensionName": {
     "message": "TabMagnet-Solo - ドメイン・URLでタブを自動集約・整理"
   },
+  "extensionShortName": {
+    "message": "TabMagnet"
+  },
   "extensionDescription": {
     "message": "100%ローカル＆プライバシー重視。散らかったタブを磁石のように同じドメイン・サイトごとに一瞬で集約・整理し、作業効率を大幅向上。"
   },
