@@ -198,7 +198,7 @@ export function validateSingleTarget(target) {
   const isValidPatternStr = (p) => {
     if (typeof p !== 'string' || p.trim() === '' || p.length > 500) return false;
     // スキーム判定前に制御文字を除外し、スキーム名の分断による回避を防ぐ
-    if (/[\u0000-\u001F\u007F]/.test(p)) return false;
+    if (/[\u0000-\u001F\u007F\u0085]/.test(p)) return false;
     const lower = p.trim().toLowerCase();
     const scheme = lower.match(/^([a-z][a-z0-9+.-]*):/)?.[1];
     if (scheme && scheme !== 'http' && scheme !== 'https') {
