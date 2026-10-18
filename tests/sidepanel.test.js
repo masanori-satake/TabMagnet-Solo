@@ -635,4 +635,28 @@ describe('sidepanel logic', () => {
 
     expect(chromeMock.i18n.getMessage).toHaveBeenCalledWith('errorGroupLimit', [String(MAX_GROUPS_PER_SET)]);
   });
+
+  test.each([
+    ['javascript scheme', 'javascript:alert(1)'],
+    ['chrome scheme', 'chrome://settings'],
+    ['data scheme', 'data:text/html,test'],
+    ['control char', 'example.com/\u0001test']
+  ])('UIモーダルから危険・特殊スキーム(%s)を含むターゲット保存を拒否する', async (_label, invalidPattern) => {
+    const { init } = await import('../projects/app/sidepanel.js');
+    const { state } = await import('../projects/app/ui/state.js');
+    await init();
+
+    state.currentEdit = { setIndex: 0, groupIndex: null };
+    document.getElementById('new-name').value = 'Security Test Group';
+    const container = document.getElementById('pattern-list-container');
+    container.innerHTML = `<div class="pattern-item"><input class="pattern-input" value="${invalidPattern}"></div>`;
+
+    chromeMock.storage.local.set.mockClear();
+
+    document.getElementById('save-target-btn').click();
+
+    expect(chromeMock.i18n.getMessage).toHaveBeenCalledWith('warningSpecialPageIncluded');
+    expect(chromeMock.storage.local.set).not.toHaveBeenCalled();
+    expect(document.getElementById('modal-feedback').textContent).toBe('warningSpecialPageIncluded');
+  });
 });

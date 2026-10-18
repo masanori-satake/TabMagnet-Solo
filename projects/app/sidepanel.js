@@ -45,6 +45,7 @@ import {
   getCompatibleColor,
   isEdge,
   validateImportData,
+  validateSingleTarget,
   normalizeGroupSets,
   createDefaultGroupSet,
   migrateTargetsToGroupSets
@@ -576,24 +577,16 @@ async function handleSaveTarget() {
     return;
   }
 
-  const patterns = [];
-  let hasSpecialPage = false;
+  const patterns = rawPatterns.map(p => /^https?:\/\//i.test(p) ? p.replace(/^https?:\/\//i, '') : p);
+  const targetData = { name, pattern: patterns, color: state.selectedColor };
 
-  for (let p of rawPatterns) {
-    if (/^https?:\/\//i.test(p)) {
-      p = p.replace(/^https?:\/\//i, '');
-    } else if (/^[a-z0-9-]+:\/\//i.test(p) || p.startsWith('about:') || p.startsWith('file:')) {
-      hasSpecialPage = true;
-    }
-    patterns.push(p);
-  }
-
-  if (hasSpecialPage) {
+  // セキュリティ向上: 中央集権的な入力検証で非http(s)スキームや不正データを排除する
+  try {
+    validateSingleTarget(targetData);
+  } catch {
     showModalFeedback(chrome.i18n.getMessage('warningSpecialPageIncluded'));
     return;
   }
-
-  const targetData = { name, pattern: patterns, color: state.selectedColor };
 
   if (groupIndex !== null) {
     state.groupSets[setIndex].groups[groupIndex] = targetData;
