@@ -640,7 +640,8 @@ describe('sidepanel logic', () => {
     ['javascript scheme', 'javascript:alert(1)'],
     ['chrome scheme', 'chrome://settings'],
     ['data scheme', 'data:text/html,test'],
-    ['control char', 'example.com/\u0001test']
+    ['control char', 'example.com/\u0001test'],
+    ['U+0085 制御文字', 'example.com/\u0085test']
   ])('UIモーダルから危険・特殊スキーム(%s)を含むターゲット保存を拒否する', async (_label, invalidPattern) => {
     const { init } = await import('../projects/app/sidepanel.js');
     const { state } = await import('../projects/app/ui/state.js');
