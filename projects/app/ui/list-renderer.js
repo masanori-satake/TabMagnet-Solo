@@ -13,9 +13,12 @@ let onEditGroupSetCallback;
  */
 export function escapeHtml(str) {
   if (typeof str !== 'string') return '';
-  const div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 /**
@@ -53,36 +56,43 @@ function createGroupSetRow(groupSet, setIndex, onEditGroupSet) {
   const editLabel = chrome.i18n.getMessage('gsEditButton', [groupSet.name]) || `グループセット「${groupSet.name}」を編集`;
   const executeLabel = chrome.i18n.getMessage('gsExecuteButton', [groupSet.name]) || `グループセット「${groupSet.name}」を実行`;
 
-  row.innerHTML = `
-    <button class="icon-button toggle-expand-btn" aria-expanded="${isExpanded ? 'true' : 'false'}" aria-label="${escapeHtml(toggleLabel)}">
-      ${isExpanded
-        ? `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" fill="currentColor"><path d="M480-345 240-585l56-56 184 184 184-184 56 56-240 240Z"/></svg>`
-        : `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" fill="currentColor"><path d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"/></svg>`
-      }
-    </button>
-    <div class="target-info">
-      <div class="target-color-chip ${colorClass}"></div>
-      <div class="target-name">${escapeHtml(groupSet.name)}</div>
-    </div>
-    <div class="target-actions">
-      <button class="icon-button edit-set-btn" aria-label="${escapeHtml(editLabel)}">
-        <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" fill="currentColor"><path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"/></svg>
-      </button>
-      <button class="icon-button execute-set-btn ${isExecuteDisabled ? 'disabled' : ''}" ${isExecuteDisabled ? 'disabled' : ''} aria-label="${escapeHtml(executeLabel)}">
-        <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24" fill="currentColor">
-          <path d="M5 2h4v3H5V2zm10 0h4v3h-4V2zM5 6v8c0 3.87 3.13 7 7 7s7-3.13 7-7V6h-4v8c0 1.66-1.34 3-3 3s-3-1.34-3-3V6H5z"/>
-        </svg>
-      </button>
-    </div>
-  `;
+  // 展開・折りたたみボタン
+  const toggleBtn = document.createElement('button');
+  toggleBtn.className = 'icon-button toggle-expand-btn';
+  toggleBtn.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
+  toggleBtn.setAttribute('aria-label', toggleLabel);
+  toggleBtn.innerHTML = isExpanded
+    ? `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" fill="currentColor"><path d="M480-345 240-585l56-56 184 184 184-184 56 56-240 240Z"/></svg>`
+    : `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" fill="currentColor"><path d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"/></svg>`;
 
-  const toggleBtn = row.querySelector('.toggle-expand-btn');
   toggleBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     toggleGroupSetExpanded(setIndex);
   });
 
-  const editSetBtn = row.querySelector('.edit-set-btn');
+  // グループセット情報表示領域
+  const targetInfo = document.createElement('div');
+  targetInfo.className = 'target-info';
+
+  const colorChip = document.createElement('div');
+  colorChip.className = `target-color-chip ${colorClass}`;
+
+  const nameEl = document.createElement('div');
+  nameEl.className = 'target-name';
+  nameEl.textContent = groupSet.name || '';
+
+  targetInfo.appendChild(colorChip);
+  targetInfo.appendChild(nameEl);
+
+  // 操作アクションボタン群
+  const targetActions = document.createElement('div');
+  targetActions.className = 'target-actions';
+
+  const editSetBtn = document.createElement('button');
+  editSetBtn.className = 'icon-button edit-set-btn';
+  editSetBtn.setAttribute('aria-label', editLabel);
+  editSetBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" fill="currentColor"><path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"/></svg>`;
+
   editSetBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     if (typeof onEditGroupSet === 'function') {
@@ -90,7 +100,14 @@ function createGroupSetRow(groupSet, setIndex, onEditGroupSet) {
     }
   });
 
-  const executeSetBtn = row.querySelector('.execute-set-btn');
+  const executeSetBtn = document.createElement('button');
+  executeSetBtn.className = `icon-button execute-set-btn${isExecuteDisabled ? ' disabled' : ''}`;
+  if (isExecuteDisabled) {
+    executeSetBtn.disabled = true;
+  }
+  executeSetBtn.setAttribute('aria-label', executeLabel);
+  executeSetBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24" fill="currentColor"><path d="M5 2h4v3H5V2zm10 0h4v3h-4V2zM5 6v8c0 3.87 3.13 7 7 7s7-3.13 7-7V6h-4v8c0 1.66-1.34 3-3 3s-3-1.34-3-3V6H5z"/></svg>`;
+
   if (!isExecuteDisabled) {
     executeSetBtn.addEventListener('click', async (e) => {
       e.stopPropagation();
@@ -102,6 +119,13 @@ function createGroupSetRow(groupSet, setIndex, onEditGroupSet) {
       }
     });
   }
+
+  targetActions.appendChild(editSetBtn);
+  targetActions.appendChild(executeSetBtn);
+
+  row.appendChild(toggleBtn);
+  row.appendChild(targetInfo);
+  row.appendChild(targetActions);
 
   return row;
 }
@@ -124,23 +148,45 @@ function createGroupRow(group, setIndex, groupIndex, onEditGroup) {
   const colorClass = `bg-${group.color || 'grey'}`;
   const labelExecute = chrome.i18n.getMessage('summonMagnet');
 
-  item.innerHTML = `
-    <div class="drag-handle">
-      <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" style="fill: currentColor;"><path d="M360-160q-33 0-56.5-23.5T280-240q0-33 23.5-56.5T360-320q33 0 56.5 23.5T440-240q0 33-23.5 56.5T360-160Zm240 0q-33 0-56.5-23.5T520-240q0-33 23.5-56.5T600-320q33 0 56.5 23.5T680-240q0 33-23.5 56.5T600-160ZM360-400q-33 0-56.5-23.5T280-480q0-33 23.5-56.5T360-560q33 0 56.5 23.5T440-480q0 33-23.5 56.5T360-400Zm240 0q-33 0-56.5-23.5T520-480q0-33 23.5-56.5T600-560q33 0 56.5 23.5T680-480q0 33-23.5 56.5T600-400ZM360-640q-33 0-56.5-23.5T280-720q0-33 23.5-56.5T360-800q33 0 56.5 23.5T440-720q0 33-23.5 56.5T360-640Zm240 0q-33 0-56.5-23.5T520-720q0-33 23.5-56.5T600-800q33 0 56.5 23.5T680-720q0 33-23.5 56.5T600-640Z"/></svg>
-    </div>
-    <div class="target-info">
-      <div class="target-color-chip ${colorClass}"></div>
-      <div class="target-name">${escapeHtml(group.name)}</div>
-    </div>
-    <div class="target-actions">
-      <button class="icon-button execute-btn" aria-label="${escapeHtml(labelExecute)}">
-        <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24" fill="currentColor">
-          <path d="M5 2h4v3H5V2zm10 0h4v3h-4V2zM5 6v8c0 3.87 3.13 7 7 7s7-3.13 7-7V6h-4v8c0 1.66-1.34 3-3 3s-3-1.34-3-3V6H5z"/>
-        </svg>
-        <span class="tooltip">${escapeHtml(labelExecute)}</span>
-      </button>
-    </div>
-  `;
+  // ドラッグハンドル
+  const dragHandle = document.createElement('div');
+  dragHandle.className = 'drag-handle';
+  dragHandle.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" style="fill: currentColor;"><path d="M360-160q-33 0-56.5-23.5T280-240q0-33 23.5-56.5T360-320q33 0 56.5 23.5T440-240q0 33-23.5 56.5T360-160Zm240 0q-33 0-56.5-23.5T520-240q0-33 23.5-56.5T600-320q33 0 56.5 23.5T680-240q0 33-23.5 56.5T600-160ZM360-400q-33 0-56.5-23.5T280-480q0-33 23.5-56.5T360-560q33 0 56.5 23.5T440-480q0 33-23.5 56.5T360-400Zm240 0q-33 0-56.5-23.5T520-480q0-33 23.5-56.5T600-560q33 0 56.5 23.5T680-480q0 33-23.5 56.5T600-400ZM360-640q-33 0-56.5-23.5T280-720q0-33 23.5-56.5T360-800q33 0 56.5 23.5T440-720q0 33-23.5 56.5T360-640Zm240 0q-33 0-56.5-23.5T520-720q0-33 23.5-56.5T600-800q33 0 56.5 23.5T680-720q0 33-23.5 56.5T360-640Z"/></svg>`;
+
+  // グループ情報表示領域
+  const targetInfo = document.createElement('div');
+  targetInfo.className = 'target-info';
+
+  const colorChip = document.createElement('div');
+  colorChip.className = `target-color-chip ${colorClass}`;
+
+  const nameEl = document.createElement('div');
+  nameEl.className = 'target-name';
+  nameEl.textContent = group.name || '';
+
+  targetInfo.appendChild(colorChip);
+  targetInfo.appendChild(nameEl);
+
+  // 操作アクション領域
+  const targetActions = document.createElement('div');
+  targetActions.className = 'target-actions';
+
+  const executeBtn = document.createElement('button');
+  executeBtn.className = 'icon-button execute-btn';
+  executeBtn.setAttribute('aria-label', labelExecute);
+
+  const tooltipSpan = document.createElement('span');
+  tooltipSpan.className = 'tooltip';
+  tooltipSpan.textContent = labelExecute;
+
+  executeBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24" fill="currentColor"><path d="M5 2h4v3H5V2zm10 0h4v3h-4V2zM5 6v8c0 3.87 3.13 7 7 7s7-3.13 7-7V6h-4v8c0 1.66-1.34 3-3 3s-3-1.34-3-3V6H5z"/></svg>`;
+  executeBtn.appendChild(tooltipSpan);
+
+  targetActions.appendChild(executeBtn);
+
+  item.appendChild(dragHandle);
+  item.appendChild(targetInfo);
+  item.appendChild(targetActions);
 
   item.addEventListener('dragstart', () => item.classList.add('dragging'));
   item.addEventListener('dragend', async () => {
@@ -155,7 +201,6 @@ function createGroupRow(group, setIndex, groupIndex, onEditGroup) {
     }
   });
 
-  const executeBtn = item.querySelector('.execute-btn');
   executeBtn.addEventListener('click', async (e) => {
     e.stopPropagation();
     try {
@@ -166,7 +211,6 @@ function createGroupRow(group, setIndex, groupIndex, onEditGroup) {
     }
   });
 
-  const dragHandle = item.querySelector('.drag-handle');
   const targetListEl = document.getElementById('target-list');
   setupTouchDragList(dragHandle, item, targetListEl, setIndex);
 
