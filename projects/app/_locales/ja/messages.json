@@ -68,8 +68,93 @@
   "confirmDelete": {
     "message": "このターゲットを削除しますか？"
   },
+  "confirmDeleteGroupSet": {
+    "message": "このグループセットを削除しますか？\n含まれるグループもすべて削除されます。"
+  },
   "confirmDeleteTitle": {
     "message": "削除の確認"
+  },
+  "defaultGroupSetName": {
+    "message": "(名称未設定)"
+  },
+  "gsAddNewSet": {
+    "message": "新規グループセット"
+  },
+  "gsEditMenuTitle": {
+    "message": "グループセットの編集"
+  },
+  "gsEditMenuAddGroup": {
+    "message": "新規グループの追加"
+  },
+  "gsEditMenuAddFromDomain": {
+    "message": "表示中タブから新規グループを追加"
+  },
+  "gsEditMenuEditSet": {
+    "message": "グループセットを編集"
+  },
+  "gsEditMenuMoveUp": {
+    "message": "上に移動"
+  },
+  "gsEditMenuMoveDown": {
+    "message": "下に移動"
+  },
+  "gsEditModalTitle": {
+    "message": "グループセット編集"
+  },
+  "gsPlaceholderName": {
+    "message": "グループセット名"
+  },
+  "gsGroupColor": {
+    "message": "グループセットの色"
+  },
+  "gsEmptyNotice": {
+    "message": "登録されたグループがありません"
+  },
+  "gsEditButton": {
+    "message": "グループセット「$1」を編集",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "gsExecuteButton": {
+    "message": "グループセット「$1」を実行",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "gsExpandButton": {
+    "message": "グループセット「$1」を縮小",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "gsCollapseButton": {
+    "message": "グループセット「$1」を展開",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "errorGroupSetLimit": {
+    "message": "グループセットは20個までです"
+  },
+  "errorGroupNameRequired": {
+    "message": "グループセット名を入力してください"
+  },
+  "errorGroupSetNameTooLong": {
+    "message": "グループセット名は$1文字以内で入力してください",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   },
   "labelUrlPattern": {
     "message": "URLパターン"
@@ -270,7 +355,7 @@
     "message": "バージョン"
   },
   "targetCount": {
-    "message": "ターゲット数"
+    "message": "グループ数"
   },
   "developer": {
     "message": "開発者"
@@ -292,5 +377,21 @@
   },
   "importError": {
     "message": "インポートに失敗しました。正しい形式のデータを選択してください。"
+  },
+  "errorGroupLimit": {
+    "message": "1つのグループセットに登録できるグループは最大$1件です",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "errorSyncSizeLimit": {
+    "message": "同期データが1項目あたり$1バイトの上限を超えています。データを減らして再試行してください。ローカルデータは保存されています。",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   }
 }

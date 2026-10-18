@@ -1,6 +1,10 @@
-import { state, saveTargets } from './state.js';
+import { state, saveGroupSets } from './state.js';
 import { executeMagnet, executeAllMagnets } from './utils.js';
 import { showToast } from './toast.js';
+import { toggleGroupSetExpanded } from './group-set.js';
+
+let onEditGroupCallback;
+let onEditGroupSetCallback;
 
 /**
  * HTMLのエスケープ処理
@@ -9,131 +13,282 @@ import { showToast } from './toast.js';
  */
 export function escapeHtml(str) {
   if (typeof str !== 'string') return '';
-  const div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/**
+ * 空のGroup-Set用案内テキスト要素を生成する
+ * @returns {HTMLElement} 案内テキスト要素
+ */
+function createEmptyGroupSetNotice() {
+  const emptyEl = document.createElement('div');
+  emptyEl.className = 'empty-set-notice';
+  emptyEl.textContent = chrome.i18n.getMessage('gsEmptyNotice') || '登録されたグループがありません';
+  return emptyEl;
+}
+
+/**
+ * Group-Set行を生成する
+ * @param {Object} groupSet - Group-Setオブジェクト
+ * @param {number} setIndex - Group-Setのインデックス
+ * @param {Function} onEditGroupSet - 編集ボタン押下時のコールバック
+ * @returns {HTMLElement} Group-Set行要素
+ */
+function createGroupSetRow(groupSet, setIndex, onEditGroupSet) {
+  const row = document.createElement('div');
+  row.className = 'target-list-item group-set-item';
+  row.dataset.static = 'true';
+  row.dataset.setIndex = setIndex;
+
+  const colorClass = `bg-${groupSet.color || 'grey'}`;
+  const isExpanded = !!groupSet.expanded;
+  const isExecuteDisabled = !groupSet.groups || groupSet.groups.length === 0;
+
+  const toggleLabel = isExpanded
+    ? (chrome.i18n.getMessage('gsExpandButton', [groupSet.name]) || `グループセット「${groupSet.name}」を縮小`)
+    : (chrome.i18n.getMessage('gsCollapseButton', [groupSet.name]) || `グループセット「${groupSet.name}」を展開`);
+
+  const editLabel = chrome.i18n.getMessage('gsEditButton', [groupSet.name]) || `グループセット「${groupSet.name}」を編集`;
+  const executeLabel = chrome.i18n.getMessage('gsExecuteButton', [groupSet.name]) || `グループセット「${groupSet.name}」を実行`;
+
+  // 展開・折りたたみボタン
+  const toggleBtn = document.createElement('button');
+  toggleBtn.className = 'icon-button toggle-expand-btn';
+  toggleBtn.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
+  toggleBtn.setAttribute('aria-label', toggleLabel);
+  toggleBtn.innerHTML = isExpanded
+    ? `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" fill="currentColor"><path d="M480-345 240-585l56-56 184 184 184-184 56 56-240 240Z"/></svg>`
+    : `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" fill="currentColor"><path d="M504-480 320-664l56-56 240 240-240 240-56-56 184-184Z"/></svg>`;
+
+  toggleBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggleGroupSetExpanded(setIndex);
+  });
+
+  // グループセット情報表示領域
+  const targetInfo = document.createElement('div');
+  targetInfo.className = 'target-info';
+
+  const colorChip = document.createElement('div');
+  colorChip.className = `target-color-chip ${colorClass}`;
+
+  const nameEl = document.createElement('div');
+  nameEl.className = 'target-name';
+  nameEl.textContent = groupSet.name || '';
+
+  targetInfo.appendChild(colorChip);
+  targetInfo.appendChild(nameEl);
+
+  // 操作アクションボタン群
+  const targetActions = document.createElement('div');
+  targetActions.className = 'target-actions';
+
+  const editSetBtn = document.createElement('button');
+  editSetBtn.className = 'icon-button edit-set-btn';
+  editSetBtn.setAttribute('aria-label', editLabel);
+  editSetBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" fill="currentColor"><path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"/></svg>`;
+
+  editSetBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (typeof onEditGroupSet === 'function') {
+      onEditGroupSet(setIndex);
+    }
+  });
+
+  const executeSetBtn = document.createElement('button');
+  executeSetBtn.className = `icon-button execute-set-btn${isExecuteDisabled ? ' disabled' : ''}`;
+  if (isExecuteDisabled) {
+    executeSetBtn.disabled = true;
+  }
+  executeSetBtn.setAttribute('aria-label', executeLabel);
+  executeSetBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24" fill="currentColor"><path d="M5 2h4v3H5V2zm10 0h4v3h-4V2zM5 6v8c0 3.87 3.13 7 7 7s7-3.13 7-7V6h-4v8c0 1.66-1.34 3-3 3s-3-1.34-3-3V6H5z"/></svg>`;
+
+  if (!isExecuteDisabled) {
+    executeSetBtn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      try {
+        await executeAllMagnets(groupSet.groups);
+      } catch (err) {
+        console.error('Group-Set execution failed:', err);
+        showToast(chrome.i18n.getMessage('errorExecutionFailed'));
+      }
+    });
+  }
+
+  targetActions.appendChild(editSetBtn);
+  targetActions.appendChild(executeSetBtn);
+
+  row.appendChild(toggleBtn);
+  row.appendChild(targetInfo);
+  row.appendChild(targetActions);
+
+  return row;
+}
+
+/**
+ * Group行を生成する
+ * @param {Object} group - Groupオブジェクト
+ * @param {number} setIndex - 所属するGroup-Setのインデックス
+ * @param {number} groupIndex - Groupのインデックス
+ * @param {Function} onEditGroup - Group編集コールバック
+ * @returns {HTMLElement} Group行要素
+ */
+function createGroupRow(group, setIndex, groupIndex, onEditGroup) {
+  const item = document.createElement('div');
+  item.className = 'target-list-item group-item';
+  item.draggable = true;
+  item.dataset.setIndex = setIndex;
+  item.dataset.groupIndex = groupIndex;
+
+  const colorClass = `bg-${group.color || 'grey'}`;
+  const labelExecute = chrome.i18n.getMessage('summonMagnet');
+
+  // ドラッグハンドル
+  const dragHandle = document.createElement('div');
+  dragHandle.className = 'drag-handle';
+  dragHandle.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" style="fill: currentColor;"><path d="M360-160q-33 0-56.5-23.5T280-240q0-33 23.5-56.5T360-320q33 0 56.5 23.5T440-240q0 33-23.5 56.5T360-160Zm240 0q-33 0-56.5-23.5T520-240q0-33 23.5-56.5T600-320q33 0 56.5 23.5T680-240q0 33-23.5 56.5T600-160ZM360-400q-33 0-56.5-23.5T280-480q0-33 23.5-56.5T360-560q33 0 56.5 23.5T440-480q0 33-23.5 56.5T360-400Zm240 0q-33 0-56.5-23.5T520-480q0-33 23.5-56.5T600-560q33 0 56.5 23.5T680-480q0 33-23.5 56.5T600-400ZM360-640q-33 0-56.5-23.5T280-720q0-33 23.5-56.5T360-800q33 0 56.5 23.5T440-720q0 33-23.5 56.5T360-640Zm240 0q-33 0-56.5-23.5T520-720q0-33 23.5-56.5T600-800q33 0 56.5 23.5T680-720q0 33-23.5 56.5T360-640Z"/></svg>`;
+
+  // グループ情報表示領域
+  const targetInfo = document.createElement('div');
+  targetInfo.className = 'target-info';
+
+  const colorChip = document.createElement('div');
+  colorChip.className = `target-color-chip ${colorClass}`;
+
+  const nameEl = document.createElement('div');
+  nameEl.className = 'target-name';
+  nameEl.textContent = group.name || '';
+
+  targetInfo.appendChild(colorChip);
+  targetInfo.appendChild(nameEl);
+
+  // 操作アクション領域
+  const targetActions = document.createElement('div');
+  targetActions.className = 'target-actions';
+
+  // 標準ボタンでキーボードからも編集できるようにする。
+  const editBtn = document.createElement('button');
+  editBtn.type = 'button';
+  editBtn.className = 'icon-button edit-btn';
+  editBtn.setAttribute('aria-label', `${chrome.i18n.getMessage('edit')}: ${group.name || ''}`);
+  editBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" fill="currentColor"><path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"/></svg>`;
+  editBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (typeof onEditGroup === 'function') {
+      onEditGroup(groupIndex, setIndex);
+    }
+  });
+
+  const executeBtn = document.createElement('button');
+  executeBtn.className = 'icon-button execute-btn';
+  executeBtn.setAttribute('aria-label', labelExecute);
+
+  const tooltipSpan = document.createElement('span');
+  tooltipSpan.className = 'tooltip';
+  tooltipSpan.textContent = labelExecute;
+
+  executeBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24" fill="currentColor"><path d="M5 2h4v3H5V2zm10 0h4v3h-4V2zM5 6v8c0 3.87 3.13 7 7 7s7-3.13 7-7V6h-4v8c0 1.66-1.34 3-3 3s-3-1.34-3-3V6H5z"/></svg>`;
+  executeBtn.appendChild(tooltipSpan);
+
+  targetActions.appendChild(editBtn);
+  targetActions.appendChild(executeBtn);
+
+  item.appendChild(dragHandle);
+  item.appendChild(targetInfo);
+  item.appendChild(targetActions);
+
+  item.addEventListener('dragstart', () => item.classList.add('dragging'));
+  item.addEventListener('dragend', async () => {
+    item.classList.remove('dragging');
+    await updateGroupOrderAfterDrag(setIndex);
+  });
+
+  item.addEventListener('click', (e) => {
+    if (e.target.closest('.drag-handle') || e.target.closest('.execute-btn')) return;
+    if (typeof onEditGroup === 'function') {
+      onEditGroup(groupIndex, setIndex);
+    }
+  });
+
+  executeBtn.addEventListener('click', async (e) => {
+    e.stopPropagation();
+    try {
+      await executeMagnet(group);
+    } catch (err) {
+      console.error('Magnet execution failed:', err);
+      showToast(chrome.i18n.getMessage('errorExecutionFailed'));
+    }
+  });
+
+  const targetListEl = document.getElementById('target-list');
+  setupTouchDragList(dragHandle, item, targetListEl, setIndex);
+
+  return item;
+}
+
+/**
+ * ドラッグ後のグループ順序を更新する
+ * @param {number} setIndex - 対象Group-Setのインデックス
+ */
+async function updateGroupOrderAfterDrag(setIndex) {
+  const targetListEl = document.getElementById('target-list');
+  const groupRows = [...targetListEl.querySelectorAll(`.group-item[data-set-index="${setIndex}"]`)];
+  if (groupRows.length === 0 || !state.groupSets[setIndex]) return;
+
+  const currentGroups = state.groupSets[setIndex].groups;
+  const newGroups = groupRows.map(el => currentGroups[parseInt(el.dataset.groupIndex)]).filter(Boolean);
+
+  if (newGroups.length === currentGroups.length) {
+    state.groupSets[setIndex].groups = newGroups;
+    await saveGroupSets(state.groupSets);
+    // 行のインデックスと両方の編集コールバックを最新の状態にそろえる。
+    renderTargetList(onEditGroupCallback, onEditGroupSetCallback);
+  }
 }
 
 /**
  * ターゲットリスト（メイン画面）のレンダリング
- * @param {Function} onEdit - 編集ボタンクリック時のコールバック
+ * @param {Function} onEditGroup - Group編集時のコールバック
+ * @param {Function} onEditGroupSet - Group-Set編集ボタンクリック時のコールバック
  */
-export function renderTargetList(onEdit) {
+export function renderTargetList(onEditGroup, onEditGroupSet) {
+  onEditGroupCallback = onEditGroup;
+  onEditGroupSetCallback = onEditGroupSet;
   const targetListEl = document.getElementById('target-list');
+  if (!targetListEl) return;
   targetListEl.innerHTML = '';
 
-  const labelExecute = chrome.i18n.getMessage('summonMagnet');
-  const labelMagnetAll = chrome.i18n.getMessage('magnetAll');
+  state.groupSets.forEach((groupSet, setIndex) => {
+    const setRow = createGroupSetRow(groupSet, setIndex, onEditGroupSet);
+    targetListEl.appendChild(setRow);
 
-  // 1. 先頭に固定の "Magnet All" 行を追加
-  const allItem = document.createElement('div');
-  allItem.className = 'target-list-item magnet-all-item';
-  allItem.dataset.static = 'true';
-
-  const isAllDisabled = state.targets.length === 0;
-
-  allItem.innerHTML = `
-    <div class="drag-handle" style="opacity: 0; cursor: default; pointer-events: none;">
-      <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" style="fill: currentColor;"><path d="M360-160q-33 0-56.5-23.5T280-240q0-33 23.5-56.5T360-320q33 0 56.5 23.5T440-240q0 33-23.5 56.5T360-160Zm240 0q-33 0-56.5-23.5T520-240q0-33 23.5-56.5T600-320q33 0 56.5 23.5T680-240q0 33-23.5 56.5T600-160ZM360-400q-33 0-56.5-23.5T280-480q0-33 23.5-56.5T360-560q33 0 56.5 23.5T440-480q0 33-23.5 56.5T360-400Zm240 0q-33 0-56.5-23.5T520-480q0-33 23.5-56.5T600-560q33 0 56.5 23.5T680-480q0 33-23.5 56.5T600-400ZM360-640q-33 0-56.5-23.5T280-720q0-33 23.5-56.5T360-800q33 0 56.5 23.5T440-720q0 33-23.5 56.5T360-640Zm240 0q-33 0-56.5-23.5T520-720q0-33 23.5-56.5T600-800q33 0 56.5 23.5T680-720q0 33-23.5 56.5T600-640Z"/></svg>
-    </div>
-    <div class="target-info">
-      <div class="target-color-chip" style="background-color: var(--md-sys-color-primary);"></div>
-      <div class="target-name" style="font-weight: 500;">${escapeHtml(labelMagnetAll)}</div>
-    </div>
-    <div class="target-actions">
-      <button class="icon-button execute-all-btn ${isAllDisabled ? 'disabled' : ''}" ${isAllDisabled ? 'disabled' : ''}>
-        <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24" fill="currentColor">
-          <path d="M5 2h4v3H5V2zm10 0h4v3h-4V2zM5 6v8c0 3.87 3.13 7 7 7s7-3.13 7-7V6h-4v8c0 1.66-1.34 3-3 3s-3-1.34-3-3V6H5z"/>
-        </svg>
-        <span class="tooltip">${labelExecute}</span>
-      </button>
-    </div>
-  `;
-
-  const executeAllBtn = allItem.querySelector('.execute-all-btn');
-  executeAllBtn.disabled = isAllDisabled;
-  if (!isAllDisabled) {
-    executeAllBtn.addEventListener('click', async (e) => {
-      e.stopPropagation();
-      try {
-        await executeAllMagnets(state.targets);
-      } catch (err) {
-        console.error('Magnet All execution failed:', err);
-        showToast(chrome.i18n.getMessage('errorExecutionFailed'));
+    if (groupSet.expanded) {
+      if (!groupSet.groups || groupSet.groups.length === 0) {
+        const emptyEl = createEmptyGroupSetNotice();
+        targetListEl.appendChild(emptyEl);
+      } else {
+        groupSet.groups.forEach((group, groupIndex) => {
+          const groupRow = createGroupRow(group, setIndex, groupIndex, onEditGroup);
+          targetListEl.appendChild(groupRow);
+        });
       }
-    });
-  }
-
-  targetListEl.appendChild(allItem);
-
-  if (state.targets.length === 0) {
-    const noTargetsEl = document.createElement('div');
-    noTargetsEl.style.cssText = 'padding: 32px; text-align: center; color: var(--md-sys-color-on-surface-variant); font: var(--md-sys-typescale-body-medium);';
-    noTargetsEl.textContent = chrome.i18n.getMessage('noTargets');
-    targetListEl.appendChild(noTargetsEl);
-    return;
-  }
-
-  state.targets.forEach((target, index) => {
-    const item = document.createElement('div');
-    item.className = 'target-list-item';
-    item.draggable = true;
-    item.dataset.index = index;
-
-    const colorClass = `bg-${target.color || 'grey'}`;
-
-    item.innerHTML = `
-      <div class="drag-handle">
-        <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" style="fill: currentColor;"><path d="M360-160q-33 0-56.5-23.5T280-240q0-33 23.5-56.5T360-320q33 0 56.5 23.5T440-240q0 33-23.5 56.5T360-160Zm240 0q-33 0-56.5-23.5T520-240q0-33 23.5-56.5T600-320q33 0 56.5 23.5T680-240q0 33-23.5 56.5T600-160ZM360-400q-33 0-56.5-23.5T280-480q0-33 23.5-56.5T360-560q33 0 56.5 23.5T440-480q0 33-23.5 56.5T360-400Zm240 0q-33 0-56.5-23.5T520-480q0-33 23.5-56.5T600-560q33 0 56.5 23.5T680-480q0 33-23.5 56.5T600-400ZM360-640q-33 0-56.5-23.5T280-720q0-33 23.5-56.5T360-800q33 0 56.5 23.5T440-720q0 33-23.5 56.5T360-640Zm240 0q-33 0-56.5-23.5T520-720q0-33 23.5-56.5T600-800q33 0 56.5 23.5T680-720q0 33-23.5 56.5T600-640Z"/></svg>
-      </div>
-      <div class="target-info">
-        <div class="target-color-chip ${colorClass}"></div>
-        <div class="target-name">${escapeHtml(target.name)}</div>
-      </div>
-      <div class="target-actions">
-        <button class="icon-button execute-btn" data-index="${index}">
-          <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24" fill="currentColor">
-            <path d="M5 2h4v3H5V2zm10 0h4v3h-4V2zM5 6v8c0 3.87 3.13 7 7 7s7-3.13 7-7V6h-4v8c0 1.66-1.34 3-3 3s-3-1.34-3-3V6H5z"/>
-          </svg>
-          <span class="tooltip">${labelExecute}</span>
-        </button>
-      </div>
-    `;
-
-    item.addEventListener('dragstart', () => item.classList.add('dragging'));
-    item.addEventListener('dragend', () => item.classList.remove('dragging'));
-
-    item.addEventListener('click', (e) => {
-      if (e.target.closest('.drag-handle') || e.target.closest('.execute-btn')) return;
-      onEdit(index);
-    });
-
-    const executeBtn = item.querySelector('.execute-btn');
-    executeBtn.addEventListener('click', async (e) => {
-      e.stopPropagation();
-      try {
-        await executeMagnet(state.targets[index]);
-      } catch (err) {
-        console.error('Magnet execution failed:', err);
-        showToast(chrome.i18n.getMessage('errorExecutionFailed'));
-      }
-    });
-
-    const dragHandle = item.querySelector('.drag-handle');
-    setupTouchDragList(dragHandle, item, targetListEl, onEdit);
-
-    targetListEl.appendChild(item);
+    }
   });
 }
 
 /**
- * タッチ操作用ドラッグ＆ドロップの設定（メインリスト用）
+ * タッチ操作用ドラッグ＆ドロップの設定（Group並べ替え用）
  * @param {HTMLElement} handle - ドラッグハンドル要素
  * @param {HTMLElement} item - リスト項目要素
  * @param {HTMLElement} container - 親コンテナ要素
- * @param {Function} onEdit - 編集コールバック
+ * @param {number} setIndex - 所属するGroup-Setインデックス
  */
-function setupTouchDragList(handle, item, container, onEdit) {
+function setupTouchDragList(handle, item, container, setIndex) {
   let isDragging = false;
 
   handle.addEventListener('touchstart', (e) => {
@@ -146,7 +301,7 @@ function setupTouchDragList(handle, item, container, onEdit) {
     if (!isDragging || e.touches.length !== 1) return;
     e.preventDefault();
     const touchY = e.touches[0].clientY;
-    const siblings = [...container.querySelectorAll('.target-list-item:not(.dragging):not([data-static="true"])')];
+    const siblings = [...container.querySelectorAll(`.group-item[data-set-index="${setIndex}"]:not(.dragging)`)];
     const nextSibling = siblings.find(sibling => {
       const rect = sibling.getBoundingClientRect();
       return touchY <= rect.top + rect.height / 2;
@@ -154,7 +309,13 @@ function setupTouchDragList(handle, item, container, onEdit) {
     if (nextSibling) {
       container.insertBefore(item, nextSibling);
     } else {
-      container.appendChild(item);
+      // 当該Group-Set内の最後のGroup行の後ろに挿入
+      const lastSibling = siblings[siblings.length - 1];
+      if (lastSibling && lastSibling.nextSibling) {
+        container.insertBefore(item, lastSibling.nextSibling);
+      } else {
+        container.appendChild(item);
+      }
     }
   }, { passive: false });
 
@@ -162,10 +323,7 @@ function setupTouchDragList(handle, item, container, onEdit) {
     if (!isDragging) return;
     isDragging = false;
     item.classList.remove('dragging');
-    const items = [...container.querySelectorAll('.target-list-item:not([data-static="true"])')];
-    const newTargets = items.map(el => state.targets[parseInt(el.dataset.index)]);
-    await saveTargets(newTargets);
-    renderTargetList(onEdit);
+    await updateGroupOrderAfterDrag(setIndex);
   };
 
   handle.addEventListener('touchend', endDrag);
@@ -173,21 +331,27 @@ function setupTouchDragList(handle, item, container, onEdit) {
 }
 
 /**
- * ドラッグオーバー時の並べ替え処理（メインリスト用）
+ * ドラッグオーバー時の並べ替え処理（Group行のみ）
  */
 export function handleDragOver(e) {
   e.preventDefault();
   const targetListEl = document.getElementById('target-list');
-  const draggingItem = document.querySelector('.target-list-item.dragging');
+  const draggingItem = document.querySelector('.group-item.dragging');
   if (!draggingItem) return;
 
-  const siblings = [...targetListEl.querySelectorAll('.target-list-item:not(.dragging):not([data-static="true"])')];
+  const setIndex = draggingItem.dataset.setIndex;
+  const siblings = [...targetListEl.querySelectorAll(`.group-item[data-set-index="${setIndex}"]:not(.dragging)`)];
   const nextSibling = siblings.find(sibling => {
     return e.clientY <= sibling.offsetTop + sibling.offsetHeight / 2;
   });
   if (nextSibling) {
     targetListEl.insertBefore(draggingItem, nextSibling);
-  } else {
-    targetListEl.appendChild(draggingItem);
+  } else if (siblings.length > 0) {
+    const lastSibling = siblings[siblings.length - 1];
+    if (lastSibling.nextSibling) {
+      targetListEl.insertBefore(draggingItem, lastSibling.nextSibling);
+    } else {
+      targetListEl.appendChild(draggingItem);
+    }
   }
 }

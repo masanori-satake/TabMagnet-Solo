@@ -1,14 +1,19 @@
-import { DEFAULT_SETTINGS, syncFromCloudIfNeeded } from './utils.js';
+import { DEFAULT_SETTINGS, syncFromCloudIfNeeded, resolveGroupSets, normalizeGroupSets } from './utils.js';
+import { showToast } from './toast.js';
+
+const SYNC_QUOTA_BYTES_PER_ITEM = 8192;
 
 /**
  * アプリケーションのグローバル状態管理
  */
 export const state = {
-  targets: [],
+  groupSets: [],
   settings: { ...DEFAULT_SETTINGS },
   selectedColor: 'grey',
-  currentEditIndex: null,
-  currentDeleteIndex: null
+  currentEdit: { setIndex: null, groupIndex: null },
+  currentDelete: { type: null, setIndex: null, groupIndex: null },
+  currentEditSetIndex: null,
+  selectedSetColor: 'grey'
 };
 
 /**
@@ -16,39 +21,67 @@ export const state = {
  */
 export async function loadState() {
   await syncFromCloudIfNeeded();
-  const data = await chrome.storage.local.get(['targets', 'settings']);
-  state.targets = data.targets || [];
-  state.settings = { ...DEFAULT_SETTINGS, ...(data.settings || {}) };
-}
+  const rawData = await chrome.storage.local.get(['groupSets', 'targets', 'settings']);
+  const resolved = resolveGroupSets(rawData);
+  state.groupSets = resolved.groupSets;
+  state.settings = { ...DEFAULT_SETTINGS, ...(rawData.settings || {}) };
 
-/**
- * ターゲットリストをストレージに保存する
- * @param {Array} targets - 保存するターゲットの配列
- */
-export async function saveTargets(targets) {
-  state.targets = targets;
-  await chrome.storage.local.set({ targets: state.targets });
-  if (state.settings.syncEnabled) {
-    try {
-      await chrome.storage.sync.set({ targets: state.targets });
-    } catch (e) {
-      console.warn('Failed to sync targets to chrome.storage.sync:', e);
+  if (resolved.migrated) {
+    await chrome.storage.local.set({ groupSets: state.groupSets });
+    if (resolved.needsCleanup) {
+      await chrome.storage.local.remove('targets');
     }
   }
 }
 
 /**
+ * シリアライズ後のキーと値のUTF-8バイト数を検査して同期する。
+ * 上限は項目単位のため、全項目を検査してから一度だけ書き込む。
+ * @param {Object} data - 同期するデータ
+ * @returns {Promise<boolean>} 同期が成功した場合はtrue
+ */
+export async function syncDataToCloud(data) {
+  const exceedsQuota = Object.entries(data).some(([key, value]) =>
+    new Blob([key, JSON.stringify(value)]).size > SYNC_QUOTA_BYTES_PER_ITEM);
+  if (exceedsQuota) {
+    showToast(chrome.i18n.getMessage('errorSyncSizeLimit', [String(SYNC_QUOTA_BYTES_PER_ITEM)]));
+    return false;
+  }
+  try {
+    await chrome.storage.sync.set(data);
+    return true;
+  } catch (e) {
+    console.warn('Failed to sync data to chrome.storage.sync:', e);
+    return false;
+  }
+}
+
+/**
+ * グループセットリストをストレージに保存する
+ * @param {Array} groupSets - 保存するグループセットの配列
+ * @param {Object} [options] - 保存オプション
+ * @param {boolean} [options.sync=true] - 同期先にも保存するか
+ * @returns {Promise<boolean>} 同期が不要、または成功した場合はtrue
+ */
+export async function saveGroupSets(groupSets, { sync = true } = {}) {
+  state.groupSets = normalizeGroupSets(groupSets);
+  await chrome.storage.local.set({ groupSets: state.groupSets });
+  if (sync && state.settings.syncEnabled) {
+    return syncDataToCloud({ groupSets: state.groupSets });
+  }
+  return true;
+}
+
+/**
  * 設定をストレージに保存する
  * @param {Object} settings - 保存する設定オブジェクト
+ * @param {Object} [options] - 保存オプション
+ * @param {boolean} [options.sync=true] - 同期先にも保存するか
  */
-export async function saveSettings(settings) {
+export async function saveSettings(settings, { sync = true } = {}) {
   state.settings = { ...state.settings, ...settings };
   await chrome.storage.local.set({ settings: state.settings });
-  if (state.settings.syncEnabled) {
-    try {
-      await chrome.storage.sync.set({ settings: state.settings });
-    } catch (e) {
-      console.warn('Failed to sync settings to chrome.storage.sync:', e);
-    }
+  if (sync && state.settings.syncEnabled) {
+    await syncDataToCloud({ settings: state.settings });
   }
 }

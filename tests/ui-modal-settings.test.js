@@ -41,7 +41,7 @@ describe('ui/modal-settings.js', () => {
       collapseAfterCollect: false,
       syncEnabled: false
     };
-    state.targets = [{}, {}];
+    state.groupSets = [{ name: 'Set 1', color: 'grey', expanded: true, groups: [{}, {}] }];
   });
 
   test('show/hide sync modal', () => {
