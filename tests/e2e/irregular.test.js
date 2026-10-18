@@ -12,7 +12,7 @@ test.describe('Irregular and Edge Cases', () => {
     await page.goto(`chrome-extension://${extensionId}/sidepanel.html`);
 
     // 3. Click "Add from domain" from group set edit menu
-    await page.click('.edit-set-btn');
+    await page.click('.group-set-item .target-name');
     await page.click('#gs-edit-menu-add-from-domain');
 
     // Verify modal is open and populated
@@ -33,14 +33,14 @@ test.describe('Irregular and Edge Cases', () => {
     await page.goto(`chrome-extension://${extensionId}/sidepanel.html`);
 
     // 1. Add first target to default group set
-    await page.click('.edit-set-btn');
+    await page.click('.group-set-item .target-name');
     await page.click('#gs-edit-menu-add-group');
     await page.fill('#new-name', 'Duplicate');
     await page.fill('.pattern-input', 'example.com');
     await page.click('#save-target-btn');
 
     // 2. Add second target with same name
-    await page.click('.edit-set-btn');
+    await page.click('.group-set-item .target-name');
     await page.click('#gs-edit-menu-add-group');
     await page.fill('#new-name', 'Duplicate');
     await page.fill('.pattern-input', 'other.com');
@@ -76,7 +76,7 @@ test.describe('Irregular and Edge Cases', () => {
     await page2.goto(`chrome-extension://${extensionId}/sidepanel.html`);
 
     // 1. Add target in page1
-    await page1.click('.edit-set-btn');
+    await page1.click('.group-set-item .target-name');
     await page1.click('#gs-edit-menu-add-group');
     await page1.fill('#new-name', 'SyncTest');
     await page1.fill('.pattern-input', 'sync.com');
@@ -99,7 +99,7 @@ test.describe('Irregular and Edge Cases', () => {
     await page1.goto(`chrome-extension://${extensionId}/sidepanel.html`);
 
     // Add a target
-    await page1.click('.edit-set-btn');
+    await page1.click('.group-set-item .target-name');
     await page1.click('#gs-edit-menu-add-group');
     await page1.fill('#new-name', 'Race');
     await page1.fill('.pattern-input', 'race.com');

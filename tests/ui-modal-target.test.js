@@ -46,7 +46,7 @@ describe('ui/modal-target.js', () => {
 
   test('showTargetModal for editing existing group in set 0', () => {
     showTargetModal(0, 0);
-    expect(document.getElementById('modal-title').textContent).toBe('edit');
+    expect(document.getElementById('modal-title').textContent).toBe('editGroupTitle');
     expect(document.getElementById('new-name').value).toBe('Existing Group');
     expect(document.getElementById('delete-target-btn').classList.contains('hidden')).toBe(false);
     expect(state.currentEdit).toEqual({ setIndex: 0, groupIndex: 0 });

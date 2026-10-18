@@ -132,6 +132,23 @@ describe('group-set.js operations and correctness properties', () => {
     expect(state.groupSets[1].name).toBe('Set 1');
   });
 
+  test('moveGroupSet updates currentEditSetIndex and button states without closing menu', async () => {
+    document.getElementById('gs-edit-menu-scrim').style.display = 'flex';
+    state.currentEditSetIndex = 0;
+
+    await moveGroupSet(0, 1); // Move Set 0 down to index 1
+
+    expect(state.groupSets[0].name).toBe('Set 1');
+    expect(state.groupSets[1].name).toBe('Set 0');
+    expect(state.currentEditSetIndex).toBe(1);
+    expect(document.getElementById('gs-edit-menu-scrim').style.display).toBe('flex');
+
+    const moveUpBtn = document.getElementById('gs-edit-menu-move-up');
+    const moveDownBtn = document.getElementById('gs-edit-menu-move-down');
+    expect(moveUpBtn.disabled).toBe(false);
+    expect(moveDownBtn.disabled).toBe(true);
+  });
+
   test('Property 16: addGroupSet respects MAX_GROUP_SETS (20)', async () => {
     state.groupSets = Array.from({ length: 20 }, (_, i) => ({
       name: `Set ${i}`, color: 'grey', expanded: true, groups: []

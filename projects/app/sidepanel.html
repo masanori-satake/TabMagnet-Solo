@@ -258,6 +258,12 @@
     }
 
     .target-name {
+      background: none;
+      border: 0;
+      padding: 0;
+      color: inherit;
+      text-align: left;
+      cursor: pointer;
       font: var(--md-sys-typescale-body-medium);
       white-space: nowrap;
       overflow: hidden;
@@ -556,6 +562,13 @@
 
     .outlined-button:hover {
       background-color: rgba(0, 0, 0, 0.04);
+    }
+
+    .outlined-button.disabled,
+    .outlined-button:disabled {
+      opacity: 0.38;
+      cursor: default;
+      pointer-events: none;
     }
 
     .outlined-button svg {
@@ -903,12 +916,31 @@
   <div id="gs-edit-menu-scrim" class="scrim">
     <div class="dialog">
       <div class="dialog-title" data-i18n="gsEditMenuTitle"></div>
-      <div style="display: flex; flex-direction: column; gap: 4px;">
-        <button id="gs-edit-menu-add-group" class="text-button" style="justify-content: flex-start; border: none; width: 100%; border-radius: 8px;" data-i18n="gsEditMenuAddGroup"></button>
-        <button id="gs-edit-menu-add-from-domain" class="text-button" style="justify-content: flex-start; border: none; width: 100%; border-radius: 8px;" data-i18n="gsEditMenuAddFromDomain"></button>
-        <button id="gs-edit-menu-edit-set" class="text-button" style="justify-content: flex-start; border: none; width: 100%; border-radius: 8px;" data-i18n="gsEditMenuEditSet"></button>
-        <button id="gs-edit-menu-move-up" class="text-button" style="justify-content: flex-start; border: none; width: 100%; border-radius: 8px;" data-i18n="gsEditMenuMoveUp"></button>
-        <button id="gs-edit-menu-move-down" class="text-button" style="justify-content: flex-start; border: none; width: 100%; border-radius: 8px;" data-i18n="gsEditMenuMoveDown"></button>
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <button id="gs-edit-menu-edit-set" class="outlined-button" style="width: 100%; box-sizing: border-box;">
+          <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20"><path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"/></svg>
+          <span data-i18n="gsEditMenuEditSet"></span>
+        </button>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <button id="gs-edit-menu-add-group" class="outlined-button">
+            <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/></svg>
+            <span data-i18n="gsEditMenuAddGroup"></span>
+          </button>
+          <button id="gs-edit-menu-add-from-domain" class="outlined-button">
+            <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20"><path d="M480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-82q26-36 45-75t31-83H404q12 44 31 83t45 75Zm-104-16q-18-33-31.5-68.5T322-320H168q32 56 81.5 97.5T376-178Zm208 0q68-21 117.5-62.5T792-320H638q-9 39-22.5 74.5T584-178ZM146-400h168q-2-20-3-39.5t-1-40.5q0-21 1-40.5t3-39.5H146q-13 20-19.5 40T120-480q0 20 6.5 40t19.5 40Zm228 0h212q2-20 3-39.5t1-40.5q0-21-1-40.5t-3-39.5H374q-2 20-3 39.5t-1 40.5q0 21 1 40.5t3 39.5Zm272 0h168q13-20 19.5-40t6.5-40q0-20-6.5-40T794-560H626q2 20 3 39.5t1 40.5q0 21-1 40.5t-3 39.5ZM168-640h154q9-39 22.5-74.5T376-782q-68 21-117.5 62.5T168-640Zm236 0h152q-12-44-31-83t-45-75q-26 36-45 75t-31 83Zm234 0h154q-32-56-81.5-97.5T584-782q18 33 31.5 68.5T638-640Z"/></svg>
+            <span data-i18n="gsEditMenuAddFromDomain"></span>
+          </button>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <button id="gs-edit-menu-move-up" class="outlined-button">
+            <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20"><path d="M440-160v-487L216-423l-56-57 320-320 320 320-56 57-224-224v487h-80Z"/></svg>
+            <span data-i18n="gsEditMenuMoveUp"></span>
+          </button>
+          <button id="gs-edit-menu-move-down" class="outlined-button">
+            <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20"><path d="M440-800v487L216-537l-56 57 320 320 320-320-56-57-224 224v-487h-80Z"/></svg>
+            <span data-i18n="gsEditMenuMoveDown"></span>
+          </button>
+        </div>
       </div>
       <div class="modal-actions" style="margin-top: 8px;">
         <button id="cancel-gs-edit-menu-btn" class="text-button" data-i18n="cancel"></button>

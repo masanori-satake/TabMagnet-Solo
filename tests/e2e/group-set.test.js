@@ -31,7 +31,7 @@ test.describe('Group-Set Operations', () => {
   });
 
   test('should edit group-set name and color', async ({ page }) => {
-    await page.click('.edit-set-btn');
+    await page.click('.group-set-item .target-name');
     await page.click('#gs-edit-menu-edit-set');
 
     await page.fill('#gs-edit-name', 'Custom Set Name');
@@ -46,14 +46,14 @@ test.describe('Group-Set Operations', () => {
     await expect(page.locator('.group-set-item')).toHaveCount(2);
 
     // Edit second set name
-    await page.locator('.edit-set-btn').nth(1).click();
+    await page.locator('.group-set-item .target-name').nth(1).click();
     await page.click('#gs-edit-menu-edit-set');
     await page.fill('#gs-edit-name', 'Second Set');
     await page.click('#save-group-set-btn');
 
     // Move second set up
     const startTime = Date.now();
-    await page.locator('.edit-set-btn').nth(1).click();
+    await page.locator('.group-set-item .target-name').nth(1).click();
     await page.click('#gs-edit-menu-move-up');
     const moveTime = Date.now() - startTime;
 
@@ -67,7 +67,7 @@ test.describe('Group-Set Operations', () => {
     await expect(page.locator('.group-set-item')).toHaveCount(2);
 
     // Open edit for second set and click delete
-    await page.locator('.edit-set-btn').nth(1).click();
+    await page.locator('.group-set-item .target-name').nth(1).click();
     await page.click('#gs-edit-menu-edit-set');
     await page.click('#delete-group-set-btn');
 
@@ -79,7 +79,7 @@ test.describe('Group-Set Operations', () => {
 
   test('should execute Group-Set magnet', async ({ page }) => {
     // Add group to set first
-    await page.click('.edit-set-btn');
+    await page.click('.group-set-item .target-name');
     await page.click('#gs-edit-menu-add-group');
     await page.fill('#new-name', 'Example Group');
     await page.fill('.pattern-input', 'example.com/*');
