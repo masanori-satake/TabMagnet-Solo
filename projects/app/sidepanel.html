@@ -1238,6 +1238,25 @@
     </div>
   </div>
 
+  <!-- Move or Duplicate Group Dialog -->
+  <div id="move-copy-dialog-scrim" class="scrim">
+    <div class="dialog">
+      <div id="move-copy-dialog-title" class="dialog-title" data-i18n="moveCopyModalTitle"></div>
+      <div id="move-copy-dialog-text" class="dialog-text"></div>
+      <div class="modal-actions">
+        <button id="move-copy-cancel-btn" class="text-button" data-i18n="cancel"></button>
+        <button id="move-copy-move-btn" class="text-button" style="background-color: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container);">
+          <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20" style="fill: currentColor; margin-right: 4px;"><path d="m560-240-56-58 142-142H160v-80h486L504-662l56-58 240 240-240 240Z"/></svg>
+          <span data-i18n="move"></span>
+        </button>
+        <button id="move-copy-duplicate-btn" class="text-button" style="background-color: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container);">
+          <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20" style="fill: currentColor; margin-right: 4px;"><path d="M360-240q-33 0-56.5-23.5T280-320v-480q0-33 23.5-56.5T360-880h360q33 0 56.5 23.5T800-800v480q0 33-23.5 56.5T720-240H360Zm0-80h360v-480H360v480ZM200-80q-33 0-56.5-23.5T120-160v-560h80v560h440v80H200Zm160-240v-480 480Z"/></svg>
+          <span data-i18n="duplicate"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Delete Confirmation Dialog -->
   <div id="delete-dialog-scrim" class="scrim">
     <div class="dialog">

@@ -71,6 +71,26 @@
   "confirmDeleteGroupSet": {
     "message": "Delete this group-set?\nAll groups in it will also be deleted."
   },
+  "moveCopyModalTitle": {
+    "message": "Move or Duplicate Group"
+  },
+  "moveCopyModalText": {
+    "message": "Do you want to move or duplicate \"$1\" to \"$2\"?",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      },
+      "2": {
+        "content": "$2"
+      }
+    }
+  },
+  "move": {
+    "message": "Move"
+  },
+  "duplicate": {
+    "message": "Duplicate"
+  },
   "confirmDeleteTitle": {
     "message": "Confirm Delete"
   },

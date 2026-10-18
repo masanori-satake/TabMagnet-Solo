@@ -6,7 +6,7 @@
 import { state, loadState, saveGroupSets, saveSettings, syncDataToCloud } from './ui/state.js';
 import { applyI18n } from './ui/i18n.js';
 import { showToast } from './ui/toast.js';
-import { renderTargetList, handleDragOver } from './ui/list-renderer.js';
+import { renderTargetList, handleDragOver, handleDrop, setOnCrossSetDropCallback } from './ui/list-renderer.js';
 import {
   showTargetModal,
   hideTargetModal,
@@ -119,6 +119,15 @@ const syncModalScrim = document.getElementById('sync-modal-scrim');
 const cancelSyncBtn = document.getElementById('cancel-sync-btn');
 const confirmSyncBtn = document.getElementById('confirm-sync-btn');
 
+// Move/Copy Modal elements
+const moveCopyDialogScrim = document.getElementById('move-copy-dialog-scrim');
+const moveCopyDialogText = document.getElementById('move-copy-dialog-text');
+const moveCopyCancelBtn = document.getElementById('move-copy-cancel-btn');
+const moveCopyMoveBtn = document.getElementById('move-copy-move-btn');
+const moveCopyDuplicateBtn = document.getElementById('move-copy-duplicate-btn');
+
+let pendingCrossSetMove = null;
+
 /**
  * リストと関連UIの再描画を行う
  */
@@ -175,14 +184,22 @@ export async function init() {
         const nextSets = normalizeGroupSets(changes.groupSets.newValue || []);
         if (JSON.stringify(nextSets) !== JSON.stringify(state.groupSets)) {
           state.groupSets = nextSets;
-          renderUI();
+          if (pendingCrossSetMove) {
+            hideMoveCopyDialog();
+          } else {
+            renderUI();
+          }
         }
       } else if (changes.targets && changes.targets.newValue !== undefined) {
         const nextTargets = changes.targets.newValue || [];
         const nextSets = [migrateTargetsToGroupSets(nextTargets)];
         if (JSON.stringify(nextSets) !== JSON.stringify(state.groupSets)) {
           state.groupSets = nextSets;
-          renderUI();
+          if (pendingCrossSetMove) {
+            hideMoveCopyDialog();
+          } else {
+            renderUI();
+          }
         }
       }
       if (changes.settings) {
@@ -206,18 +223,29 @@ export async function init() {
       if (changes.groupSets && changes.groupSets.newValue) {
         const nextSets = normalizeGroupSets(changes.groupSets.newValue);
         state.groupSets = nextSets;
-        chrome.storage.local.set({ groupSets: nextSets }).then(() => {
-          renderUI();
-        });
+        const saving = chrome.storage.local.set({ groupSets: nextSets });
+        // 保存完了を待つ間に、更新前のインデックスで確定されるのを防ぐ。
+        if (pendingCrossSetMove) {
+          hideMoveCopyDialog();
+        } else {
+          saving.then(() => {
+            renderUI();
+          });
+        }
       } else if (!changes.groupSets && changes.targets && changes.targets.newValue) {
         // 旧端末からの更新で、すでに同期済みの新形式を上書きしない。
         const sync = await chrome.storage.sync.get(['groupSets']);
         if (sync.groupSets === undefined) {
           const nextSets = [migrateTargetsToGroupSets(changes.targets.newValue)];
           state.groupSets = nextSets;
-          chrome.storage.local.set({ groupSets: nextSets }).then(() => {
-            renderUI();
-          });
+          const saving = chrome.storage.local.set({ groupSets: nextSets });
+          if (pendingCrossSetMove) {
+            hideMoveCopyDialog();
+          } else {
+            saving.then(() => {
+              renderUI();
+            });
+          }
         }
       }
       if (changes.settings && changes.settings.newValue) {
@@ -241,7 +269,10 @@ function setupEventListeners() {
   // メインリスト
   if (targetListEl) {
     targetListEl.addEventListener('dragover', handleDragOver);
+    targetListEl.addEventListener('drop', handleDrop);
   }
+
+  setOnCrossSetDropCallback(handleCrossSetDrop);
 
   // フッターボタン
   if (addGroupSetBtn) {
@@ -419,8 +450,13 @@ function setupEventListeners() {
     input.addEventListener('change', updateSyncConfirmButtonState);
   });
 
+  // 移動・複製ダイアログ
+  if (moveCopyCancelBtn) moveCopyCancelBtn.addEventListener('click', hideMoveCopyDialog);
+  if (moveCopyMoveBtn) moveCopyMoveBtn.addEventListener('click', handleConfirmMoveGroup);
+  if (moveCopyDuplicateBtn) moveCopyDuplicateBtn.addEventListener('click', handleConfirmDuplicateGroup);
+
   // モーダル外側クリック
-  [targetModalScrim, settingsModalScrim, deleteDialogScrim, pasteImportModalScrim, syncModalScrim, gsEditMenuScrim, gsEditModalScrim].forEach(scrim => {
+  [targetModalScrim, settingsModalScrim, deleteDialogScrim, pasteImportModalScrim, syncModalScrim, gsEditMenuScrim, gsEditModalScrim, moveCopyDialogScrim].forEach(scrim => {
     if (!scrim) return;
     scrim.addEventListener('click', (e) => {
       if (e.target === scrim) {
@@ -431,6 +467,7 @@ function setupEventListeners() {
         if (scrim === syncModalScrim) handleCancelSync();
         if (scrim === gsEditMenuScrim) hideGroupSetEditMenu();
         if (scrim === gsEditModalScrim) hideGroupSetModal();
+        if (scrim === moveCopyDialogScrim) hideMoveCopyDialog();
       }
     });
   });
@@ -785,4 +822,110 @@ async function handleConfirmDelete() {
   }
   hideDeleteDialog();
   hideTargetModal();
+}
+
+/**
+ * グループセット間ドロップ時のポップアップ表示
+ * @param {Object} info - { sourceSetIndex, sourceGroupIndex, targetSetIndex, targetGroupIndex }
+ */
+function handleCrossSetDrop(info) {
+  const sourceSet = state.groupSets[info.sourceSetIndex];
+  const targetSet = state.groupSets[info.targetSetIndex];
+  if (!sourceSet || !targetSet) return;
+
+  const group = (sourceSet.groups || [])[info.sourceGroupIndex];
+  if (!group) return;
+
+  pendingCrossSetMove = info;
+
+  if (moveCopyDialogText) {
+    const textPattern = chrome.i18n.getMessage('moveCopyModalText', [group.name || '', targetSet.name || '']) ||
+      `「${group.name || ''}」を「${targetSet.name || ''}」へ移動または複製しますか？`;
+    moveCopyDialogText.textContent = textPattern;
+  }
+
+  if (moveCopyDialogScrim) {
+    moveCopyDialogScrim.style.display = 'flex';
+  }
+}
+
+/**
+ * 移動・複製ダイアログを閉じる
+ */
+function hideMoveCopyDialog() {
+  if (moveCopyDialogScrim) {
+    moveCopyDialogScrim.style.display = 'none';
+  }
+  pendingCrossSetMove = null;
+  renderUI();
+}
+
+/**
+ * グループの移動を確定実行
+ */
+async function handleConfirmMoveGroup() {
+  if (!pendingCrossSetMove) return;
+  const { sourceSetIndex, sourceGroupIndex, targetSetIndex, targetGroupIndex } = pendingCrossSetMove;
+  // 保存待ち中の連続クリックでも、同じ保留操作は一度だけ実行する。
+  pendingCrossSetMove = null;
+
+  const sourceSet = state.groupSets[sourceSetIndex];
+  const targetSet = state.groupSets[targetSetIndex];
+  if (!sourceSet || !targetSet) {
+    hideMoveCopyDialog();
+    return;
+  }
+
+  if ((targetSet.groups || []).length >= MAX_GROUPS_PER_SET) {
+    showToast(chrome.i18n.getMessage('errorGroupLimit', [String(MAX_GROUPS_PER_SET)]));
+    hideMoveCopyDialog();
+    return;
+  }
+
+  const [group] = sourceSet.groups.splice(sourceGroupIndex, 1);
+  if (!targetSet.groups) targetSet.groups = [];
+
+  const insertIndex = Math.min(targetGroupIndex, targetSet.groups.length);
+  targetSet.groups.splice(insertIndex, 0, group);
+
+  await saveGroupSets(state.groupSets);
+  hideMoveCopyDialog();
+}
+
+/**
+ * グループの複製を確定実行
+ */
+async function handleConfirmDuplicateGroup() {
+  if (!pendingCrossSetMove) return;
+  const { sourceSetIndex, sourceGroupIndex, targetSetIndex, targetGroupIndex } = pendingCrossSetMove;
+  // 保存待ち中の連続クリックでも、同じ保留操作は一度だけ実行する。
+  pendingCrossSetMove = null;
+
+  const sourceSet = state.groupSets[sourceSetIndex];
+  const targetSet = state.groupSets[targetSetIndex];
+  if (!sourceSet || !targetSet) {
+    hideMoveCopyDialog();
+    return;
+  }
+
+  if ((targetSet.groups || []).length >= MAX_GROUPS_PER_SET) {
+    showToast(chrome.i18n.getMessage('errorGroupLimit', [String(MAX_GROUPS_PER_SET)]));
+    hideMoveCopyDialog();
+    return;
+  }
+
+  const originalGroup = sourceSet.groups[sourceGroupIndex];
+  if (!originalGroup) {
+    hideMoveCopyDialog();
+    return;
+  }
+
+  const duplicatedGroup = JSON.parse(JSON.stringify(originalGroup));
+  if (!targetSet.groups) targetSet.groups = [];
+
+  const insertIndex = Math.min(targetGroupIndex, targetSet.groups.length);
+  targetSet.groups.splice(insertIndex, 0, duplicatedGroup);
+
+  await saveGroupSets(state.groupSets);
+  hideMoveCopyDialog();
 }

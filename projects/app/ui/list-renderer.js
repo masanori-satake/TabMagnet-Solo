@@ -5,6 +5,16 @@ import { toggleGroupSetExpanded } from './group-set.js';
 
 let onEditGroupCallback;
 let onEditGroupSetCallback;
+let onCrossSetDropCallback;
+let isCrossSetDropping = false;
+
+/**
+ * 他グループセットへのドロップ発生時のコールバックを登録
+ * @param {Function} fn - コールバック関数
+ */
+export function setOnCrossSetDropCallback(fn) {
+  onCrossSetDropCallback = fn;
+}
 
 /**
  * HTMLのエスケープ処理
@@ -25,9 +35,10 @@ export function escapeHtml(str) {
  * 空のGroup-Set用案内テキスト要素を生成する
  * @returns {HTMLElement} 案内テキスト要素
  */
-function createEmptyGroupSetNotice() {
+function createEmptyGroupSetNotice(setIndex) {
   const emptyEl = document.createElement('div');
   emptyEl.className = 'empty-set-notice';
+  emptyEl.dataset.setIndex = setIndex;
   emptyEl.textContent = chrome.i18n.getMessage('gsEmptyNotice') || '登録されたグループがありません';
   return emptyEl;
 }
@@ -192,6 +203,10 @@ function createGroupRow(group, setIndex, groupIndex, onEditGroup) {
   item.addEventListener('dragstart', () => item.classList.add('dragging'));
   item.addEventListener('dragend', async () => {
     item.classList.remove('dragging');
+    if (isCrossSetDropping) {
+      isCrossSetDropping = false;
+      return;
+    }
     await updateGroupOrderAfterDrag(setIndex);
   });
 
@@ -256,7 +271,7 @@ export function renderTargetList(onEditGroup, onEditGroupSet) {
 
     if (groupSet.expanded) {
       if (!groupSet.groups || groupSet.groups.length === 0) {
-        const emptyEl = createEmptyGroupSetNotice();
+        const emptyEl = createEmptyGroupSetNotice(setIndex);
         targetListEl.appendChild(emptyEl);
       } else {
         groupSet.groups.forEach((group, groupIndex) => {
@@ -275,42 +290,110 @@ export function renderTargetList(onEditGroup, onEditGroupSet) {
  * @param {HTMLElement} container - 親コンテナ要素
  * @param {number} setIndex - 所属するGroup-Setインデックス
  */
+/**
+ * 座標(x, y)からドロップ先のGroup-Setおよび挿入インデックスを取得する
+ * @param {number} x - X座標
+ * @param {number} y - Y座標
+ * @returns {Object|null} { setIndex, groupIndex }
+ */
+export function getDropTargetInfo(x, y) {
+  if (typeof document.elementFromPoint !== 'function') return null;
+  const el = document.elementFromPoint(x, y);
+  if (!el) return null;
+
+  const groupItem = el.closest('.group-item');
+  if (groupItem) {
+    const setIndex = parseInt(groupItem.dataset.setIndex, 10);
+    const groupIndex = parseInt(groupItem.dataset.groupIndex, 10);
+    const rect = groupItem.getBoundingClientRect();
+    const insertIndex = y <= rect.top + rect.height / 2 ? groupIndex : groupIndex + 1;
+    return { setIndex, groupIndex: insertIndex };
+  }
+
+  const emptyNotice = el.closest('.empty-set-notice');
+  if (emptyNotice) {
+    const setIndex = parseInt(emptyNotice.dataset.setIndex, 10);
+    return { setIndex, groupIndex: 0 };
+  }
+
+  const setItem = el.closest('.group-set-item');
+  if (setItem) {
+    const setIndex = parseInt(setItem.dataset.setIndex, 10);
+    const groups = state.groupSets[setIndex]?.groups || [];
+    return { setIndex, groupIndex: groups.length };
+  }
+
+  return null;
+}
+
+/**
+ * タッチ操作用ドラッグ＆ドロップの設定（Group並べ替え用）
+ * @param {HTMLElement} handle - ドラッグハンドル要素
+ * @param {HTMLElement} item - リスト項目要素
+ * @param {HTMLElement} container - 親コンテナ要素
+ * @param {number} setIndex - 所属するGroup-Setインデックス
+ */
 function setupTouchDragList(handle, item, container, setIndex) {
   let isDragging = false;
+  let lastX = 0;
+  let lastY = 0;
 
   handle.addEventListener('touchstart', (e) => {
     if (e.touches.length !== 1) return;
     isDragging = true;
     item.classList.add('dragging');
+    lastX = e.touches[0].clientX;
+    lastY = e.touches[0].clientY;
   }, { passive: false });
 
   handle.addEventListener('touchmove', (e) => {
     if (!isDragging || e.touches.length !== 1) return;
     e.preventDefault();
-    const touchY = e.touches[0].clientY;
-    const siblings = [...container.querySelectorAll(`.group-item[data-set-index="${setIndex}"]:not(.dragging)`)];
-    const nextSibling = siblings.find(sibling => {
-      const rect = sibling.getBoundingClientRect();
-      return touchY <= rect.top + rect.height / 2;
-    });
-    if (nextSibling) {
-      container.insertBefore(item, nextSibling);
-    } else {
-      // 当該Group-Set内の最後のGroup行の後ろに挿入
-      const lastSibling = siblings[siblings.length - 1];
-      if (lastSibling && lastSibling.nextSibling) {
-        container.insertBefore(item, lastSibling.nextSibling);
+    lastX = e.touches[0].clientX;
+    lastY = e.touches[0].clientY;
+
+    const targetInfo = getDropTargetInfo(lastX, lastY);
+  if (!targetInfo || targetInfo.setIndex === setIndex) {
+      const siblings = [...container.querySelectorAll(`.group-item[data-set-index="${setIndex}"]:not(.dragging)`)];
+      const nextSibling = siblings.find(sibling => {
+        const rect = sibling.getBoundingClientRect();
+        return lastY <= rect.top + rect.height / 2;
+      });
+      if (nextSibling) {
+        container.insertBefore(item, nextSibling);
       } else {
-        container.appendChild(item);
+        const lastSibling = siblings[siblings.length - 1];
+        if (lastSibling && lastSibling.nextSibling) {
+          container.insertBefore(item, lastSibling.nextSibling);
+        } else {
+          container.appendChild(item);
+        }
       }
     }
   }, { passive: false });
 
-  const endDrag = async () => {
+  const endDrag = async (e) => {
     if (!isDragging) return;
     isDragging = false;
     item.classList.remove('dragging');
-    await updateGroupOrderAfterDrag(setIndex);
+
+    const touch = e.changedTouches ? e.changedTouches[0] : null;
+    const x = touch ? touch.clientX : lastX;
+    const y = touch ? touch.clientY : lastY;
+
+    const targetInfo = getDropTargetInfo(x, y);
+    if (targetInfo && targetInfo.setIndex !== setIndex) {
+      if (typeof onCrossSetDropCallback === 'function') {
+        onCrossSetDropCallback({
+          sourceSetIndex: setIndex,
+          sourceGroupIndex: parseInt(item.dataset.groupIndex, 10),
+          targetSetIndex: targetInfo.setIndex,
+          targetGroupIndex: targetInfo.groupIndex
+        });
+      }
+    } else {
+      await updateGroupOrderAfterDrag(setIndex);
+    }
   };
 
   handle.addEventListener('touchend', endDrag);
@@ -326,19 +409,49 @@ export function handleDragOver(e) {
   const draggingItem = document.querySelector('.group-item.dragging');
   if (!draggingItem) return;
 
-  const setIndex = draggingItem.dataset.setIndex;
-  const siblings = [...targetListEl.querySelectorAll(`.group-item[data-set-index="${setIndex}"]:not(.dragging)`)];
-  const nextSibling = siblings.find(sibling => {
-    return e.clientY <= sibling.offsetTop + sibling.offsetHeight / 2;
-  });
-  if (nextSibling) {
-    targetListEl.insertBefore(draggingItem, nextSibling);
-  } else if (siblings.length > 0) {
-    const lastSibling = siblings[siblings.length - 1];
-    if (lastSibling.nextSibling) {
-      targetListEl.insertBefore(draggingItem, lastSibling.nextSibling);
-    } else {
-      targetListEl.appendChild(draggingItem);
+  const setIndex = parseInt(draggingItem.dataset.setIndex, 10);
+  const targetInfo = getDropTargetInfo(e.clientX, e.clientY);
+  if (!targetInfo || targetInfo.setIndex === setIndex) {
+    const siblings = [...targetListEl.querySelectorAll(`.group-item[data-set-index="${setIndex}"]:not(.dragging)`)];
+    const nextSibling = siblings.find(sibling => {
+      return e.clientY <= sibling.offsetTop + sibling.offsetHeight / 2;
+    });
+    if (nextSibling) {
+      targetListEl.insertBefore(draggingItem, nextSibling);
+    } else if (siblings.length > 0) {
+      const lastSibling = siblings[siblings.length - 1];
+      if (lastSibling.nextSibling) {
+        targetListEl.insertBefore(draggingItem, lastSibling.nextSibling);
+      } else {
+        targetListEl.appendChild(draggingItem);
+      }
+    }
+  }
+}
+
+/**
+ * ドロップ時の処理
+ */
+export function handleDrop(e) {
+  e.preventDefault();
+  const draggingItem = document.querySelector('.group-item.dragging');
+  if (!draggingItem) return;
+
+  const sourceSetIndex = parseInt(draggingItem.dataset.setIndex, 10);
+  const sourceGroupIndex = parseInt(draggingItem.dataset.groupIndex, 10);
+
+  const targetInfo = getDropTargetInfo(e.clientX, e.clientY);
+  if (!targetInfo) return;
+
+  if (targetInfo.setIndex !== sourceSetIndex) {
+    isCrossSetDropping = true;
+    if (typeof onCrossSetDropCallback === 'function') {
+      onCrossSetDropCallback({
+        sourceSetIndex,
+        sourceGroupIndex,
+        targetSetIndex: targetInfo.setIndex,
+        targetGroupIndex: targetInfo.groupIndex
+      });
     }
   }
 }

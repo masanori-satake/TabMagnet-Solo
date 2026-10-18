@@ -64,10 +64,13 @@ export async function syncDataToCloud(data) {
  * @returns {Promise<boolean>} 同期が不要、または成功した場合はtrue
  */
 export async function saveGroupSets(groupSets, { sync = true } = {}) {
-  state.groupSets = normalizeGroupSets(groupSets);
-  await chrome.storage.local.set({ groupSets: state.groupSets });
+  // この保存では呼び出し時の値を採用し、待機中の外部更新を同期内容に混在させない。
+  // 外部更新で置き換わった表示用のstateは、保存完了時に巻き戻さない。
+  const savedGroupSets = normalizeGroupSets(groupSets);
+  state.groupSets = savedGroupSets;
+  await chrome.storage.local.set({ groupSets: savedGroupSets });
   if (sync && state.settings.syncEnabled) {
-    return syncDataToCloud({ groupSets: state.groupSets });
+    return syncDataToCloud({ groupSets: savedGroupSets });
   }
   return true;
 }

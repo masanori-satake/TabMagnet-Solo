@@ -71,6 +71,26 @@
   "confirmDeleteGroupSet": {
     "message": "このグループセットを削除しますか？\n含まれるグループもすべて削除されます。"
   },
+  "moveCopyModalTitle": {
+    "message": "グループの移動・複製"
+  },
+  "moveCopyModalText": {
+    "message": "「$1」を「$2」へ移動または複製しますか？",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      },
+      "2": {
+        "content": "$2"
+      }
+    }
+  },
+  "move": {
+    "message": "移動"
+  },
+  "duplicate": {
+    "message": "複製"
+  },
   "confirmDeleteTitle": {
     "message": "削除の確認"
   },
