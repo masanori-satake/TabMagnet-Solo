@@ -5,10 +5,11 @@ import { isEdge } from './utils.js';
 import { COLORS_CHROME, COLORS_EDGE } from './constants.js';
 
 /**
- * ターゲット追加・編集モーダルの表示
- * @param {number|null} index - 編集対象のインデックス（新規の場合はnull）
+ * ターゲット（Group）追加・編集モーダルの表示
+ * @param {number|null} groupIndex - 編集対象Groupのインデックス（新規の場合はnull）
+ * @param {number} setIndex - 所属するGroup-Setのインデックス
  */
-export function showTargetModal(index = null) {
+export function showTargetModal(groupIndex = null, setIndex = 0) {
   const targetModalScrim = document.getElementById('target-modal-scrim');
   const modalTitleEl = document.getElementById('modal-title');
   const newNameInput = document.getElementById('new-name');
@@ -18,12 +19,12 @@ export function showTargetModal(index = null) {
   // ブラウザに合わせてカラーオプションを動的に生成
   renderColorOptions();
 
-  state.currentEditIndex = index;
+  state.currentEdit = { setIndex, groupIndex };
   if (patternListContainer) patternListContainer.innerHTML = '';
   hideModalFeedback();
 
-  if (index !== null) {
-    const target = state.targets[index];
+  if (groupIndex !== null && state.groupSets[setIndex] && state.groupSets[setIndex].groups[groupIndex]) {
+    const target = state.groupSets[setIndex].groups[groupIndex];
     if (modalTitleEl) modalTitleEl.textContent = chrome.i18n.getMessage('edit');
     if (newNameInput) newNameInput.value = target.name;
     const patterns = Array.isArray(target.pattern) ? target.pattern : [target.pattern];
@@ -88,7 +89,7 @@ function renderColorOptions() {
 export function hideTargetModal() {
   const targetModalScrim = document.getElementById('target-modal-scrim');
   if (targetModalScrim) targetModalScrim.style.display = 'none';
-  state.currentEditIndex = null;
+  state.currentEdit = { setIndex: null, groupIndex: null };
 }
 
 /**

@@ -25,6 +25,7 @@ ALLOWED_DIRS = {
     ".git",
     "tests",
     ".Jules",
+    ".kiro",
 }
 
 

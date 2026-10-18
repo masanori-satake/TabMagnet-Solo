@@ -4,7 +4,12 @@ import {
   COLORS_CHROME,
   COLORS_EDGE,
   ALL_COLORS,
-  COLOR_COMPATIBILITY_MAP
+  COLOR_COMPATIBILITY_MAP,
+  MAX_GROUP_SETS,
+  MAX_GROUPS_PER_SET,
+  MAX_GROUP_SET_NAME_LENGTH,
+  ALLOWED_GROUP_SET_PROPERTIES,
+  ALLOWED_GROUP_SET_IMPORT_PROPERTIES
 } from './constants.js';
 
 /**
@@ -163,7 +168,6 @@ export function isSpecialPage(url) {
   return !url.startsWith('http://') && !url.startsWith('https://');
 }
 
-const ALLOWED_IMPORT_PROPERTIES = new Set(['targets', 'settings']);
 const ALLOWED_TARGET_PROPERTIES = new Set(['name', 'pattern', 'color']);
 const ALLOWED_SETTINGS_PROPERTIES = new Set(Object.keys(DEFAULT_SETTINGS));
 const ALLOWED_TARGET_COLORS = new Set([...ALL_COLORS, ...Object.keys(COLOR_COMPATIBILITY_MAP)]);
@@ -179,15 +183,151 @@ function validateAllowedProperties(value, allowedProperties, errorMessage) {
 }
 
 /**
+ * 単一のターゲット（Group）要素を検証する
+ * @param {Object} target - 検証対象のターゲット
+ */
+export function validateSingleTarget(target) {
+  if (!target || typeof target !== 'object' || Array.isArray(target)) {
+    throw new Error('Invalid target element');
+  }
+  validateAllowedProperties(target, ALLOWED_TARGET_PROPERTIES, 'Invalid target property');
+  if (typeof target.name !== 'string' || target.name.trim() === '' || target.name.length > 100) {
+    throw new Error('Invalid target name');
+  }
+  // 非 http(s) 特殊スキームや危険なスキームを含むパターンを拒否する
+  const isValidPatternStr = (p) => {
+    if (typeof p !== 'string' || p.trim() === '' || p.length > 500) return false;
+    // スキーム判定前に制御文字を除外し、スキーム名の分断による回避を防ぐ
+    if (/[\u0000-\u001F\u007F]/.test(p)) return false;
+    const lower = p.trim().toLowerCase();
+    const scheme = lower.match(/^([a-z][a-z0-9+.-]*):/)?.[1];
+    if (scheme && scheme !== 'http' && scheme !== 'https') {
+      return false;
+    }
+    return true;
+  };
+
+  const isPatternStringValid = isValidPatternStr(target.pattern);
+  const isPatternArrayValid = Array.isArray(target.pattern) &&
+    target.pattern.length > 0 &&
+    target.pattern.length <= 50 &&
+    target.pattern.every(isValidPatternStr);
+
+  if (!isPatternStringValid && !isPatternArrayValid) {
+    throw new Error('Invalid target pattern');
+  }
+  if (Object.prototype.hasOwnProperty.call(target, 'color') &&
+      (typeof target.color !== 'string' || target.color.trim() === '' ||
+       target.color.length > MAX_TARGET_COLOR_LENGTH || !ALLOWED_TARGET_COLORS.has(target.color))) {
+    throw new Error('Invalid target color');
+  }
+}
+
+/**
+ * Group-Set の構造・型・上限値を検証する。
+ * @param {Object} groupSet - 検証対象の Group-Set
+ */
+export function validateGroupSet(groupSet) {
+  if (!groupSet || typeof groupSet !== 'object' || Array.isArray(groupSet)) {
+    throw new Error('Invalid group-set element');
+  }
+  validateAllowedProperties(groupSet, ALLOWED_GROUP_SET_PROPERTIES, 'Invalid group-set property');
+  if (typeof groupSet.name !== 'string' || groupSet.name.trim() === '' || groupSet.name.length > MAX_GROUP_SET_NAME_LENGTH) {
+    throw new Error('Invalid group-set name');
+  }
+  if (typeof groupSet.color !== 'string' || groupSet.color.trim() === '' ||
+      groupSet.color.length > MAX_TARGET_COLOR_LENGTH || !ALLOWED_TARGET_COLORS.has(groupSet.color)) {
+    throw new Error('Invalid group-set color');
+  }
+  if (typeof groupSet.expanded !== 'boolean') {
+    throw new Error('Invalid group-set expanded');
+  }
+  if (!Array.isArray(groupSet.groups) || groupSet.groups.length > MAX_GROUPS_PER_SET) {
+    throw new Error('Invalid group-set groups');
+  }
+  for (const group of groupSet.groups) {
+    validateSingleTarget(group);
+  }
+}
+
+/**
+ * groupSets 配列全体を検証する（要素数上限20含む）。
+ * @param {Array} groupSets - 検証対象の groupSets 配列
+ */
+export function validateGroupSets(groupSets) {
+  if (!Array.isArray(groupSets)) {
+    throw new Error('Invalid format: groupSets must be an array');
+  }
+  if (groupSets.length > MAX_GROUP_SETS) {
+    throw new Error('Invalid format: groupSets array exceeds limit');
+  }
+  for (const groupSet of groupSets) {
+    validateGroupSet(groupSet);
+  }
+}
+
+/**
+ * デフォルトのGroup-Setを生成する。
+ * @returns {Object} デフォルトGroup-Set
+ */
+export function createDefaultGroupSet() {
+  const name = chrome.i18n.getMessage('defaultGroupSetName');
+  return {
+    name: name || '(Untitled)',
+    color: 'grey',
+    expanded: true,
+    groups: []
+  };
+}
+
+/**
+ * Old Formatの targets 配列を1つのGroup-Setに変換する。
+ * @param {Array} targets - Old Format の targets 配列
+ * @returns {Object} 変換されたGroup-Set
+ */
+export function migrateTargetsToGroupSets(targets) {
+  const defaultName = chrome.i18n.getMessage('defaultGroupSetName') || '(Untitled)';
+  const groups = (targets || []).map(target => ({
+    name: target.name,
+    pattern: Array.isArray(target.pattern) ? [...target.pattern] : target.pattern,
+    color: target.color ? getCompatibleColor(target.color) : 'grey'
+  }));
+  return {
+    name: defaultName,
+    color: 'grey',
+    expanded: true,
+    groups
+  };
+}
+
+/**
+ * ローカルストレージの生データから最終的な groupSets を決定する。
+ * @param {Object} rawData - chrome.storage.local.get の結果
+ * @returns {{groupSets: Array, migrated: boolean, needsCleanup: boolean}}
+ */
+export function resolveGroupSets(rawData) {
+  if (rawData && Array.isArray(rawData.groupSets)) {
+    return { groupSets: rawData.groupSets, migrated: false, needsCleanup: false };
+  }
+  if (rawData && Array.isArray(rawData.targets)) {
+    const groupSet = migrateTargetsToGroupSets(rawData.targets);
+    return { groupSets: [groupSet], migrated: true, needsCleanup: true };
+  }
+  return { groupSets: [createDefaultGroupSet()], migrated: true, needsCleanup: false };
+}
+
+/**
  * インポート・同期データの構造・型・入力長を検証する
  */
 export function validateImportData(data) {
   if (!data || typeof data !== 'object' || Array.isArray(data)) {
     throw new Error('Invalid format');
   }
-  validateAllowedProperties(data, ALLOWED_IMPORT_PROPERTIES, 'Invalid import property');
+  validateAllowedProperties(data, ALLOWED_GROUP_SET_IMPORT_PROPERTIES, 'Invalid import property');
 
-  if (data.targets !== undefined) {
+  if (data.groupSets !== undefined) {
+    validateGroupSets(data.groupSets);
+  } else if (data.targets !== undefined) {
     if (!Array.isArray(data.targets)) {
       throw new Error('Invalid format: targets must be an array');
     }
@@ -196,40 +336,7 @@ export function validateImportData(data) {
     }
 
     for (const target of data.targets) {
-      if (!target || typeof target !== 'object' || Array.isArray(target)) {
-        throw new Error('Invalid target element');
-      }
-      validateAllowedProperties(target, ALLOWED_TARGET_PROPERTIES, 'Invalid target property');
-      if (typeof target.name !== 'string' || target.name.trim() === '' || target.name.length > 100) {
-        throw new Error('Invalid target name');
-      }
-      // 非 http(s) 特殊スキームや危険なスキームを含むパターンを拒否する
-      const isValidPatternStr = (p) => {
-        if (typeof p !== 'string' || p.trim() === '' || p.length > 500) return false;
-        // スキーム判定前に制御文字を除外し、スキーム名の分断による回避を防ぐ
-        if (/[\u0000-\u001F\u007F]/.test(p)) return false;
-        const lower = p.trim().toLowerCase();
-        const scheme = lower.match(/^([a-z][a-z0-9+.-]*):/)?.[1];
-        if (scheme && scheme !== 'http' && scheme !== 'https') {
-          return false;
-        }
-        return true;
-      };
-
-      const isPatternStringValid = isValidPatternStr(target.pattern);
-      const isPatternArrayValid = Array.isArray(target.pattern) &&
-        target.pattern.length > 0 &&
-        target.pattern.length <= 50 &&
-        target.pattern.every(isValidPatternStr);
-
-      if (!isPatternStringValid && !isPatternArrayValid) {
-        throw new Error('Invalid target pattern');
-      }
-      if (Object.prototype.hasOwnProperty.call(target, 'color') &&
-          (typeof target.color !== 'string' || target.color.trim() === '' ||
-           target.color.length > MAX_TARGET_COLOR_LENGTH || !ALLOWED_TARGET_COLORS.has(target.color))) {
-        throw new Error('Invalid target color');
-      }
+      validateSingleTarget(target);
     }
   }
 
@@ -308,7 +415,7 @@ export function executeAllMagnets(targets) {
       await _executeMagnetInternal(target, { skipMaintainTMOrder: true });
     }
     const currentWindow = await chrome.windows.getCurrent();
-    await maintainTMOrder(currentWindow.id);
+    await maintainTMOrder(currentWindow.id, targets);
   });
   executionQueue = currentTask.catch(() => {});
   return currentTask;
@@ -524,16 +631,17 @@ export async function syncFromCloudIfNeeded() {
     const isSyncEnabled = local.settings?.syncEnabled ?? false;
     if (!isSyncEnabled) return;
 
-    const syncData = await chrome.storage.sync.get(['settings', 'targets']);
+    const syncData = await chrome.storage.sync.get(['settings', 'groupSets', 'targets']);
     validateImportData(syncData);
 
     const updates = {};
     const keysToRemove = [];
 
-    if (syncData.targets === undefined) {
+    if (syncData.groupSets !== undefined) {
+      updates.groupSets = syncData.groupSets;
+    } else if (syncData.targets !== undefined) {
+      updates.groupSets = [migrateTargetsToGroupSets(syncData.targets)];
       keysToRemove.push('targets');
-    } else {
-      updates.targets = syncData.targets;
     }
 
     if (syncData.settings === undefined) {
@@ -563,15 +671,16 @@ export async function syncFromCloudIfNeeded() {
  * 重複するターゲットグループのクリーンアップ
  */
 export async function performAutoCleanup() {
-  const data = await chrome.storage.local.get(['targets', 'protectedGroups']);
-  const targets = data.targets || [];
+  const data = await chrome.storage.local.get(['groupSets', 'protectedGroups']);
+  const groupSets = data.groupSets || [];
   const protectedGroups = data.protectedGroups || [];
 
-  if (targets.length === 0) return;
+  const allGroupsInSets = groupSets.flatMap(gs => gs.groups || []);
+  if (allGroupsInSets.length === 0) return;
 
   const groups = await chrome.tabGroups.query({});
 
-  for (const target of targets) {
+  for (const target of allGroupsInSets) {
     const targetName = target.name;
     // 同一ターゲット名を持つグループを抽出（保護されたグループは除外）
     const matchingGroups = groups.filter(g => {
@@ -594,17 +703,16 @@ export async function performAutoCleanup() {
  * ウィンドウ内の全TabMagnetグループ（🧲で始まるもの）を最後尾に並べ替え、
  * さらにターゲットリストの定義順に従って整列させる。
  *
- * 確実性を高めるため、グループ単位（chrome.tabGroups.move）で
- * 一つずつ最後尾（index: -1）へ移動させる方式を採用。
- * 1. ターゲットリストに含まれない孤立したTMグループを先に最後尾へ移動
- * 2. ターゲットリストに含まれるTMグループを、リストの順序に従って最後尾へ移動
- * これにより、最終的にターゲットリスト順がウィンドウの末尾に確定する。
- *
  * @param {number} windowId
+ * @param {Array<Object>} [groupList] - 整列基準とするGroupリスト。未指定時は全Group-SetのGroupをフラット化して使用
  */
-export async function maintainTMOrder(windowId) {
-  const data = await chrome.storage.local.get(['targets']);
-  const targets = data.targets || [];
+export async function maintainTMOrder(windowId, groupList = null) {
+  let targets = groupList;
+  if (!targets) {
+    const data = await chrome.storage.local.get(['groupSets']);
+    const groupSets = data.groupSets || [];
+    targets = groupSets.flatMap(gs => gs.groups || []);
+  }
 
   const allGroups = await chrome.tabGroups.query({ windowId });
 
@@ -625,12 +733,11 @@ export async function maintainTMOrder(windowId) {
 
     if (matchedGroups.length > 0) {
       // 複数の同名グループがある場合、Collectingではない（正規）方を優先し、さらにIDが古い順に並べる
-      // (最後尾に送るループのため、優先度の低いものを先に並べる)
       const sorted = matchedGroups.sort((a, b) => {
         const aIsColl = a.title.endsWith(SUFFIX_COLLECTING);
         const bIsColl = b.title.endsWith(SUFFIX_COLLECTING);
-        if (aIsColl !== bIsColl) return aIsColl ? -1 : 1; // Collectingを先（＝先に移動させ、正規を後に移動させて後ろにする）
-        return a.id - b.id; // 古いIDを先
+        if (aIsColl !== bIsColl) return aIsColl ? -1 : 1;
+        return a.id - b.id;
       });
 
       for (const g of sorted) {
@@ -646,8 +753,6 @@ export async function maintainTMOrder(windowId) {
     .map(g => g.id);
 
   // 移動の実行
-  // まず孤立グループを最後尾へ、次にターゲットグループを順に最後尾へ。
-  // これにより、[非TMタブ] [孤立TMグループ] [ターゲットTM1] [ターゲットTM2] ... の順になる。
   const allIdsToMove = [...orphanGroupIds, ...orderedGroupIds];
 
   for (const groupId of allIdsToMove) {

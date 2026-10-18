@@ -1,14 +1,16 @@
-import { DEFAULT_SETTINGS, syncFromCloudIfNeeded } from './utils.js';
+import { DEFAULT_SETTINGS, syncFromCloudIfNeeded, resolveGroupSets } from './utils.js';
 
 /**
  * アプリケーションのグローバル状態管理
  */
 export const state = {
-  targets: [],
+  groupSets: [],
   settings: { ...DEFAULT_SETTINGS },
   selectedColor: 'grey',
-  currentEditIndex: null,
-  currentDeleteIndex: null
+  currentEdit: { setIndex: null, groupIndex: null },
+  currentDelete: { type: null, setIndex: null, groupIndex: null },
+  currentEditSetIndex: null,
+  selectedSetColor: 'grey'
 };
 
 /**
@@ -16,23 +18,31 @@ export const state = {
  */
 export async function loadState() {
   await syncFromCloudIfNeeded();
-  const data = await chrome.storage.local.get(['targets', 'settings']);
-  state.targets = data.targets || [];
-  state.settings = { ...DEFAULT_SETTINGS, ...(data.settings || {}) };
+  const rawData = await chrome.storage.local.get(['groupSets', 'targets', 'settings']);
+  const resolved = resolveGroupSets(rawData);
+  state.groupSets = resolved.groupSets;
+  state.settings = { ...DEFAULT_SETTINGS, ...(rawData.settings || {}) };
+
+  if (resolved.migrated) {
+    await chrome.storage.local.set({ groupSets: state.groupSets });
+    if (resolved.needsCleanup) {
+      await chrome.storage.local.remove('targets');
+    }
+  }
 }
 
 /**
- * ターゲットリストをストレージに保存する
- * @param {Array} targets - 保存するターゲットの配列
+ * グループセットリストをストレージに保存する
+ * @param {Array} groupSets - 保存するグループセットの配列
  */
-export async function saveTargets(targets) {
-  state.targets = targets;
-  await chrome.storage.local.set({ targets: state.targets });
+export async function saveGroupSets(groupSets) {
+  state.groupSets = groupSets;
+  await chrome.storage.local.set({ groupSets: state.groupSets });
   if (state.settings.syncEnabled) {
     try {
-      await chrome.storage.sync.set({ targets: state.targets });
+      await chrome.storage.sync.set({ groupSets: state.groupSets });
     } catch (e) {
-      console.warn('Failed to sync targets to chrome.storage.sync:', e);
+      console.warn('Failed to sync groupSets to chrome.storage.sync:', e);
     }
   }
 }

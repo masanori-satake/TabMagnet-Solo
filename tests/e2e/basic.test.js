@@ -5,6 +5,6 @@ test('should load sidepanel', async ({ page, extensionId }) => {
   await expect(page).toHaveTitle('TabMagnet-Solo');
 
   // Check if initial UI is rendered
-  const addNewBtn = page.locator('#add-new-btn');
-  await expect(addNewBtn).toBeVisible();
+  const addGroupSetBtn = page.locator('#add-group-set-btn');
+  await expect(addGroupSetBtn).toBeVisible();
 });

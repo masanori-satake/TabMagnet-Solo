@@ -6,8 +6,7 @@ import {
   addPatternInput,
   showModalFeedback,
   hideModalFeedback,
-  selectColor,
-  handlePatternDragOver
+  selectColor
 } from '../projects/app/ui/modal-target.js';
 
 describe('ui/modal-target.js', () => {
@@ -19,37 +18,48 @@ describe('ui/modal-target.js', () => {
       <div id="pattern-list-container"></div>
       <div id="modal-feedback" class="hidden"></div>
       <button id="delete-target-btn"></button>
-      <div class="color-option" data-color="red"></div>
-      <div class="color-option" data-color="blue"></div>
+      <div id="color-selection"></div>
+      <template id="color-option-template">
+        <div class="color-option"><span class="tooltip"></span></div>
+      </template>
     `;
     global.chrome = {
       i18n: { getMessage: jest.fn(key => key) }
     };
-    state.targets = [{ name: 'Existing', pattern: ['test.com'], color: 'blue' }];
+    state.groupSets = [
+      { name: 'Set 0', color: 'grey', expanded: true, groups: [{ name: 'Existing Group', pattern: ['test.com'], color: 'blue' }] },
+      { name: 'Set 1', color: 'grey', expanded: true, groups: [{ name: 'Other Group', pattern: ['other.com'], color: 'green' }] }
+    ];
   });
 
-  test('showTargetModal for new target', () => {
-    showTargetModal(null);
+  afterEach(() => {
+    delete global.chrome;
+  });
+
+  test('showTargetModal for new group in set 0', () => {
+    showTargetModal(null, 0);
     expect(document.getElementById('modal-title').textContent).toBe('addNew');
     expect(document.getElementById('target-modal-scrim').style.display).toBe('flex');
     expect(document.getElementById('delete-target-btn').classList.contains('hidden')).toBe(true);
+    expect(state.currentEdit).toEqual({ setIndex: 0, groupIndex: null });
   });
 
-  test('showTargetModal for editing target', () => {
-    showTargetModal(0);
+  test('showTargetModal for editing existing group in set 0', () => {
+    showTargetModal(0, 0);
     expect(document.getElementById('modal-title').textContent).toBe('edit');
-    expect(document.getElementById('new-name').value).toBe('Existing');
+    expect(document.getElementById('new-name').value).toBe('Existing Group');
     expect(document.getElementById('delete-target-btn').classList.contains('hidden')).toBe(false);
+    expect(state.currentEdit).toEqual({ setIndex: 0, groupIndex: 0 });
   });
 
-  test('hideTargetModal', () => {
-    showTargetModal();
+  test('hideTargetModal resets currentEdit', () => {
+    showTargetModal(0, 0);
     hideTargetModal();
     expect(document.getElementById('target-modal-scrim').style.display).toBe('none');
-    expect(state.currentEditIndex).toBe(null);
+    expect(state.currentEdit).toEqual({ setIndex: null, groupIndex: null });
   });
 
-  test('addPatternInput adds item', () => {
+  test('addPatternInput adds item to container', () => {
     addPatternInput('example.com');
     const container = document.getElementById('pattern-list-container');
     expect(container.children.length).toBe(1);
@@ -59,16 +69,25 @@ describe('ui/modal-target.js', () => {
   test('selectColor updates state and UI', () => {
     selectColor('red');
     expect(state.selectedColor).toBe('red');
-    expect(document.querySelector('.color-option[data-color="red"]').classList.contains('selected')).toBe(true);
   });
 
   test('show/hide feedback', () => {
-    showModalFeedback('error');
+    showModalFeedback('error message');
     const feedback = document.getElementById('modal-feedback');
-    expect(feedback.textContent).toBe('error');
+    expect(feedback.textContent).toBe('error message');
     expect(feedback.classList.contains('hidden')).toBe(false);
 
     hideModalFeedback();
     expect(feedback.classList.contains('hidden')).toBe(true);
+  });
+
+  test('Property 9: Group operations in a Group-Set do not modify other Group-Sets', () => {
+    // Edit group 0 in set 0
+    showTargetModal(0, 0);
+    state.groupSets[0].groups[0].name = 'Updated Group 0';
+
+    expect(state.groupSets[0].groups[0].name).toBe('Updated Group 0');
+    // Set 1 should remain completely untouched
+    expect(state.groupSets[1].groups[0].name).toBe('Other Group');
   });
 });

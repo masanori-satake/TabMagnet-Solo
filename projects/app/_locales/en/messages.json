@@ -68,8 +68,85 @@
   "confirmDelete": {
     "message": "Do you want to delete this target?"
   },
+  "confirmDeleteGroupSet": {
+    "message": "Delete this group-set?\nAll groups in it will also be deleted."
+  },
   "confirmDeleteTitle": {
     "message": "Confirm Delete"
+  },
+  "defaultGroupSetName": {
+    "message": "(Untitled)"
+  },
+  "gsAddNewSet": {
+    "message": "New Group-Set"
+  },
+  "gsEditMenuTitle": {
+    "message": "Edit Group-Set"
+  },
+  "gsEditMenuAddGroup": {
+    "message": "Add New Group"
+  },
+  "gsEditMenuAddFromDomain": {
+    "message": "Add Group from Active Tab"
+  },
+  "gsEditMenuEditSet": {
+    "message": "Edit Group-Set"
+  },
+  "gsEditMenuMoveUp": {
+    "message": "Move Up"
+  },
+  "gsEditMenuMoveDown": {
+    "message": "Move Down"
+  },
+  "gsEditModalTitle": {
+    "message": "Edit Group-Set"
+  },
+  "gsPlaceholderName": {
+    "message": "Group-Set name"
+  },
+  "gsGroupColor": {
+    "message": "Group-Set Color"
+  },
+  "gsEmptyNotice": {
+    "message": "No groups registered"
+  },
+  "gsEditButton": {
+    "message": "Edit group-set \"$1\"",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "gsExecuteButton": {
+    "message": "Execute group-set \"$1\"",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "gsExpandButton": {
+    "message": "Collapse group-set \"$1\"",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "gsCollapseButton": {
+    "message": "Expand group-set \"$1\"",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "errorGroupSetLimit": {
+    "message": "Up to 20 group-sets allowed"
+  },
+  "errorGroupNameRequired": {
+    "message": "Please enter group-set name"
   },
   "labelUrlPattern": {
     "message": "URL Patterns"
@@ -270,7 +347,7 @@
     "message": "Version"
   },
   "targetCount": {
-    "message": "Target Count"
+    "message": "Group Count"
   },
   "developer": {
     "message": "Developer"
