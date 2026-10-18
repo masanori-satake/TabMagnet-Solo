@@ -21,7 +21,7 @@ describe('ui/list-renderer.js', () => {
   });
 
   test('escapeHtml works correctly', () => {
-    expect(escapeHtml('<>&"\'')).toBe('&lt;&gt;&amp;"\'');
+    expect(escapeHtml('<>&"\'')).toBe('&lt;&gt;&amp;&quot;&#39;');
   });
 
   test('Property 3: renderTargetList renders Group-Set rows with count, order, and color dot class reflecting state.groupSets', () => {
