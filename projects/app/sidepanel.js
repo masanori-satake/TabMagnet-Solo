@@ -184,14 +184,22 @@ export async function init() {
         const nextSets = normalizeGroupSets(changes.groupSets.newValue || []);
         if (JSON.stringify(nextSets) !== JSON.stringify(state.groupSets)) {
           state.groupSets = nextSets;
-          renderUI();
+          if (pendingCrossSetMove) {
+            hideMoveCopyDialog();
+          } else {
+            renderUI();
+          }
         }
       } else if (changes.targets && changes.targets.newValue !== undefined) {
         const nextTargets = changes.targets.newValue || [];
         const nextSets = [migrateTargetsToGroupSets(nextTargets)];
         if (JSON.stringify(nextSets) !== JSON.stringify(state.groupSets)) {
           state.groupSets = nextSets;
-          renderUI();
+          if (pendingCrossSetMove) {
+            hideMoveCopyDialog();
+          } else {
+            renderUI();
+          }
         }
       }
       if (changes.settings) {
@@ -215,18 +223,29 @@ export async function init() {
       if (changes.groupSets && changes.groupSets.newValue) {
         const nextSets = normalizeGroupSets(changes.groupSets.newValue);
         state.groupSets = nextSets;
-        chrome.storage.local.set({ groupSets: nextSets }).then(() => {
-          renderUI();
-        });
+        const saving = chrome.storage.local.set({ groupSets: nextSets });
+        // 保存完了を待つ間に、更新前のインデックスで確定されるのを防ぐ。
+        if (pendingCrossSetMove) {
+          hideMoveCopyDialog();
+        } else {
+          saving.then(() => {
+            renderUI();
+          });
+        }
       } else if (!changes.groupSets && changes.targets && changes.targets.newValue) {
         // 旧端末からの更新で、すでに同期済みの新形式を上書きしない。
         const sync = await chrome.storage.sync.get(['groupSets']);
         if (sync.groupSets === undefined) {
           const nextSets = [migrateTargetsToGroupSets(changes.targets.newValue)];
           state.groupSets = nextSets;
-          chrome.storage.local.set({ groupSets: nextSets }).then(() => {
-            renderUI();
-          });
+          const saving = chrome.storage.local.set({ groupSets: nextSets });
+          if (pendingCrossSetMove) {
+            hideMoveCopyDialog();
+          } else {
+            saving.then(() => {
+              renderUI();
+            });
+          }
         }
       }
       if (changes.settings && changes.settings.newValue) {
@@ -847,6 +866,8 @@ function hideMoveCopyDialog() {
 async function handleConfirmMoveGroup() {
   if (!pendingCrossSetMove) return;
   const { sourceSetIndex, sourceGroupIndex, targetSetIndex, targetGroupIndex } = pendingCrossSetMove;
+  // 保存待ち中の連続クリックでも、同じ保留操作は一度だけ実行する。
+  pendingCrossSetMove = null;
 
   const sourceSet = state.groupSets[sourceSetIndex];
   const targetSet = state.groupSets[targetSetIndex];
@@ -877,6 +898,8 @@ async function handleConfirmMoveGroup() {
 async function handleConfirmDuplicateGroup() {
   if (!pendingCrossSetMove) return;
   const { sourceSetIndex, sourceGroupIndex, targetSetIndex, targetGroupIndex } = pendingCrossSetMove;
+  // 保存待ち中の連続クリックでも、同じ保留操作は一度だけ実行する。
+  pendingCrossSetMove = null;
 
   const sourceSet = state.groupSets[sourceSetIndex];
   const targetSet = state.groupSets[targetSetIndex];

@@ -60,6 +60,38 @@ describe('sidepanel logic', () => {
     jest.resetModules();
   });
 
+  /**
+   * 実際のドロップイベントでグループセット間の確認ダイアログを開く。
+   * @returns {Promise<Object>} 初期化後のアプリケーション状態
+   */
+  async function openCrossSetDialog() {
+    chromeMock.storage.local.get.mockResolvedValue({
+      groupSets: [
+        { name: 'Set A', color: 'grey', expanded: true, groups: [
+          { name: 'Group 1', pattern: ['g1.com'] },
+          { name: 'Group 3', pattern: ['g3.com'] }
+        ] },
+        { name: 'Set B', color: 'blue', expanded: true, groups: [
+          { name: 'Group 2', pattern: ['g2.com'] }
+        ] }
+      ]
+    });
+    const { init } = await import('../projects/app/sidepanel.js');
+    const { state } = await import('../projects/app/ui/state.js');
+    await init();
+
+    const source = document.querySelector('.group-item[data-set-index="0"]');
+    const target = document.querySelector('.group-item[data-set-index="1"]');
+    source.classList.add('dragging');
+    target.getBoundingClientRect = () => ({ top: 0, height: 50 });
+    document.elementFromPoint = jest.fn().mockReturnValue(target);
+    document.getElementById('target-list').dispatchEvent(new MouseEvent('drop', {
+      clientX: 10, clientY: 10, bubbles: true
+    }));
+    expect(document.getElementById('move-copy-dialog-scrim').style.display).toBe('flex');
+    return state;
+  }
+
   test('init initializes the sidepanel', async () => {
     const { init } = await import('../projects/app/sidepanel.js');
     await init();
@@ -409,6 +441,91 @@ describe('sidepanel logic', () => {
     expect(chromeMock.storage.local.set).toHaveBeenCalledWith({ groupSets });
     expect(chromeMock.storage.sync.set).not.toHaveBeenCalledWith(expect.objectContaining({ groupSets: expect.anything() }));
     expect(document.getElementById('toast').textContent).toBe('errorSyncSizeLimit');
+  });
+
+  test.each([
+    ['local', 'groupSets', true],
+    ['local', 'targets', true],
+    ['sync', 'groupSets', true],
+    ['sync', 'targets', true],
+    ['local', 'groupSets', false],
+    ['local', 'targets', false],
+    ['sync', 'groupSets', false],
+    ['sync', 'targets', false]
+  ])('外部更新時は保留操作を破棄し、保留なしの描画タイミングを維持する: %s/%s/保留=%s', async (area, format, pending) => {
+    const state = await openCrossSetDialog();
+    if (!pending) document.getElementById('move-copy-cancel-btn').click();
+    state.settings.syncEnabled = true;
+    chromeMock.storage.local.set.mockClear();
+
+    let finishSave;
+    const saving = new Promise(resolve => { finishSave = resolve; });
+    chromeMock.storage.local.set.mockReturnValue(saving);
+    const listener = chromeMock.storage.onChanged.addListener.mock.calls[0][0];
+    const group = { name: 'External Group', color: 'grey', pattern: ['external.com'] };
+    const newValue = format === 'groupSets'
+      ? [
+        { name: 'External Set', color: 'grey', expanded: true, groups: [group] },
+        { name: 'External Destination', color: 'blue', expanded: true, groups: [] }
+      ]
+      : [group];
+
+    await listener({ [format]: { newValue } }, area);
+
+    expect(state.groupSets[0].groups).toEqual([group]);
+    expect(document.getElementById('move-copy-dialog-scrim').style.display).toBe('none');
+    if (pending || area === 'local') {
+      expect(document.querySelector('.group-item').textContent).toContain('External Group');
+    } else {
+      expect(document.querySelector('.group-item').textContent).toContain('Group 1');
+    }
+
+    const updatedSets = JSON.parse(JSON.stringify(state.groupSets));
+    document.getElementById('move-copy-move-btn').click();
+    document.getElementById('move-copy-duplicate-btn').click();
+    expect(state.groupSets).toEqual(updatedSets);
+    expect(chromeMock.storage.local.set).toHaveBeenCalledTimes(area === 'sync' ? 1 : 0);
+
+    finishSave();
+    await saving;
+    expect(document.querySelector('.group-item').textContent).toContain('External Group');
+  });
+
+  test('同じ内容のローカル通知では保留操作を維持する', async () => {
+    const state = await openCrossSetDialog();
+    const currentSets = state.groupSets;
+    const listener = chromeMock.storage.onChanged.addListener.mock.calls[0][0];
+    await listener({ groupSets: { newValue: currentSets } }, 'local');
+
+    expect(state.groupSets).toBe(currentSets);
+    expect(document.getElementById('move-copy-dialog-scrim').style.display).toBe('flex');
+    document.getElementById('move-copy-cancel-btn').click();
+  });
+
+  test.each([
+    ['move', 'move'],
+    ['duplicate', 'duplicate'],
+    ['move', 'duplicate'],
+    ['duplicate', 'move']
+  ])('保存完了前の連続確定では最初の操作だけを実行する: %s/%s', async (first, second) => {
+    const state = await openCrossSetDialog();
+    chromeMock.storage.local.set.mockClear();
+    let finishSave;
+    const saving = new Promise(resolve => { finishSave = resolve; });
+    chromeMock.storage.local.set.mockReturnValue(saving);
+
+    document.getElementById(`move-copy-${first}-btn`).click();
+    document.getElementById(`move-copy-${second}-btn`).click();
+
+    expect(chromeMock.storage.local.set).toHaveBeenCalledTimes(1);
+    expect(state.groupSets[0].groups.map(group => group.name)).toEqual(
+      first === 'move' ? ['Group 3'] : ['Group 1', 'Group 3']
+    );
+    expect(state.groupSets[1].groups.map(group => group.name)).toEqual(['Group 1', 'Group 2']);
+    finishSave();
+    await saving;
+    await Promise.resolve();
+    expect(document.getElementById('move-copy-dialog-scrim').style.display).toBe('none');
   });
 
   test('グループセット間でのドラッグ＆ドロップ（Move/Duplicate/Cancel/Limit）の各種動作', async () => {
