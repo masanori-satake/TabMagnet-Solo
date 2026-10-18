@@ -168,7 +168,7 @@ export async function init() {
   setupEventListeners();
 
   // ストレージの変更を監視
-  chrome.storage.onChanged.addListener((changes, area) => {
+  chrome.storage.onChanged.addListener(async (changes, area) => {
     if (area === 'local') {
       if (changes.groupSets) {
         const nextSets = changes.groupSets.newValue || [];
@@ -176,7 +176,7 @@ export async function init() {
           state.groupSets = nextSets;
           renderUI();
         }
-      } else if (changes.targets) {
+      } else if (changes.targets && changes.targets.newValue !== undefined) {
         const nextTargets = changes.targets.newValue || [];
         const nextSets = [migrateTargetsToGroupSets(nextTargets)];
         if (JSON.stringify(nextSets) !== JSON.stringify(state.groupSets)) {
@@ -208,12 +208,16 @@ export async function init() {
         chrome.storage.local.set({ groupSets: nextSets }).then(() => {
           renderUI();
         });
-      } else if (changes.targets && changes.targets.newValue) {
-        const nextSets = [migrateTargetsToGroupSets(changes.targets.newValue)];
-        state.groupSets = nextSets;
-        chrome.storage.local.set({ groupSets: nextSets }).then(() => {
-          renderUI();
-        });
+      } else if (!changes.groupSets && changes.targets && changes.targets.newValue) {
+        // 旧端末からの更新で、すでに同期済みの新形式を上書きしない。
+        const sync = await chrome.storage.sync.get(['groupSets']);
+        if (sync.groupSets === undefined) {
+          const nextSets = [migrateTargetsToGroupSets(changes.targets.newValue)];
+          state.groupSets = nextSets;
+          chrome.storage.local.set({ groupSets: nextSets }).then(() => {
+            renderUI();
+          });
+        }
       }
       if (changes.settings && changes.settings.newValue) {
         const currentSyncEnabled = state.settings.syncEnabled;
@@ -630,6 +634,13 @@ async function importData(data) {
   }
 
   const mode = document.querySelector('input[name="import-mode"]:checked').value;
+  const nextGroupSets = mode === 'append'
+    ? [...state.groupSets, ...importedGroupSets]
+    : importedGroupSets;
+  if (nextGroupSets.length > MAX_GROUP_SETS) {
+    throw new Error('Invalid import data: groupSets array exceeds limit');
+  }
+
   const importedSettings = mode === 'append'
     ? { ...state.settings }
     : { ...DEFAULT_SETTINGS, syncEnabled: state.settings.syncEnabled };
@@ -641,13 +652,8 @@ async function importData(data) {
     }
   }
 
-  if (mode === 'append') {
-    await saveGroupSets([...state.groupSets, ...importedGroupSets]);
-    await saveSettings(importedSettings);
-  } else {
-    await saveGroupSets(importedGroupSets);
-    await saveSettings(importedSettings);
-  }
+  await saveGroupSets(nextGroupSets);
+  await saveSettings(importedSettings);
 
   renderUI();
   renderSettingsUI();

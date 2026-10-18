@@ -1,5 +1,6 @@
 import { jest } from '@jest/globals';
 import { state } from '../projects/app/ui/state.js';
+import { MAX_GROUP_SET_NAME_LENGTH } from '../projects/app/ui/constants.js';
 import {
   toggleGroupSetExpanded,
   moveGroupSet,
@@ -87,6 +88,32 @@ describe('group-set.js operations and correctness properties', () => {
     deleteGroupSet(0);
     expect(state.currentDelete).toEqual({ type: 'groupSet', setIndex: 0 });
     expect(document.getElementById('delete-dialog-scrim').style.display).toBe('flex');
+  });
+
+  test.each([MAX_GROUP_SET_NAME_LENGTH - 1, MAX_GROUP_SET_NAME_LENGTH])('上限内の名前をトリムして保存する: %i文字', async (length) => {
+    const name = 'あ'.repeat(length);
+    document.getElementById('gs-edit-name').value = `  ${name}  `;
+    state.selectedSetColor = 'red';
+
+    await saveGroupSet(0);
+
+    expect(state.groupSets[0]).toEqual(expect.objectContaining({ name, color: 'red' }));
+    expect(chromeMock.storage.local.set).toHaveBeenCalledWith({ groupSets: state.groupSets });
+    expect(document.getElementById('gs-modal-feedback').classList.contains('hidden')).toBe(true);
+  });
+
+  test('文字数上限を超える名前はフィードバックを表示して保存を中止する', async () => {
+    document.getElementById('gs-edit-name').value = 'あ'.repeat(MAX_GROUP_SET_NAME_LENGTH + 1);
+    document.getElementById('gs-edit-modal-scrim').style.display = 'flex';
+    state.selectedSetColor = 'red';
+
+    await saveGroupSet(0);
+
+    expect(state.groupSets[0]).toEqual(expect.objectContaining({ name: 'Set 0', color: 'grey' }));
+    expect(chromeMock.storage.local.set).not.toHaveBeenCalled();
+    expect(document.getElementById('gs-modal-feedback').textContent).toBe('errorGroupSetNameTooLong');
+    expect(document.getElementById('gs-modal-feedback').classList.contains('hidden')).toBe(false);
+    expect(document.getElementById('gs-edit-modal-scrim').style.display).toBe('flex');
   });
 
   test('deleteGroupSet does nothing when count === 1', () => {

@@ -3,6 +3,9 @@ import { executeMagnet, executeAllMagnets } from './utils.js';
 import { showToast } from './toast.js';
 import { toggleGroupSetExpanded } from './group-set.js';
 
+let onEditGroupCallback;
+let onEditGroupSetCallback;
+
 /**
  * HTMLのエスケープ処理
  * @param {string} str - 対象文字列
@@ -165,7 +168,7 @@ function createGroupRow(group, setIndex, groupIndex, onEditGroup) {
 
   const dragHandle = item.querySelector('.drag-handle');
   const targetListEl = document.getElementById('target-list');
-  setupTouchDragList(dragHandle, item, targetListEl, onEditGroup, setIndex);
+  setupTouchDragList(dragHandle, item, targetListEl, setIndex);
 
   return item;
 }
@@ -185,6 +188,8 @@ async function updateGroupOrderAfterDrag(setIndex) {
   if (newGroups.length === currentGroups.length) {
     state.groupSets[setIndex].groups = newGroups;
     await saveGroupSets(state.groupSets);
+    // 行のインデックスと両方の編集コールバックを最新の状態にそろえる。
+    renderTargetList(onEditGroupCallback, onEditGroupSetCallback);
   }
 }
 
@@ -194,6 +199,8 @@ async function updateGroupOrderAfterDrag(setIndex) {
  * @param {Function} onEditGroupSet - Group-Set編集ボタンクリック時のコールバック
  */
 export function renderTargetList(onEditGroup, onEditGroupSet) {
+  onEditGroupCallback = onEditGroup;
+  onEditGroupSetCallback = onEditGroupSet;
   const targetListEl = document.getElementById('target-list');
   if (!targetListEl) return;
   targetListEl.innerHTML = '';
@@ -221,10 +228,9 @@ export function renderTargetList(onEditGroup, onEditGroupSet) {
  * @param {HTMLElement} handle - ドラッグハンドル要素
  * @param {HTMLElement} item - リスト項目要素
  * @param {HTMLElement} container - 親コンテナ要素
- * @param {Function} onEditGroup - 編集コールバック
  * @param {number} setIndex - 所属するGroup-Setインデックス
  */
-function setupTouchDragList(handle, item, container, onEditGroup, setIndex) {
+function setupTouchDragList(handle, item, container, setIndex) {
   let isDragging = false;
 
   handle.addEventListener('touchstart', (e) => {
@@ -260,7 +266,6 @@ function setupTouchDragList(handle, item, container, onEditGroup, setIndex) {
     isDragging = false;
     item.classList.remove('dragging');
     await updateGroupOrderAfterDrag(setIndex);
-    renderTargetList(onEditGroup);
   };
 
   handle.addEventListener('touchend', endDrag);

@@ -67,7 +67,11 @@ chrome.storage.onChanged.addListener(async (changes, area) => {
       if (changes.targets.newValue === undefined) {
         keysToRemove.push('targets');
       } else {
-        updates.groupSets = [migrateTargetsToGroupSets(changes.targets.newValue)];
+        // 旧端末からの更新で、すでに同期済みの新形式を上書きしない。
+        const sync = await chrome.storage.sync.get(['groupSets']);
+        if (sync.groupSets === undefined) {
+          updates.groupSets = [migrateTargetsToGroupSets(changes.targets.newValue)];
+        }
         keysToRemove.push('targets');
       }
     }

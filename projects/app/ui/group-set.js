@@ -5,7 +5,7 @@ import {
   getCompatibleColor,
   isSpecialPage
 } from './utils.js';
-import { MAX_GROUP_SETS, MAX_GROUPS_PER_SET, COLORS_CHROME, COLORS_EDGE } from './constants.js';
+import { MAX_GROUP_SETS, MAX_GROUPS_PER_SET, MAX_GROUP_SET_NAME_LENGTH, COLORS_CHROME, COLORS_EDGE } from './constants.js';
 import { showDeleteDialog } from './dialog-delete.js';
 
 let renderCallback = null;
@@ -286,6 +286,10 @@ export async function saveGroupSet(setIndex) {
   const nameValue = nameInput.value ? nameInput.value.trim() : '';
   if (!nameValue) {
     showGroupSetModalFeedback(chrome.i18n.getMessage('errorGroupNameRequired') || 'グループセット名を入力してください');
+    return;
+  }
+  if (nameValue.length > MAX_GROUP_SET_NAME_LENGTH) {
+    showGroupSetModalFeedback(chrome.i18n.getMessage('errorGroupSetNameTooLong', [String(MAX_GROUP_SET_NAME_LENGTH)]) || `グループセット名は${MAX_GROUP_SET_NAME_LENGTH}文字以内で入力してください`);
     return;
   }
 

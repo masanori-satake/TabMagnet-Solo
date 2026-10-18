@@ -2,6 +2,7 @@ import { jest } from '@jest/globals';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { MAX_GROUP_SETS } from '../projects/app/ui/constants.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const html = fs.readFileSync(path.resolve(__dirname, '../projects/app/sidepanel.html'), 'utf8');
@@ -207,5 +208,83 @@ describe('sidepanel logic', () => {
         expect.objectContaining({ groups: [] })
       ]
     }));
+  });
+
+  test.each([
+    ['新形式なし', {}],
+    ['空の新形式あり', { groupSets: [] }],
+    ['新形式あり', { groupSets: [{ name: 'Synced Set', color: 'blue', expanded: true, groups: [] }] }]
+  ])('旧形式の同期では既存の新形式を優先する: %s', async (_label, syncData) => {
+    const existingSets = [{ name: 'Existing Set', color: 'blue', expanded: true, groups: [] }];
+    chromeMock.storage.local.get.mockResolvedValue({
+      groupSets: existingSets, settings: { syncEnabled: true }
+    });
+    const { init } = await import('../projects/app/sidepanel.js');
+    const { state } = await import('../projects/app/ui/state.js');
+    await init();
+    chromeMock.storage.local.set.mockClear();
+    chromeMock.storage.sync.get.mockClear().mockResolvedValue(syncData);
+    const listener = chromeMock.storage.onChanged.addListener.mock.calls[0][0];
+    const targets = [{ name: 'Legacy', pattern: 'legacy.example/*', color: 'grey' }];
+
+    await listener({ targets: { newValue: targets } }, 'sync');
+    await Promise.resolve();
+
+    expect(chromeMock.storage.sync.get).toHaveBeenCalledWith(['groupSets']);
+    if (syncData.groupSets === undefined) {
+      expect(chromeMock.storage.local.set).toHaveBeenCalledWith({
+        groupSets: [expect.objectContaining({ groups: targets })]
+      });
+      expect(document.querySelector('.group-item').textContent).toContain('Legacy');
+    } else {
+      expect(chromeMock.storage.local.set).not.toHaveBeenCalled();
+      expect(state.groupSets).toEqual(existingSets);
+    }
+
+    // バックグラウンドの旧キー削除イベントで移行済みデータを失わない。
+    const currentSets = state.groupSets;
+    await listener({ targets: { oldValue: targets, newValue: undefined } }, 'local');
+    expect(state.groupSets).toBe(currentSets);
+  });
+
+  test.each([
+    ['groupSets', MAX_GROUP_SETS - 1],
+    ['groupSets', MAX_GROUP_SETS],
+    ['targets', MAX_GROUP_SETS - 1],
+    ['targets', MAX_GROUP_SETS]
+  ])('追記インポートで保存後の総件数を検証する: %s、既存%i件', async (format, count) => {
+    const existingSets = Array.from({ length: count }, (_, i) => ({
+      name: `Set ${i}`, color: 'grey', expanded: true, groups: []
+    }));
+    chromeMock.storage.local.get.mockResolvedValue({ groupSets: existingSets });
+    const { init } = await import('../projects/app/sidepanel.js');
+    const { state } = await import('../projects/app/ui/state.js');
+    await init();
+    chromeMock.storage.local.set.mockClear();
+    const settingsBefore = { ...state.settings };
+    const data = {
+      [format]: format === 'groupSets'
+        ? [{ name: 'Imported Set', color: 'blue', expanded: true, groups: [] }]
+        : [{ name: 'Legacy', color: 'blue', pattern: 'legacy.example/*' }],
+      settings: { collectFromAllGroups: !settingsBefore.collectFromAllGroups }
+    };
+    document.querySelector('input[name="import-mode"][value="append"]').checked = true;
+    document.getElementById('paste-import-textarea').value = JSON.stringify(data);
+
+    document.getElementById('confirm-paste-import-btn').click();
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    if (count === MAX_GROUP_SETS) {
+      expect(chromeMock.storage.local.set).not.toHaveBeenCalled();
+      expect(chromeMock.storage.sync.set).not.toHaveBeenCalled();
+      expect(state.groupSets).toEqual(existingSets);
+      expect(state.settings).toEqual(settingsBefore);
+      expect(document.getElementById('toast').textContent).toBe('importError');
+    } else {
+      expect(state.groupSets).toHaveLength(MAX_GROUP_SETS);
+      expect(chromeMock.storage.local.set).toHaveBeenCalledWith({ groupSets: state.groupSets });
+      expect(state.settings.collectFromAllGroups).toBe(data.settings.collectFromAllGroups);
+      expect(document.getElementById('toast').textContent).toBe('importSuccess');
+    }
   });
 });

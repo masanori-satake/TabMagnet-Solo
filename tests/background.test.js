@@ -5,6 +5,9 @@ describe('background auto-cleanup and renaming', () => {
 
   beforeEach(() => {
     chromeMock = {
+      i18n: {
+        getMessage: jest.fn(key => key)
+      },
       tabGroups: {
         query: jest.fn(),
         update: jest.fn().mockResolvedValue({}),
@@ -162,5 +165,40 @@ describe('background auto-cleanup and renaming', () => {
         syncEnabled: true
       })
     });
+  });
+
+  test.each([
+    ['新形式なし', {}],
+    ['空の新形式あり', { groupSets: [] }],
+    ['新形式あり', { groupSets: [{ name: 'Synced Set', color: 'blue', expanded: true, groups: [] }] }]
+  ])('旧形式の同期では既存の新形式を優先する: %s', async (_label, syncData) => {
+    chromeMock.storage.local.get.mockResolvedValue({ settings: { syncEnabled: true } });
+    chromeMock.storage.sync.get.mockResolvedValue(syncData);
+    await import('../projects/app/background.js');
+    const listener = chromeMock.storage.onChanged.addListener.mock.calls[0][0];
+    const targets = [{ name: 'Legacy', pattern: 'legacy.example/*', color: 'grey' }];
+
+    await listener({ targets: { newValue: targets } }, 'sync');
+
+    expect(chromeMock.storage.sync.get).toHaveBeenCalledWith(['groupSets']);
+    expect(chromeMock.storage.local.remove).toHaveBeenCalledWith(['targets']);
+    if (syncData.groupSets === undefined) {
+      expect(chromeMock.storage.local.set).toHaveBeenCalledWith({
+        groupSets: [expect.objectContaining({ groups: targets })]
+      });
+    } else {
+      expect(chromeMock.storage.local.set).not.toHaveBeenCalled();
+    }
+  });
+
+  test('旧形式の同期キー削除時もローカルの旧形式を削除する', async () => {
+    chromeMock.storage.local.get.mockResolvedValue({ settings: { syncEnabled: true } });
+    await import('../projects/app/background.js');
+    const listener = chromeMock.storage.onChanged.addListener.mock.calls[0][0];
+
+    await listener({ targets: { oldValue: [], newValue: undefined } }, 'sync');
+
+    expect(chromeMock.storage.local.remove).toHaveBeenCalledWith(['targets']);
+    expect(chromeMock.storage.local.set).not.toHaveBeenCalled();
   });
 });

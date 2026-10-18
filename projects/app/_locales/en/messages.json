@@ -148,6 +148,14 @@
   "errorGroupNameRequired": {
     "message": "Please enter group-set name"
   },
+  "errorGroupSetNameTooLong": {
+    "message": "Please enter a group-set name of $1 characters or fewer",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
   "labelUrlPattern": {
     "message": "URL Patterns"
   },

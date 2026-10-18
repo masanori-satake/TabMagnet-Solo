@@ -148,6 +148,14 @@
   "errorGroupNameRequired": {
     "message": "グループセット名を入力してください"
   },
+  "errorGroupSetNameTooLong": {
+    "message": "グループセット名は$1文字以内で入力してください",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
   "labelUrlPattern": {
     "message": "URLパターン"
   },
