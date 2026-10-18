@@ -410,4 +410,77 @@ describe('sidepanel logic', () => {
     expect(chromeMock.storage.sync.set).not.toHaveBeenCalledWith(expect.objectContaining({ groupSets: expect.anything() }));
     expect(document.getElementById('toast').textContent).toBe('errorSyncSizeLimit');
   });
+
+  test('グループセット間でのドラッグ＆ドロップ（Move/Duplicate/Cancel/Limit）の各種動作', async () => {
+    chromeMock.storage.local.get.mockResolvedValue({
+      groupSets: [
+        { name: 'Set A', color: 'grey', expanded: true, groups: [{ name: 'Group 1', pattern: 'g1.com' }] },
+        { name: 'Set B', color: 'blue', expanded: true, groups: [{ name: 'Group 2', pattern: 'g2.com' }] }
+      ]
+    });
+    const { init } = await import('../projects/app/sidepanel.js');
+    const listRenderer = await import('../projects/app/ui/list-renderer.js');
+    const { state } = await import('../projects/app/ui/state.js');
+    await init();
+
+    document.elementFromPoint = jest.fn((x, y) => {
+      const targetGroup = document.createElement('div');
+      targetGroup.className = 'group-item';
+      targetGroup.dataset.setIndex = '1';
+      targetGroup.dataset.groupIndex = '0';
+      targetGroup.getBoundingClientRect = () => ({ top: 0, height: 50 });
+      return targetGroup;
+    });
+
+    const triggerDrop = () => {
+      const dragging = document.createElement('div');
+      dragging.className = 'group-item dragging';
+      dragging.dataset.setIndex = '0';
+      dragging.dataset.groupIndex = '0';
+      document.getElementById('target-list').appendChild(dragging);
+      listRenderer.handleDrop({ preventDefault: jest.fn(), clientX: 10, clientY: 10 });
+    };
+
+    // 1. Cancel test
+    state.groupSets[0].groups = [{ name: 'Group 1', pattern: ['g1.com'] }];
+    state.groupSets[1].groups = [{ name: 'Group 2', pattern: ['g2.com'] }];
+
+    triggerDrop();
+    expect(document.getElementById('move-copy-dialog-scrim').style.display).toBe('flex');
+    expect(document.getElementById('move-copy-dialog-text').textContent).toContain('moveCopyModalText');
+
+    document.getElementById('move-copy-cancel-btn').click();
+    expect(document.getElementById('move-copy-dialog-scrim').style.display).toBe('none');
+
+    // 2. Move test
+    triggerDrop();
+    document.getElementById('move-copy-move-btn').click();
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    expect(state.groupSets[0].groups).toHaveLength(0);
+    expect(state.groupSets[1].groups).toHaveLength(2);
+    expect(state.groupSets[1].groups[0].name).toBe('Group 1');
+    expect(state.groupSets[1].groups[1].name).toBe('Group 2');
+
+    // 3. Duplicate test
+    state.groupSets[0].groups = [{ name: 'Group 1', pattern: ['g1.com'] }];
+    state.groupSets[1].groups = [{ name: 'Group 2', pattern: ['g2.com'] }];
+
+    triggerDrop();
+    document.getElementById('move-copy-duplicate-btn').click();
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    expect(state.groupSets[0].groups).toHaveLength(1); // Retained in Set A
+    expect(state.groupSets[0].groups[0].name).toBe('Group 1');
+    expect(state.groupSets[1].groups).toHaveLength(2); // Duplicated to Set B
+    expect(state.groupSets[1].groups[0].name).toBe('Group 1');
+
+    // 4. MAX_GROUPS_PER_SET limit on Duplicate
+    state.groupSets[1].groups = Array.from({ length: MAX_GROUPS_PER_SET }, () => ({ name: 'Full', pattern: ['full.com'] }));
+    triggerDrop();
+    document.getElementById('move-copy-duplicate-btn').click();
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    expect(chromeMock.i18n.getMessage).toHaveBeenCalledWith('errorGroupLimit', [String(MAX_GROUPS_PER_SET)]);
+  });
 });
