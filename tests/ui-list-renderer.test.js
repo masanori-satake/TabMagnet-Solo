@@ -86,6 +86,46 @@ describe('ui/list-renderer.js', () => {
     expect(onEditGroup).toHaveBeenCalledWith(0, 0);
   });
 
+  test('Group編集ボタンはフォーカス可能で、対象のインデックスを一度だけ渡す', () => {
+    state.groupSets = [
+      { name: 'Set 1', expanded: false, groups: [] },
+      { name: 'Set 2', expanded: true, groups: [{ name: 'G1' }, { name: 'G2' }] }
+    ];
+    const onEditGroup = jest.fn();
+    renderTargetList(onEditGroup);
+
+    const editBtn = document.querySelectorAll('.group-item .edit-btn')[1];
+    expect(editBtn.tagName).toBe('BUTTON');
+    expect(editBtn.type).toBe('button');
+    expect(editBtn.getAttribute('aria-label')).toBe('edit: G2');
+    expect(editBtn.tabIndex).toBe(0);
+    editBtn.focus();
+    expect(document.activeElement).toBe(editBtn);
+    editBtn.querySelector('path').dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(onEditGroup).toHaveBeenCalledTimes(1);
+    expect(onEditGroup).toHaveBeenCalledWith(1, 1);
+  });
+
+  test('Group実行ボタンは編集を開始せず、既存の実行処理を呼び出す', async () => {
+    chromeMock.windows = { getCurrent: jest.fn().mockResolvedValue({ id: 1 }) };
+    chromeMock.tabs = { query: jest.fn().mockResolvedValue([]) };
+    chromeMock.storage = { local: { get: jest.fn().mockResolvedValue({}) } };
+    chromeMock.tabGroups = { query: jest.fn().mockResolvedValue([]) };
+    state.groupSets = [
+      { name: 'Set 1', expanded: true, groups: [{ name: 'G1', pattern: 'example.com/*' }] }
+    ];
+    const onEditGroup = jest.fn();
+    renderTargetList(onEditGroup);
+
+    document.querySelector('.group-item .execute-btn').click();
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    expect(chromeMock.windows.getCurrent).toHaveBeenCalledTimes(1);
+    expect(chromeMock.tabs.query).toHaveBeenCalledWith({});
+    expect(chromeMock.tabGroups.query).toHaveBeenCalledWith({});
+    expect(onEditGroup).not.toHaveBeenCalled();
+  });
+
   test('handleDragOver prevents default', () => {
     const event = {
       preventDefault: jest.fn(),
