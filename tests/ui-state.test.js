@@ -161,6 +161,28 @@ describe('ui/state.js', () => {
     expect(chromeMock.storage.sync.set).toHaveBeenCalledWith(expected);
   });
 
+  test.each([
+    { groupSets: [] },
+    { groupSets: [{ name: 'Confirmed Set', color: 'blue', expanded: true, groups: [] }] }
+  ])('保存中に状態が置き換わっても同じ正規化済み配列を同期する: %j', async ({ groupSets }) => {
+    state.settings.syncEnabled = true;
+    let finishSave;
+    chromeMock.storage.local.set.mockReturnValueOnce(new Promise(resolve => { finishSave = resolve; }));
+
+    const saving = saveGroupSets(groupSets);
+    const savedGroupSets = chromeMock.storage.local.set.mock.calls[0][0].groupSets;
+    expect(savedGroupSets).toEqual(groupSets.length ? groupSets : [createDefaultGroupSet()]);
+    const externalGroupSets = [{ name: 'External Set', color: 'grey', expanded: true, groups: [] }];
+    state.groupSets = externalGroupSets;
+
+    finishSave();
+    expect(await saving).toBe(true);
+
+    expect(chromeMock.storage.sync.set).toHaveBeenCalledTimes(1);
+    expect(chromeMock.storage.sync.set.mock.calls[0][0].groupSets).toBe(savedGroupSets);
+    expect(state.groupSets).toBe(externalGroupSets);
+  });
+
   test('ロード時の同期でも空の新形式を旧形式より優先して正規化する', async () => {
     chromeMock.storage.local.get.mockResolvedValue({ settings: { syncEnabled: true } });
     chromeMock.storage.sync.get.mockResolvedValue({

@@ -503,6 +503,41 @@ describe('sidepanel logic', () => {
   });
 
   test.each([
+    ['local', 'move'],
+    ['local', 'duplicate'],
+    ['sync', 'move'],
+    ['sync', 'duplicate']
+  ])('確定操作の保存中に外部更新が届いても同期には確定時の配列を使う: %s/%s', async (area, operation) => {
+    const state = await openCrossSetDialog();
+    state.settings.syncEnabled = true;
+    chromeMock.storage.local.set.mockClear();
+    chromeMock.storage.sync.set.mockClear();
+    let finishSave;
+    chromeMock.storage.local.set.mockReturnValueOnce(new Promise(resolve => { finishSave = resolve; }));
+
+    document.getElementById(`move-copy-${operation}-btn`).click();
+    const confirmedSets = JSON.parse(JSON.stringify(chromeMock.storage.local.set.mock.calls[0][0].groupSets));
+    expect(confirmedSets[0].groups.map(group => group.name)).toEqual(
+      operation === 'move' ? ['Group 3'] : ['Group 1', 'Group 3']
+    );
+    expect(confirmedSets[1].groups.map(group => group.name)).toEqual(['Group 1', 'Group 2']);
+    expect(chromeMock.storage.sync.set).not.toHaveBeenCalled();
+
+    const externalSets = [{ name: 'External Set', color: 'grey', expanded: true, groups: [] }];
+    const listener = chromeMock.storage.onChanged.addListener.mock.calls[0][0];
+    await listener({ groupSets: { newValue: externalSets } }, area);
+
+    finishSave();
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    expect(chromeMock.storage.sync.set).toHaveBeenCalledTimes(1);
+    expect(chromeMock.storage.sync.set).toHaveBeenCalledWith({ groupSets: confirmedSets });
+    expect(state.groupSets).toEqual(externalSets);
+    expect(document.getElementById('move-copy-dialog-scrim').style.display).toBe('none');
+    expect(document.querySelector('.group-set-item .target-name').textContent).toBe('External Set');
+  });
+
+  test.each([
     ['move', 'move'],
     ['duplicate', 'duplicate'],
     ['move', 'duplicate'],
