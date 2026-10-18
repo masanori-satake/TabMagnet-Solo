@@ -53,7 +53,6 @@ function createGroupSetRow(groupSet, setIndex, onEditGroupSet) {
     ? (chrome.i18n.getMessage('gsExpandButton', [groupSet.name]) || `グループセット「${groupSet.name}」を縮小`)
     : (chrome.i18n.getMessage('gsCollapseButton', [groupSet.name]) || `グループセット「${groupSet.name}」を展開`);
 
-  const editLabel = chrome.i18n.getMessage('gsEditButton', [groupSet.name]) || `グループセット「${groupSet.name}」を編集`;
   const executeLabel = chrome.i18n.getMessage('gsExecuteButton', [groupSet.name]) || `グループセット「${groupSet.name}」を実行`;
 
   // 展開・折りたたみボタン
@@ -80,6 +79,12 @@ function createGroupSetRow(groupSet, setIndex, onEditGroupSet) {
   const nameEl = document.createElement('div');
   nameEl.className = 'target-name';
   nameEl.textContent = groupSet.name || '';
+  nameEl.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (typeof onEditGroupSet === 'function') {
+      onEditGroupSet(setIndex);
+    }
+  });
 
   targetInfo.appendChild(colorChip);
   targetInfo.appendChild(nameEl);
@@ -87,18 +92,6 @@ function createGroupSetRow(groupSet, setIndex, onEditGroupSet) {
   // 操作アクションボタン群
   const targetActions = document.createElement('div');
   targetActions.className = 'target-actions';
-
-  const editSetBtn = document.createElement('button');
-  editSetBtn.className = 'icon-button edit-set-btn';
-  editSetBtn.setAttribute('aria-label', editLabel);
-  editSetBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" fill="currentColor"><path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"/></svg>`;
-
-  editSetBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    if (typeof onEditGroupSet === 'function') {
-      onEditGroupSet(setIndex);
-    }
-  });
 
   const executeSetBtn = document.createElement('button');
   executeSetBtn.className = `icon-button execute-set-btn${isExecuteDisabled ? ' disabled' : ''}`;
@@ -120,7 +113,6 @@ function createGroupSetRow(groupSet, setIndex, onEditGroupSet) {
     });
   }
 
-  targetActions.appendChild(editSetBtn);
   targetActions.appendChild(executeSetBtn);
 
   row.appendChild(toggleBtn);
@@ -167,22 +159,16 @@ function createGroupRow(group, setIndex, groupIndex, onEditGroup) {
   targetInfo.appendChild(colorChip);
   targetInfo.appendChild(nameEl);
 
-  // 操作アクション領域
-  const targetActions = document.createElement('div');
-  targetActions.className = 'target-actions';
-
-  // 標準ボタンでキーボードからも編集できるようにする。
-  const editBtn = document.createElement('button');
-  editBtn.type = 'button';
-  editBtn.className = 'icon-button edit-btn';
-  editBtn.setAttribute('aria-label', `${chrome.i18n.getMessage('edit')}: ${group.name || ''}`);
-  editBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" fill="currentColor"><path d="M200-200h57l391-391-57-57-391 391v57Zm-80 80v-170l528-527q12-11 26.5-17t30.5-6q16 0 31 6t26 18l55 56q12 11 17.5 26t5.5 30q0 16-5.5 30.5T817-647L290-120H120Zm640-584-56-56 56 56Zm-141 85-28-29 57 57-29-28Z"/></svg>`;
-  editBtn.addEventListener('click', (e) => {
+  nameEl.addEventListener('click', (e) => {
     e.stopPropagation();
     if (typeof onEditGroup === 'function') {
       onEditGroup(groupIndex, setIndex);
     }
   });
+
+  // 操作アクション領域
+  const targetActions = document.createElement('div');
+  targetActions.className = 'target-actions';
 
   const executeBtn = document.createElement('button');
   executeBtn.className = 'icon-button execute-btn';
@@ -195,7 +181,6 @@ function createGroupRow(group, setIndex, groupIndex, onEditGroup) {
   executeBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24" fill="currentColor"><path d="M5 2h4v3H5V2zm10 0h4v3h-4V2zM5 6v8c0 3.87 3.13 7 7 7s7-3.13 7-7V6h-4v8c0 1.66-1.34 3-3 3s-3-1.34-3-3V6H5z"/></svg>`;
   executeBtn.appendChild(tooltipSpan);
 
-  targetActions.appendChild(editBtn);
   targetActions.appendChild(executeBtn);
 
   item.appendChild(dragHandle);

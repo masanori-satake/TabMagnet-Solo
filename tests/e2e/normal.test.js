@@ -7,7 +7,7 @@ test.describe('Normal Operations', () => {
 
   test('should create, edit and delete a group', async ({ page }) => {
     // 1. Open edit menu for the default Group-Set and add a new group
-    await page.click('.edit-set-btn');
+    await page.click('.group-set-item .target-name');
     await page.click('#gs-edit-menu-add-group');
 
     await page.fill('#new-name', 'Test Target');

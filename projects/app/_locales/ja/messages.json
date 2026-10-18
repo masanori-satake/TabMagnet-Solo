@@ -81,7 +81,7 @@
     "message": "新規グループセット"
   },
   "gsEditMenuTitle": {
-    "message": "グループセットの編集"
+    "message": "グループセット操作"
   },
   "gsEditMenuAddGroup": {
     "message": "新規グループの追加"
@@ -90,7 +90,7 @@
     "message": "表示中タブから新規グループを追加"
   },
   "gsEditMenuEditSet": {
-    "message": "グループセットを編集"
+    "message": "グループセット編集"
   },
   "gsEditMenuMoveUp": {
     "message": "上に移動"
@@ -100,6 +100,9 @@
   },
   "gsEditModalTitle": {
     "message": "グループセット編集"
+  },
+  "editGroupTitle": {
+    "message": "グループ編集"
   },
   "gsPlaceholderName": {
     "message": "グループセット名"

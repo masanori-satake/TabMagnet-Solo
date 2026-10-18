@@ -249,8 +249,9 @@ export async function moveGroupSet(setIndex, direction) {
   state.groupSets[setIndex] = state.groupSets[targetIndex];
   state.groupSets[targetIndex] = temp;
 
+  state.currentEditSetIndex = targetIndex;
   await saveGroupSets(state.groupSets);
-  hideGroupSetEditMenu();
+  await updateEditMenuButtonStates(targetIndex);
   requestRender();
 }
 

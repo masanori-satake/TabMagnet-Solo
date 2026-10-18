@@ -24,7 +24,7 @@ export function showTargetModal(groupIndex = null, setIndex = 0) {
 
   if (groupIndex !== null && state.groupSets[setIndex] && state.groupSets[setIndex].groups[groupIndex]) {
     const target = state.groupSets[setIndex].groups[groupIndex];
-    if (modalTitleEl) modalTitleEl.textContent = chrome.i18n.getMessage('edit');
+    if (modalTitleEl) modalTitleEl.textContent = chrome.i18n.getMessage('editGroupTitle');
     if (newNameInput) newNameInput.value = target.name;
     const patterns = Array.isArray(target.pattern) ? target.pattern : [target.pattern];
     patterns.forEach(p => addPatternInput(p));

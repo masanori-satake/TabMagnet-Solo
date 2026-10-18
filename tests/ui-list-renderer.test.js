@@ -86,7 +86,7 @@ describe('ui/list-renderer.js', () => {
     expect(onEditGroup).toHaveBeenCalledWith(0, 0);
   });
 
-  test('Group編集ボタンはフォーカス可能で、対象のインデックスを一度だけ渡す', () => {
+  test('Group名要素クリック時に編集コールバックに対象のインデックスを一度だけ渡す', () => {
     state.groupSets = [
       { name: 'Set 1', expanded: false, groups: [] },
       { name: 'Set 2', expanded: true, groups: [{ name: 'G1' }, { name: 'G2' }] }
@@ -94,14 +94,9 @@ describe('ui/list-renderer.js', () => {
     const onEditGroup = jest.fn();
     renderTargetList(onEditGroup);
 
-    const editBtn = document.querySelectorAll('.group-item .edit-btn')[1];
-    expect(editBtn.tagName).toBe('BUTTON');
-    expect(editBtn.type).toBe('button');
-    expect(editBtn.getAttribute('aria-label')).toBe('edit: G2');
-    expect(editBtn.tabIndex).toBe(0);
-    editBtn.focus();
-    expect(document.activeElement).toBe(editBtn);
-    editBtn.querySelector('path').dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    const nameEl = document.querySelectorAll('.group-item .target-name')[1];
+    expect(nameEl.textContent).toBe('G2');
+    nameEl.click();
     expect(onEditGroup).toHaveBeenCalledTimes(1);
     expect(onEditGroup).toHaveBeenCalledWith(1, 1);
   });
@@ -176,7 +171,7 @@ describe('ui/list-renderer.js', () => {
         groupRow.click();
         expect(onEditGroup).toHaveBeenLastCalledWith(index, 1);
       });
-      document.querySelector('.group-set-item[data-set-index="1"] .edit-set-btn').click();
+      document.querySelector('.group-set-item[data-set-index="1"] .target-name').click();
       expect(onEditGroupSet).toHaveBeenLastCalledWith(1);
       expect(state.groupSets[0].groups[0].name).toBe('Other');
     }
