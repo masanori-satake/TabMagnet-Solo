@@ -76,7 +76,8 @@ function createGroupSetRow(groupSet, setIndex, onEditGroupSet) {
   const colorChip = document.createElement('div');
   colorChip.className = `target-color-chip ${colorClass}`;
 
-  const nameEl = document.createElement('div');
+  const nameEl = document.createElement('button');
+  nameEl.type = 'button';
   nameEl.className = 'target-name';
   nameEl.textContent = groupSet.name || '';
   nameEl.addEventListener('click', (e) => {
@@ -152,7 +153,8 @@ function createGroupRow(group, setIndex, groupIndex, onEditGroup) {
   const colorChip = document.createElement('div');
   colorChip.className = `target-color-chip ${colorClass}`;
 
-  const nameEl = document.createElement('div');
+  const nameEl = document.createElement('button');
+  nameEl.type = 'button';
   nameEl.className = 'target-name';
   nameEl.textContent = group.name || '';
 
