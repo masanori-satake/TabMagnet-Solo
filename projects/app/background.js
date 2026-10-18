@@ -12,6 +12,7 @@ import {
   syncFromCloudIfNeeded,
   DEFAULT_SETTINGS,
   validateImportData,
+  normalizeGroupSets,
   migrateTargetsToGroupSets
 } from './ui/utils.js';
 
@@ -61,7 +62,7 @@ chrome.storage.onChanged.addListener(async (changes, area) => {
       if (changes.groupSets.newValue === undefined) {
         keysToRemove.push('groupSets');
       } else {
-        updates.groupSets = changes.groupSets.newValue;
+        updates.groupSets = normalizeGroupSets(changes.groupSets.newValue);
       }
     } else if (changes.targets) {
       if (changes.targets.newValue === undefined) {

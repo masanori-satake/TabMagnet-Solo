@@ -1,6 +1,26 @@
 import { jest } from '@jest/globals';
 import { state, loadState, saveGroupSets, saveSettings } from '../projects/app/ui/state.js';
-import { DEFAULT_SETTINGS } from '../projects/app/ui/utils.js';
+import { DEFAULT_SETTINGS, createDefaultGroupSet } from '../projects/app/ui/utils.js';
+
+/**
+ * キーとJSON値を合わせたUTF-8サイズが指定値になる有効な同期データを作る。
+ * @param {number} bytes - 項目のバイト数
+ * @returns {Array} 境界値検証用のGroup-Set配列
+ */
+function groupSetsWithBytes(bytes) {
+  const patterns = Array(20).fill('x');
+  const groupSets = [{
+    name: 'Set', color: 'grey', expanded: true,
+    groups: [{ name: 'Group', pattern: patterns }]
+  }];
+  let remaining = bytes - Buffer.byteLength('groupSets' + JSON.stringify(groupSets), 'utf8');
+  for (let i = 0; i < patterns.length && remaining > 0; i++) {
+    const length = Math.min(499, remaining);
+    patterns[i] += 'a'.repeat(length);
+    remaining -= length;
+  }
+  return groupSets;
+}
 
 describe('ui/state.js', () => {
   let chromeMock;
@@ -14,7 +34,8 @@ describe('ui/state.js', () => {
           remove: jest.fn().mockResolvedValue({})
         },
         sync: {
-          get: jest.fn().mockResolvedValue({})
+          get: jest.fn().mockResolvedValue({}),
+          set: jest.fn().mockResolvedValue({})
         }
       },
       i18n: {
@@ -22,6 +43,7 @@ describe('ui/state.js', () => {
       }
     };
     global.chrome = chromeMock;
+    document.body.innerHTML = '<div id="toast"></div>';
 
     // Reset state
     state.groupSets = [];
@@ -95,5 +117,59 @@ describe('ui/state.js', () => {
     await loadState();
 
     expect(state.settings.syncEnabled).toBe(true);
+  });
+
+  test.each([8191, 8192, 8193])('同期容量の境界をキー込みのバイト数で検証する: %i', async (bytes) => {
+    state.settings.syncEnabled = true;
+    const groupSets = groupSetsWithBytes(bytes);
+    expect(Buffer.byteLength('groupSets' + JSON.stringify(groupSets), 'utf8')).toBe(bytes);
+
+    await saveGroupSets(groupSets);
+
+    expect(chromeMock.storage.local.set).toHaveBeenCalledWith({ groupSets });
+    if (bytes <= 8192) {
+      expect(chromeMock.storage.sync.set).toHaveBeenCalledWith({ groupSets });
+    } else {
+      expect(chromeMock.storage.sync.set).not.toHaveBeenCalled();
+      expect(chromeMock.i18n.getMessage).toHaveBeenCalledWith('errorSyncSizeLimit', ['8192']);
+      expect(document.getElementById('toast').classList.contains('show')).toBe(true);
+    }
+  });
+
+  test.each(['あ', '"', '\\'])('JSONのエスケープとUTF-8の実サイズで同期を制限する: %s', async (character) => {
+    state.settings.syncEnabled = true;
+    const groupSets = [{
+      name: 'Set', color: 'grey', expanded: true,
+      groups: [{ name: 'Group', pattern: Array(10).fill(character.repeat(490)) }]
+    }];
+
+    await saveGroupSets(groupSets);
+
+    expect(chromeMock.storage.local.set).toHaveBeenCalledWith({ groupSets });
+    expect(chromeMock.storage.sync.set).not.toHaveBeenCalled();
+    expect(chromeMock.i18n.getMessage).toHaveBeenCalledWith('errorSyncSizeLimit', ['8192']);
+  });
+
+  test('空配列の保存はローカルと同期で既定の1件に正規化する', async () => {
+    state.settings.syncEnabled = true;
+
+    await saveGroupSets([]);
+
+    const expected = { groupSets: [createDefaultGroupSet()] };
+    expect(state.groupSets).toEqual(expected.groupSets);
+    expect(chromeMock.storage.local.set).toHaveBeenCalledWith(expected);
+    expect(chromeMock.storage.sync.set).toHaveBeenCalledWith(expected);
+  });
+
+  test('ロード時の同期でも空の新形式を旧形式より優先して正規化する', async () => {
+    chromeMock.storage.local.get.mockResolvedValue({ settings: { syncEnabled: true } });
+    chromeMock.storage.sync.get.mockResolvedValue({
+      groupSets: [], targets: [{ name: 'Legacy', pattern: 'legacy.example' }]
+    });
+
+    await loadState();
+
+    expect(chromeMock.storage.local.set).toHaveBeenCalledWith({ groupSets: [createDefaultGroupSet()] });
+    expect(state.groupSets).toEqual([createDefaultGroupSet()]);
   });
 });

@@ -122,6 +122,17 @@ describe('Property 2: resolveGroupSets and createDefaultGroupSet', () => {
     });
   });
 
+  test('空の新形式を優先し、検証と解決で既定の1件に正規化する', () => {
+    const empty = [];
+    const expected = [createDefaultGroupSet()];
+    expect(validateGroupSets(empty)).toEqual(expected);
+    expect(empty).toEqual([]);
+    expect(resolveGroupSets({
+      groupSets: empty,
+      targets: [{ name: 'Legacy', pattern: 'legacy.example' }]
+    })).toEqual({ groupSets: expected, migrated: true, needsCleanup: false });
+  });
+
   test('resolveGroupSets handles empty, undefined, and valid inputs', () => {
     // Empty / null rawData
     const res1 = resolveGroupSets(null);

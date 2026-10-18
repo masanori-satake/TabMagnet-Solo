@@ -253,6 +253,7 @@ export function validateGroupSet(groupSet) {
 /**
  * groupSets 配列全体を検証する（要素数上限20含む）。
  * @param {Array} groupSets - 検証対象の groupSets 配列
+ * @returns {Array} 検証・正規化済みの groupSets 配列
  */
 export function validateGroupSets(groupSets) {
   if (!Array.isArray(groupSets)) {
@@ -264,6 +265,7 @@ export function validateGroupSets(groupSets) {
   for (const groupSet of groupSets) {
     validateGroupSet(groupSet);
   }
+  return normalizeGroupSets(groupSets);
 }
 
 /**
@@ -278,6 +280,15 @@ export function createDefaultGroupSet() {
     expanded: true,
     groups: []
   };
+}
+
+/**
+ * 空の配列を既定の1件に正規化し、操作対象のGroup-Setを常に確保する。
+ * @param {Array} groupSets - 正規化する配列
+ * @returns {Array} 少なくとも1件を含む配列
+ */
+export function normalizeGroupSets(groupSets) {
+  return groupSets.length === 0 ? [createDefaultGroupSet()] : groupSets;
 }
 
 /**
@@ -307,7 +318,11 @@ export function migrateTargetsToGroupSets(targets) {
  */
 export function resolveGroupSets(rawData) {
   if (rawData && Array.isArray(rawData.groupSets)) {
-    return { groupSets: rawData.groupSets, migrated: false, needsCleanup: false };
+    return {
+      groupSets: normalizeGroupSets(rawData.groupSets),
+      migrated: rawData.groupSets.length === 0,
+      needsCleanup: false
+    };
   }
   if (rawData && Array.isArray(rawData.targets)) {
     const groupSet = migrateTargetsToGroupSets(rawData.targets);
@@ -638,7 +653,7 @@ export async function syncFromCloudIfNeeded() {
     const keysToRemove = [];
 
     if (syncData.groupSets !== undefined) {
-      updates.groupSets = syncData.groupSets;
+      updates.groupSets = normalizeGroupSets(syncData.groupSets);
     } else if (syncData.targets !== undefined) {
       updates.groupSets = [migrateTargetsToGroupSets(syncData.targets)];
       keysToRemove.push('targets');

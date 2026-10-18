@@ -3,7 +3,7 @@
  * 各モジュールを調整し、UIの初期化とイベント設定を行う
  */
 
-import { state, loadState, saveGroupSets, saveSettings } from './ui/state.js';
+import { state, loadState, saveGroupSets, saveSettings, syncDataToCloud } from './ui/state.js';
 import { applyI18n } from './ui/i18n.js';
 import { showToast } from './ui/toast.js';
 import { renderTargetList, handleDragOver } from './ui/list-renderer.js';
@@ -45,6 +45,7 @@ import {
   getCompatibleColor,
   isEdge,
   validateImportData,
+  normalizeGroupSets,
   createDefaultGroupSet,
   migrateTargetsToGroupSets
 } from './ui/utils.js';
@@ -171,7 +172,7 @@ export async function init() {
   chrome.storage.onChanged.addListener(async (changes, area) => {
     if (area === 'local') {
       if (changes.groupSets) {
-        const nextSets = changes.groupSets.newValue || [];
+        const nextSets = normalizeGroupSets(changes.groupSets.newValue || []);
         if (JSON.stringify(nextSets) !== JSON.stringify(state.groupSets)) {
           state.groupSets = nextSets;
           renderUI();
@@ -203,7 +204,7 @@ export async function init() {
         return;
       }
       if (changes.groupSets && changes.groupSets.newValue) {
-        const nextSets = changes.groupSets.newValue;
+        const nextSets = normalizeGroupSets(changes.groupSets.newValue);
         state.groupSets = nextSets;
         chrome.storage.local.set({ groupSets: nextSets }).then(() => {
           renderUI();
@@ -470,6 +471,7 @@ async function handleConfirmSync() {
 
   try {
     const syncData = await chrome.storage.sync.get(['settings', 'groupSets', 'targets']);
+    validateImportData(syncData);
 
     // 1. 設定項目の同期処理
     let finalSettings = { ...state.settings, syncEnabled: true };
@@ -478,7 +480,6 @@ async function handleConfirmSync() {
         finalSettings = { ...DEFAULT_SETTINGS, ...syncData.settings, syncEnabled: true };
       }
     }
-    await saveSettings(finalSettings);
 
     // 2. タブグループセットの同期処理
     let finalGroupSets = [...state.groupSets];
@@ -489,13 +490,16 @@ async function handleConfirmSync() {
         finalGroupSets = [migrateTargetsToGroupSets(syncData.targets)];
       }
     }
-    await saveGroupSets(finalGroupSets);
+    finalGroupSets = normalizeGroupSets(finalGroupSets);
 
-    // クラウド側へ最新のローカル状態をアップロードして同期を確定させる
-    await chrome.storage.sync.set({
+    // 容量検査に成功したデータだけで同期を確定し、重複した書き込みを避ける。
+    const synced = await syncDataToCloud({
       settings: finalSettings,
       groupSets: finalGroupSets
     });
+    if (!synced) return;
+    await saveSettings(finalSettings, { sync: false });
+    await saveGroupSets(finalGroupSets, { sync: false });
 
     renderSettingsUI();
     renderUI();
@@ -531,7 +535,7 @@ async function handleSaveTarget() {
   if (!state.groupSets[setIndex]) return;
 
   if (groupIndex === null && (state.groupSets[setIndex].groups || []).length >= MAX_GROUPS_PER_SET) {
-    showModalFeedback(chrome.i18n.getMessage('errorInputRequired'));
+    showModalFeedback(chrome.i18n.getMessage('errorGroupLimit', [String(MAX_GROUPS_PER_SET)]));
     return;
   }
 
@@ -626,7 +630,7 @@ async function importData(data) {
 
   let importedGroupSets = [];
   if (Array.isArray(data.groupSets)) {
-    importedGroupSets = data.groupSets;
+    importedGroupSets = normalizeGroupSets(data.groupSets);
   } else if (Array.isArray(data.targets)) {
     importedGroupSets = [migrateTargetsToGroupSets(data.targets)];
   } else {
@@ -652,12 +656,13 @@ async function importData(data) {
     }
   }
 
-  await saveGroupSets(nextGroupSets);
+  const synced = await saveGroupSets(nextGroupSets);
   await saveSettings(importedSettings);
 
   renderUI();
   renderSettingsUI();
-  showToast(chrome.i18n.getMessage('importSuccess'));
+  // 容量超過の通知を成功メッセージで即座に消さない。
+  if (synced) showToast(chrome.i18n.getMessage('importSuccess'));
 }
 
 /**

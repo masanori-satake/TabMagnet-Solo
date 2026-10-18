@@ -201,4 +201,19 @@ describe('background auto-cleanup and renaming', () => {
     expect(chromeMock.storage.local.remove).toHaveBeenCalledWith(['targets']);
     expect(chromeMock.storage.local.set).not.toHaveBeenCalled();
   });
+
+  test('空の新形式の同期では既定の1件を保存し旧形式を使わない', async () => {
+    chromeMock.storage.local.get.mockResolvedValue({ settings: { syncEnabled: true } });
+    await import('../projects/app/background.js');
+    const listener = chromeMock.storage.onChanged.addListener.mock.calls[0][0];
+
+    await listener({
+      groupSets: { newValue: [] },
+      targets: { newValue: [{ name: 'Legacy', pattern: 'legacy.example' }] }
+    }, 'sync');
+
+    expect(chromeMock.storage.local.set).toHaveBeenCalledWith({
+      groupSets: [{ name: 'defaultGroupSetName', color: 'grey', expanded: true, groups: [] }]
+    });
+  });
 });

@@ -2,7 +2,7 @@ import { jest } from '@jest/globals';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { MAX_GROUP_SETS } from '../projects/app/ui/constants.js';
+import { MAX_GROUP_SETS, MAX_GROUPS_PER_SET } from '../projects/app/ui/constants.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const html = fs.readFileSync(path.resolve(__dirname, '../projects/app/sidepanel.html'), 'utf8');
@@ -286,5 +286,128 @@ describe('sidepanel logic', () => {
       expect(state.settings.collectFromAllGroups).toBe(data.settings.collectFromAllGroups);
       expect(document.getElementById('toast').textContent).toBe('importSuccess');
     }
+  });
+
+  test('グループ上限では専用メッセージに上限値を渡し保存しない', async () => {
+    const { init } = await import('../projects/app/sidepanel.js');
+    const { state } = await import('../projects/app/ui/state.js');
+    await init();
+    state.groupSets[0].groups = Array.from({ length: MAX_GROUPS_PER_SET }, () => ({
+      name: 'Group', pattern: 'example.com'
+    }));
+    state.currentEdit = { setIndex: 0, groupIndex: null };
+    document.getElementById('new-name').value = 'New';
+    document.getElementById('pattern-list-container').innerHTML = '<input class="pattern-input" value="new.example">';
+    chromeMock.storage.local.set.mockClear();
+
+    document.getElementById('save-target-btn').click();
+
+    expect(chromeMock.i18n.getMessage).toHaveBeenCalledWith('errorGroupLimit', [String(MAX_GROUPS_PER_SET)]);
+    expect(chromeMock.storage.local.set).not.toHaveBeenCalled();
+    expect(state.groupSets[0].groups).toHaveLength(MAX_GROUPS_PER_SET);
+  });
+
+  test('空の新形式をインポートすると既定の1件を保存・表示する', async () => {
+    const { init } = await import('../projects/app/sidepanel.js');
+    await init();
+    chromeMock.storage.local.set.mockClear();
+    document.querySelector('input[name="import-mode"][value="overwrite"]').checked = true;
+    document.getElementById('paste-import-textarea').value = JSON.stringify({
+      groupSets: [], targets: [{ name: 'Legacy', pattern: 'legacy.example' }]
+    });
+
+    document.getElementById('confirm-paste-import-btn').click();
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    expect(chromeMock.storage.local.set).toHaveBeenCalledWith({
+      groupSets: [{ name: 'defaultGroupSetName', color: 'grey', expanded: true, groups: [] }]
+    });
+    expect(document.querySelectorAll('.group-set-item')).toHaveLength(1);
+    expect(document.querySelectorAll('.group-item')).toHaveLength(0);
+  });
+
+  test.each(['sync', 'local'])('空配列の変更通知でも既定の1件を表示する: %s', async (area) => {
+    const { init } = await import('../projects/app/sidepanel.js');
+    const { state } = await import('../projects/app/ui/state.js');
+    await init();
+    state.settings.syncEnabled = true;
+    const listener = chromeMock.storage.onChanged.addListener.mock.calls[0][0];
+
+    await listener({ groupSets: { newValue: [] } }, area);
+    await Promise.resolve();
+
+    expect(state.groupSets).toEqual([{ name: 'defaultGroupSetName', color: 'grey', expanded: true, groups: [] }]);
+    expect(document.querySelectorAll('.group-set-item')).toHaveLength(1);
+    if (area === 'sync') {
+      expect(chromeMock.storage.local.set).toHaveBeenCalledWith({ groupSets: state.groupSets });
+    }
+  });
+
+  test.each(['to_sync', 'from_sync'])('同期確定でも容量超過時は一切同期せずローカルを保持する: %s', async (direction) => {
+    const { init } = await import('../projects/app/sidepanel.js');
+    const { state } = await import('../projects/app/ui/state.js');
+    await init();
+    const oversized = [{
+      name: 'Large', color: 'grey', expanded: true,
+      groups: [{ name: 'Group', pattern: Array(20).fill('a'.repeat(500)) }]
+    }];
+    if (direction === 'to_sync') state.groupSets = oversized;
+    else chromeMock.storage.sync.get.mockResolvedValue({ groupSets: oversized });
+    const previousGroupSets = state.groupSets;
+    chromeMock.storage.local.set.mockClear();
+    document.querySelector(`input[name="sync-settings-option"][value="${direction}"]`).checked = true;
+    document.querySelector(`input[name="sync-targets-option"][value="${direction}"]`).checked = true;
+
+    document.getElementById('confirm-sync-btn').click();
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    expect(chromeMock.storage.sync.set).not.toHaveBeenCalled();
+    expect(chromeMock.storage.local.set).not.toHaveBeenCalled();
+    expect(state.groupSets).toBe(previousGroupSets);
+    expect(state.settings.syncEnabled).toBe(false);
+    expect(document.getElementById('toast').textContent).toBe('errorSyncSizeLimit');
+  });
+
+  test('同期確定では空の新形式を正規化し一度だけ同期する', async () => {
+    const { init } = await import('../projects/app/sidepanel.js');
+    const { state } = await import('../projects/app/ui/state.js');
+    await init();
+    chromeMock.storage.sync.get.mockResolvedValue({
+      groupSets: [], targets: [{ name: 'Legacy', pattern: 'legacy.example' }]
+    });
+    document.querySelector('input[name="sync-settings-option"][value="to_sync"]').checked = true;
+    document.querySelector('input[name="sync-targets-option"][value="from_sync"]').checked = true;
+
+    document.getElementById('confirm-sync-btn').click();
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    expect(chromeMock.storage.sync.set).toHaveBeenCalledTimes(1);
+    expect(chromeMock.storage.sync.set).toHaveBeenCalledWith({
+      settings: expect.objectContaining({ syncEnabled: true }),
+      groupSets: [{ name: 'defaultGroupSetName', color: 'grey', expanded: true, groups: [] }]
+    });
+    expect(state.settings.syncEnabled).toBe(true);
+    expect(document.querySelectorAll('.group-set-item')).toHaveLength(1);
+  });
+
+  test('インポート成功時も同期容量超過の通知を保持する', async () => {
+    const { init } = await import('../projects/app/sidepanel.js');
+    const { state } = await import('../projects/app/ui/state.js');
+    await init();
+    state.settings.syncEnabled = true;
+    const groupSets = [{
+      name: 'Large', color: 'grey', expanded: true,
+      groups: [{ name: 'Group', pattern: Array(20).fill('a'.repeat(500)) }]
+    }];
+    document.querySelector('input[name="import-mode"][value="overwrite"]').checked = true;
+    document.getElementById('paste-import-textarea').value = JSON.stringify({ groupSets });
+
+    document.getElementById('confirm-paste-import-btn').click();
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    expect(state.groupSets).toEqual(groupSets);
+    expect(chromeMock.storage.local.set).toHaveBeenCalledWith({ groupSets });
+    expect(chromeMock.storage.sync.set).not.toHaveBeenCalledWith(expect.objectContaining({ groupSets: expect.anything() }));
+    expect(document.getElementById('toast').textContent).toBe('errorSyncSizeLimit');
   });
 });

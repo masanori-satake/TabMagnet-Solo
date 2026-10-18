@@ -377,5 +377,21 @@
   },
   "importError": {
     "message": "インポートに失敗しました。正しい形式のデータを選択してください。"
+  },
+  "errorGroupLimit": {
+    "message": "1つのグループセットに登録できるグループは最大$1件です",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "errorSyncSizeLimit": {
+    "message": "同期データが1項目あたり$1バイトの上限を超えています。データを減らして再試行してください。ローカルデータは保存されています。",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   }
 }

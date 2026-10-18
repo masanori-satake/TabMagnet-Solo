@@ -377,5 +377,21 @@
   },
   "importError": {
     "message": "Import failed. Please select data in the correct format."
+  },
+  "errorGroupLimit": {
+    "message": "Up to $1 groups are allowed per group-set",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "errorSyncSizeLimit": {
+    "message": "Sync data exceeds the $1-byte limit per item. Reduce the data and try again. Your local data is saved.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   }
 }
