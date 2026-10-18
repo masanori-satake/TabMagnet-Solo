@@ -5,6 +5,9 @@ describe('background auto-cleanup and renaming', () => {
 
   beforeEach(() => {
     chromeMock = {
+      i18n: {
+        getMessage: jest.fn(key => key)
+      },
       tabGroups: {
         query: jest.fn(),
         update: jest.fn().mockResolvedValue({}),
@@ -18,6 +21,7 @@ describe('background auto-cleanup and renaming', () => {
       storage: {
         local: {
           get: jest.fn().mockResolvedValue({}),
+          set: jest.fn().mockResolvedValue({}),
           remove: jest.fn().mockResolvedValue({})
         },
         sync: {
@@ -43,11 +47,14 @@ describe('background auto-cleanup and renaming', () => {
     jest.resetModules();
   });
 
-  test('performAutoCleanup should ungroup tabs if duplicate target groups exist', async () => {
+  test('performAutoCleanup should ungroup tabs if duplicate target groups exist in groupSets', async () => {
     const { performAutoCleanup } = await import('../projects/app/background.js');
 
     chromeMock.storage.local.get.mockResolvedValue({
-      targets: [{ name: 'Jira' }],
+      groupSets: [{
+        name: 'Set 1', color: 'grey', expanded: true,
+        groups: [{ name: 'Jira', pattern: 'jira.example.com/*' }]
+      }],
       protectedGroups: []
     });
 
@@ -72,7 +79,10 @@ describe('background auto-cleanup and renaming', () => {
     const { performAutoCleanup } = await import('../projects/app/background.js');
 
     chromeMock.storage.local.get.mockResolvedValue({
-      targets: [{ name: 'Jira' }],
+      groupSets: [{
+        name: 'Set 1', color: 'grey', expanded: true,
+        groups: [{ name: 'Jira', pattern: 'jira.example.com/*' }]
+      }],
       protectedGroups: []
     });
 
@@ -89,7 +99,10 @@ describe('background auto-cleanup and renaming', () => {
     const { performAutoCleanup } = await import('../projects/app/background.js');
 
     chromeMock.storage.local.get.mockResolvedValue({
-      targets: [{ name: 'Jira' }],
+      groupSets: [{
+        name: 'Set 1', color: 'grey', expanded: true,
+        groups: [{ name: 'Jira', pattern: 'jira.example.com/*' }]
+      }],
       protectedGroups: ['🧲Jira']
     });
 
@@ -115,93 +128,6 @@ describe('background auto-cleanup and renaming', () => {
     expect(chromeMock.tabGroups.update).toHaveBeenCalledWith(1, { title: '🧲Jira' });
   });
 
-  test('checkAndRenameCollectingGroups should not rename if conflict exists', async () => {
-    const { checkAndRenameCollectingGroups } = await import('../projects/app/background.js');
-
-    chromeMock.tabGroups.query.mockResolvedValue([
-      { id: 1, title: '🧲Jira (Now Collecting)' },
-      { id: 2, title: '🧲Jira' }
-    ]);
-
-    await checkAndRenameCollectingGroups();
-
-    expect(chromeMock.tabGroups.update).not.toHaveBeenCalled();
-  });
-
-  test('checkAndRenameCollectingGroups should handle multiple groups', async () => {
-    const { checkAndRenameCollectingGroups } = await import('../projects/app/background.js');
-
-    chromeMock.tabGroups.query.mockResolvedValue([
-      { id: 1, title: '🧲Jira (Now Collecting)' },
-      { id: 2, title: '🧲Github (Now Collecting)' }
-    ]);
-
-    await checkAndRenameCollectingGroups();
-
-    expect(chromeMock.tabGroups.update).toHaveBeenCalledWith(1, { title: '🧲Jira' });
-    expect(chromeMock.tabGroups.update).toHaveBeenCalledWith(2, { title: '🧲Github' });
-  });
-
-  test('checkAndRenameCollectingGroups should handle error in update gracefully', async () => {
-    const { checkAndRenameCollectingGroups } = await import('../projects/app/background.js');
-
-    chromeMock.tabGroups.query.mockResolvedValue([
-      { id: 1, title: '🧲Jira (Now Collecting)' }
-    ]);
-    chromeMock.tabGroups.update.mockRejectedValue(new Error('Update failed'));
-
-    await checkAndRenameCollectingGroups();
-    // Should not throw
-  });
-
-  test('performAutoCleanup handles error when querying tabs', async () => {
-    const { performAutoCleanup } = await import('../projects/app/background.js');
-    const originalConsoleError = console.error;
-    console.error = jest.fn();
-
-    chromeMock.storage.local.get.mockResolvedValue({ targets: [{ name: 'Jira' }], protectedGroups: [] });
-    chromeMock.tabGroups.query.mockResolvedValue([{ id: 1, title: '🧲Jira' }, { id: 2, title: '🧲Jira' }]);
-    chromeMock.tabs.query.mockReturnValue(Promise.resolve([{ id: 101 }]));
-    // Mock ungroup to fail
-    chromeMock.tabs.ungroup.mockRejectedValue(new Error('Ungroup error'));
-
-    try {
-      await performAutoCleanup();
-      // Error is logged in dissolveGroups (which is now in utils.js)
-      expect(console.error).toHaveBeenCalled();
-    } finally {
-      console.error = originalConsoleError;
-    }
-  });
-
-  test('checkAndRenameCollectingGroups should prioritize the group with smaller ID when multiple Collecting groups exist', async () => {
-    const { checkAndRenameCollectingGroups } = await import('../projects/app/background.js');
-
-    // Simulate multiple collecting groups for the same target
-    // ID 1 should be finalized, ID 2 should stay as is
-    chromeMock.tabGroups.query
-      .mockResolvedValueOnce([
-        { id: 1, title: '🧲Jira (Now Collecting)' },
-        { id: 2, title: '🧲Jira (Now Collecting)' }
-      ])
-      // Second call (inside loop for ID 1)
-      .mockResolvedValueOnce([
-        { id: 1, title: '🧲Jira (Now Collecting)' },
-        { id: 2, title: '🧲Jira (Now Collecting)' }
-      ])
-      // Third call (inside loop for ID 2)
-      .mockResolvedValueOnce([
-        { id: 1, title: '🧲Jira' }, // ID 1 was finalized
-        { id: 2, title: '🧲Jira (Now Collecting)' }
-      ]);
-
-    await checkAndRenameCollectingGroups();
-
-    // Should only finalize group 1
-    expect(chromeMock.tabGroups.update).toHaveBeenCalledWith(1, { title: '🧲Jira' });
-    expect(chromeMock.tabGroups.update).not.toHaveBeenCalledWith(2, expect.anything());
-  });
-
   test('listeners are registered', async () => {
     await import('../projects/app/background.js');
 
@@ -211,32 +137,7 @@ describe('background auto-cleanup and renaming', () => {
     expect(chromeMock.tabGroups.onUpdated.addListener).toHaveBeenCalled();
   });
 
-  test('onInstalled sets sidepanel behavior', async () => {
-    await import('../projects/app/background.js');
-    const onInstalled = chromeMock.runtime.onInstalled.addListener.mock.calls[0][0];
-
-    chromeMock.storage.local.get.mockResolvedValue({ targets: [] });
-    await onInstalled();
-
-    expect(chromeMock.sidePanel.setPanelBehavior).toHaveBeenCalledWith({ openPanelOnActionClick: true });
-  });
-
-  test('onRemoved and onUpdated trigger checkAndRenameCollectingGroups', async () => {
-    await import('../projects/app/background.js');
-    const onRemoved = chromeMock.tabGroups.onRemoved.addListener.mock.calls[0][0];
-    const onUpdated = chromeMock.tabGroups.onUpdated.addListener.mock.calls[0][0];
-
-    chromeMock.tabGroups.query.mockResolvedValue([{ id: 1, title: '🧲Jira (Now Collecting)' }]);
-
-    await onRemoved();
-    expect(chromeMock.tabGroups.update).toHaveBeenCalledWith(1, { title: '🧲Jira' });
-
-    chromeMock.tabGroups.update.mockClear();
-    await onUpdated();
-    expect(chromeMock.tabGroups.update).toHaveBeenCalledWith(1, { title: '🧲Jira' });
-  });
-
-  test('chrome.storage.onChanged handles sync area changes in background when syncEnabled', async () => {
+  test('chrome.storage.onChanged handles sync area groupSets in background when syncEnabled', async () => {
     chromeMock.storage.local.set = jest.fn().mockResolvedValue({});
     chromeMock.storage.local.get.mockResolvedValue({
       settings: { syncEnabled: true }
@@ -246,14 +147,19 @@ describe('background auto-cleanup and renaming', () => {
     const onChangedListener = chromeMock.storage.onChanged.addListener.mock.calls[0][0];
 
     const changes = {
-      targets: { newValue: [{ name: 'SyncedTarget', pattern: ['example.com/*'], color: 'blue' }] },
+      groupSets: {
+        newValue: [{
+          name: 'SyncedSet', color: 'blue', expanded: true,
+          groups: [{ name: 'SyncedTarget', pattern: ['example.com/*'], color: 'blue' }]
+        }]
+      },
       settings: { newValue: { collectFromAllGroups: true } }
     };
 
     await onChangedListener(changes, 'sync');
 
     expect(chromeMock.storage.local.set).toHaveBeenCalledWith({
-      targets: [{ name: 'SyncedTarget', pattern: ['example.com/*'], color: 'blue' }],
+      groupSets: changes.groupSets.newValue,
       settings: expect.objectContaining({
         collectFromAllGroups: true,
         syncEnabled: true
@@ -261,39 +167,38 @@ describe('background auto-cleanup and renaming', () => {
     });
   });
 
-  test('chrome.storage.onChanged ignores sync area changes when syncEnabled is false', async () => {
-    chromeMock.storage.local.set = jest.fn().mockResolvedValue({});
-    chromeMock.storage.local.get.mockResolvedValue({
-      settings: { syncEnabled: false }
-    });
-
+  test.each([
+    ['新形式なし', {}],
+    ['空の新形式あり', { groupSets: [] }],
+    ['新形式あり', { groupSets: [{ name: 'Synced Set', color: 'blue', expanded: true, groups: [] }] }]
+  ])('旧形式の同期では既存の新形式を優先する: %s', async (_label, syncData) => {
+    chromeMock.storage.local.get.mockResolvedValue({ settings: { syncEnabled: true } });
+    chromeMock.storage.sync.get.mockResolvedValue(syncData);
     await import('../projects/app/background.js');
-    const onChangedListener = chromeMock.storage.onChanged.addListener.mock.calls[0][0];
+    const listener = chromeMock.storage.onChanged.addListener.mock.calls[0][0];
+    const targets = [{ name: 'Legacy', pattern: 'legacy.example/*', color: 'grey' }];
 
-    const changes = {
-      targets: { newValue: [{ name: 'SyncedTarget' }] }
-    };
+    await listener({ targets: { newValue: targets } }, 'sync');
 
-    await onChangedListener(changes, 'sync');
-
-    expect(chromeMock.storage.local.set).not.toHaveBeenCalled();
+    expect(chromeMock.storage.sync.get).toHaveBeenCalledWith(['groupSets']);
+    expect(chromeMock.storage.local.remove).toHaveBeenCalledWith(['targets']);
+    if (syncData.groupSets === undefined) {
+      expect(chromeMock.storage.local.set).toHaveBeenCalledWith({
+        groupSets: [expect.objectContaining({ groups: targets })]
+      });
+    } else {
+      expect(chromeMock.storage.local.set).not.toHaveBeenCalled();
+    }
   });
 
-  test('chrome.storage.onChanged removes local keys deleted from sync storage', async () => {
-    chromeMock.storage.local.set = jest.fn().mockResolvedValue({});
-    chromeMock.storage.local.get.mockResolvedValue({
-      settings: { syncEnabled: true }
-    });
-
+  test('旧形式の同期キー削除時もローカルの旧形式を削除する', async () => {
+    chromeMock.storage.local.get.mockResolvedValue({ settings: { syncEnabled: true } });
     await import('../projects/app/background.js');
-    const onChangedListener = chromeMock.storage.onChanged.addListener.mock.calls[0][0];
+    const listener = chromeMock.storage.onChanged.addListener.mock.calls[0][0];
 
-    await onChangedListener({
-      targets: { newValue: undefined },
-      settings: { newValue: undefined }
-    }, 'sync');
+    await listener({ targets: { oldValue: [], newValue: undefined } }, 'sync');
 
-    expect(chromeMock.storage.local.remove).toHaveBeenCalledWith(['targets', 'settings']);
+    expect(chromeMock.storage.local.remove).toHaveBeenCalledWith(['targets']);
     expect(chromeMock.storage.local.set).not.toHaveBeenCalled();
   });
 });

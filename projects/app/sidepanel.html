@@ -199,6 +199,25 @@
       cursor: pointer;
     }
 
+    .target-list-item.group-set-item {
+      font-weight: 500;
+      background-color: var(--md-sys-color-surface-container-low);
+    }
+
+    .target-list-item.group-item {
+      padding-left: 16px;
+    }
+
+    .empty-set-notice {
+      height: 40px;
+      display: flex;
+      align-items: center;
+      padding-left: 48px;
+      font: var(--md-sys-typescale-body-small);
+      color: var(--md-sys-color-outline);
+      border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    }
+
     .target-list-item:last-child {
       border-bottom: none;
     }
@@ -874,15 +893,52 @@
   </main>
 
   <footer>
-    <button id="add-new-btn" class="footer-button">
+    <button id="add-group-set-btn" class="footer-button">
       <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/></svg>
-      <span data-i18n="addNew"></span>
-    </button>
-    <button id="add-from-domain-btn" class="footer-button">
-      <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20"><path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z"/></svg>
-      <span data-i18n="addFromDomain"></span>
+      <span data-i18n="gsAddNewSet"></span>
     </button>
   </footer>
+
+  <!-- Group-Set Edit Menu Dialog -->
+  <div id="gs-edit-menu-scrim" class="scrim">
+    <div class="dialog">
+      <div class="dialog-title" data-i18n="gsEditMenuTitle"></div>
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <button id="gs-edit-menu-add-group" class="text-button" style="justify-content: flex-start; border: none; width: 100%; border-radius: 8px;" data-i18n="gsEditMenuAddGroup"></button>
+        <button id="gs-edit-menu-add-from-domain" class="text-button" style="justify-content: flex-start; border: none; width: 100%; border-radius: 8px;" data-i18n="gsEditMenuAddFromDomain"></button>
+        <button id="gs-edit-menu-edit-set" class="text-button" style="justify-content: flex-start; border: none; width: 100%; border-radius: 8px;" data-i18n="gsEditMenuEditSet"></button>
+        <button id="gs-edit-menu-move-up" class="text-button" style="justify-content: flex-start; border: none; width: 100%; border-radius: 8px;" data-i18n="gsEditMenuMoveUp"></button>
+        <button id="gs-edit-menu-move-down" class="text-button" style="justify-content: flex-start; border: none; width: 100%; border-radius: 8px;" data-i18n="gsEditMenuMoveDown"></button>
+      </div>
+      <div class="modal-actions" style="margin-top: 8px;">
+        <button id="cancel-gs-edit-menu-btn" class="text-button" data-i18n="cancel"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Group-Set Edit Modal -->
+  <div id="gs-edit-modal-scrim" class="scrim">
+    <div class="modal">
+      <div class="modal-title" data-i18n="gsEditModalTitle"></div>
+      <div class="modal-content">
+        <div class="text-field">
+          <input type="text" id="gs-edit-name" placeholder=" " required>
+          <label data-i18n="gsPlaceholderName"></label>
+        </div>
+        <div class="pattern-list-label" data-i18n="gsGroupColor"></div>
+        <div id="gs-color-selection" class="color-selection">
+          <!-- Color options injected via JS -->
+        </div>
+      </div>
+      <div id="gs-modal-feedback" class="modal-feedback hidden"></div>
+      <div class="modal-actions">
+        <button id="delete-group-set-btn" class="text-button error" data-i18n="delete"></button>
+        <div style="flex: 1;"></div>
+        <button id="cancel-group-set-btn" class="text-button" data-i18n="cancel"></button>
+        <button id="save-group-set-btn" class="text-button" data-i18n="save" style="background-color: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container);"></button>
+      </div>
+    </div>
+  </div>
 
   <!-- Target Modal (Add/Edit) -->
   <div id="target-modal-scrim" class="scrim">

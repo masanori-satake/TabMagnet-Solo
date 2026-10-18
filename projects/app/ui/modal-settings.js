@@ -44,7 +44,9 @@ export function updateAboutInfo() {
   const manifest = chrome.runtime.getManifest();
   if (aboutVersionEl) aboutVersionEl.textContent = `v${manifest.version}`;
   if (aboutDeveloperEl) aboutDeveloperEl.textContent = manifest.author || 'Masanori SATAKE';
-  if (aboutTargetCountEl) aboutTargetCountEl.textContent = state.targets.length;
+
+  const totalGroups = (state.groupSets || []).reduce((sum, gs) => sum + (gs.groups ? gs.groups.length : 0), 0);
+  if (aboutTargetCountEl) aboutTargetCountEl.textContent = totalGroups;
 }
 
 /**

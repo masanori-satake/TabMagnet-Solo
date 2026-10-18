@@ -48,3 +48,29 @@ export const COLOR_COMPATIBILITY_MAP = {
   'white': 'grey',
   'black': 'grey'
 };
+
+/**
+ * グループセット数の上限
+ */
+export const MAX_GROUP_SETS = 20;
+
+/**
+ * 1グループセット内のグループ数の上限
+ */
+export const MAX_GROUPS_PER_SET = 100;
+
+/**
+ * グループセット名の最大文字数
+ */
+export const MAX_GROUP_SET_NAME_LENGTH = 100;
+
+/**
+ * Group-Set が持つことを許可されるプロパティ（過剰プロパティの検出用）
+ */
+export const ALLOWED_GROUP_SET_PROPERTIES = new Set(['name', 'color', 'expanded', 'groups']);
+
+/**
+ * 新形式インポート/同期データが持つことを許可されるトップレベルプロパティ
+ * targets は後方互換のため維持（Old Format インポート対応）
+ */
+export const ALLOWED_GROUP_SET_IMPORT_PROPERTIES = new Set(['groupSets', 'targets', 'settings']);

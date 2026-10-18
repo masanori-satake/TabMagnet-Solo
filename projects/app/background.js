@@ -6,7 +6,14 @@
  * 2. ブラウザ起動時の初期化処理
  * 3. 収集完了待ちグループの自動リネーム
  */
-import { checkAndRenameCollectingGroups, performAutoCleanup, syncFromCloudIfNeeded, DEFAULT_SETTINGS, validateImportData } from './ui/utils.js';
+import {
+  checkAndRenameCollectingGroups,
+  performAutoCleanup,
+  syncFromCloudIfNeeded,
+  DEFAULT_SETTINGS,
+  validateImportData,
+  migrateTargetsToGroupSets
+} from './ui/utils.js';
 
 /**
  * 拡張機能起動時またはブラウザ起動時に実行
@@ -38,6 +45,7 @@ chrome.storage.onChanged.addListener(async (changes, area) => {
 
     try {
       const syncData = {};
+      if (changes.groupSets) syncData.groupSets = changes.groupSets.newValue;
       if (changes.targets) syncData.targets = changes.targets.newValue;
       if (changes.settings) syncData.settings = changes.settings.newValue;
       validateImportData(syncData);
@@ -48,13 +56,26 @@ chrome.storage.onChanged.addListener(async (changes, area) => {
 
     const updates = {};
     const keysToRemove = [];
-    if (changes.targets) {
+
+    if (changes.groupSets) {
+      if (changes.groupSets.newValue === undefined) {
+        keysToRemove.push('groupSets');
+      } else {
+        updates.groupSets = changes.groupSets.newValue;
+      }
+    } else if (changes.targets) {
       if (changes.targets.newValue === undefined) {
         keysToRemove.push('targets');
       } else {
-        updates.targets = changes.targets.newValue;
+        // 旧端末からの更新で、すでに同期済みの新形式を上書きしない。
+        const sync = await chrome.storage.sync.get(['groupSets']);
+        if (sync.groupSets === undefined) {
+          updates.groupSets = [migrateTargetsToGroupSets(changes.targets.newValue)];
+        }
+        keysToRemove.push('targets');
       }
     }
+
     if (changes.settings) {
       if (changes.settings.newValue === undefined) {
         keysToRemove.push('settings');
