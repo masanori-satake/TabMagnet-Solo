@@ -101,6 +101,51 @@ describe('ui/list-renderer.js', () => {
     expect(onEditGroup).toHaveBeenCalledWith(1, 1);
   });
 
+  test('Group-Set行の左右ボタン以外のクリックでonEditGroupSetが呼ばれる', async () => {
+    chromeMock.windows = { getCurrent: jest.fn().mockResolvedValue({ id: 1 }) };
+    chromeMock.tabs = { query: jest.fn().mockResolvedValue([]) };
+    chromeMock.storage = { local: { get: jest.fn().mockResolvedValue({}), set: jest.fn().mockResolvedValue({}) } };
+    chromeMock.tabGroups = { query: jest.fn().mockResolvedValue([]) };
+
+    state.groupSets = [
+      { name: 'Set 1', color: 'blue', expanded: false, groups: [{ name: 'G1', pattern: 'g1.com' }] }
+    ];
+    const onEditGroup = jest.fn();
+    const onEditGroupSet = jest.fn();
+    renderTargetList(onEditGroup, onEditGroupSet);
+
+    const setRow = document.querySelector('.group-set-item');
+    const colorChip = setRow.querySelector('.target-color-chip');
+    const toggleBtn = setRow.querySelector('.toggle-expand-btn');
+    const executeBtn = setRow.querySelector('.execute-set-btn');
+
+    // 行本体のクリック
+    setRow.click();
+    expect(onEditGroupSet).toHaveBeenCalledTimes(1);
+    expect(onEditGroupSet).toHaveBeenLastCalledWith(0);
+
+    // グループセット名のクリック（1回のみ発火することを確認）
+    const nameEl = setRow.querySelector('.target-name');
+    nameEl.click();
+    expect(onEditGroupSet).toHaveBeenCalledTimes(2);
+    expect(onEditGroupSet).toHaveBeenLastCalledWith(0);
+
+    // カラーチップのクリック
+    colorChip.click();
+    expect(onEditGroupSet).toHaveBeenCalledTimes(3);
+    expect(onEditGroupSet).toHaveBeenLastCalledWith(0);
+
+    // 展開ボタンクリック（stopPropagationにより行クリックイベントでonEditGroupSetは呼ばれない）
+    toggleBtn.click();
+    await new Promise(resolve => setTimeout(resolve, 0));
+    expect(onEditGroupSet).toHaveBeenCalledTimes(3);
+
+    // 実行ボタンクリック（stopPropagationにより行クリックイベントでonEditGroupSetは呼ばれない）
+    executeBtn.click();
+    await new Promise(resolve => setTimeout(resolve, 0));
+    expect(onEditGroupSet).toHaveBeenCalledTimes(3);
+  });
+
   test('Group実行ボタンは編集を開始せず、既存の実行処理を呼び出す', async () => {
     chromeMock.windows = { getCurrent: jest.fn().mockResolvedValue({ id: 1 }) };
     chromeMock.tabs = { query: jest.fn().mockResolvedValue([]) };
