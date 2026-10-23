@@ -91,12 +91,6 @@ function createGroupSetRow(groupSet, setIndex, onEditGroupSet) {
   nameEl.type = 'button';
   nameEl.className = 'target-name';
   nameEl.textContent = groupSet.name || '';
-  nameEl.addEventListener('click', (e) => {
-    e.stopPropagation();
-    if (typeof onEditGroupSet === 'function') {
-      onEditGroupSet(setIndex);
-    }
-  });
 
   targetInfo.appendChild(colorChip);
   targetInfo.appendChild(nameEl);
@@ -130,6 +124,14 @@ function createGroupSetRow(groupSet, setIndex, onEditGroupSet) {
   row.appendChild(toggleBtn);
   row.appendChild(targetInfo);
   row.appendChild(targetActions);
+
+  // ボタンエリアを除く行全体のクリックでグループセット操作メニューを開く
+  row.addEventListener('click', (e) => {
+    if (e.target.closest('.toggle-expand-btn') || e.target.closest('.execute-set-btn')) return;
+    if (typeof onEditGroupSet === 'function') {
+      onEditGroupSet(setIndex);
+    }
+  });
 
   return row;
 }
