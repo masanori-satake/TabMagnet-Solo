@@ -8,8 +8,9 @@
     "test": "NODE_OPTIONS='--experimental-vm-modules' jest",
     "coverage": "NODE_OPTIONS='--experimental-vm-modules' jest --coverage",
     "test:e2e": "playwright test",
-    "lint": "markdownlint '**/*.md'",
-    "pre-commit": "pre-commit run --all-files"
+    "lint": "markdownlint '**/*.md' --ignore 'node_modules/**'",
+    "pre-commit": "pre-commit run --all-files",
+    "update-version": "python3 scripts/update_version.py"
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",
