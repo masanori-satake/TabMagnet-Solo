@@ -13,11 +13,11 @@
 [![Offline Capable](https://img.shields.io/badge/Offline-Capable-success)](#chromebook--mobile-environment-friendly)
 [![Touch & Tablet Ready](https://img.shields.io/badge/Touch%20%26%20Tablet-Ready-purple)](#chromebook--mobile-environment-friendly)
 
-~ A lightweight, privacy-focused Chrome extension that magnetically aggregates cluttered tabs across multiple windows into dedicated domain groups ~
+~ A lightweight, privacy-first Chrome extension that organizes scattered tabs into dedicated domain groups ~
 
 ## Overview
 
-Are you struggling with dozens of open tabs scattered across multiple browser windows? **TabMagnet-Solo** is a privacy-first `chrome-extension` designed to instantly pull and organize your tabs by domain or URL pattern into a single window. Boost your `browser-productivity` with a clean, clutter-free tab bar in just one click.
+**TabMagnet-Solo** is a privacy-first Chrome extension that instantly aggregates cluttered tabs across multiple windows by domain into a single window, giving you a clean, clutter-free tab bar in one click.
 
 ## Key Features
 
