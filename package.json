@@ -8,7 +8,7 @@
     "test": "NODE_OPTIONS='--experimental-vm-modules' jest",
     "coverage": "NODE_OPTIONS='--experimental-vm-modules' jest --coverage",
     "test:e2e": "playwright test",
-    "lint": "markdownlint '**/*.md'",
+    "lint": "markdownlint '**/*.md' --ignore 'node_modules/**'",
     "pre-commit": "pre-commit run --all-files"
   },
   "devDependencies": {
