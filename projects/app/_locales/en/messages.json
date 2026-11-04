@@ -6,7 +6,7 @@
     "message": "TabMagnet"
   },
   "extensionDescription": {
-    "message": "Gather scattered tabs by domain/URL into one window & group in 1 click. Lightweight tab organizer - 100% local, zero tracking."
+    "message": "Gather tabs by domain/URL into one window & group in 1 click. Local by default - optional device sync is off unless you turn it on."
   },
   "addCurrentTabTitle": {
     "message": "Register current tab"
