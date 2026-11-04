@@ -1,12 +1,12 @@
 {
   "extensionName": {
-    "message": "TabMagnet-Solo - Smart Tab & Domain Organizer"
+    "message": "TabMagnet-Solo - Gather Tabs by Domain & URL"
   },
   "extensionShortName": {
     "message": "TabMagnet"
   },
   "extensionDescription": {
-    "message": "Instantly group cluttered tabs by domain. 100% local & privacy-first tab manager to boost browser speed and focus. Zero tracking."
+    "message": "Gather tabs by domain/URL into one window & group in 1 click. Local by default - optional device sync is off unless you turn it on."
   },
   "addCurrentTabTitle": {
     "message": "Register current tab"
