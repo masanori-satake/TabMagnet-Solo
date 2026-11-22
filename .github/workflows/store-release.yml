@@ -33,3 +33,5 @@ jobs:
       generate_icons: true
       # 提出 ZIP は release-package と同じく projects/app から base 側で生成する
       package_source_dir: 'projects/app'
+      # 疎通テスト用ブランチ: 審査に出さずアップロードのみ
+      chrome_publish: false
