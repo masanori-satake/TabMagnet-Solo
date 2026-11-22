@@ -261,7 +261,7 @@
     "message": "General"
   },
   "tabSolo": {
-    "message": "Solo"
+    "message": "Solo/Duo"
   },
   "tabAbout": {
     "message": "About"
@@ -274,6 +274,9 @@
   },
   "categoryDevelopers": {
     "message": "For Developers"
+  },
+  "categoryEditorExtensions": {
+    "message": "Editor Extensions"
   },
   "sectionCommon": {
     "message": "Common"
