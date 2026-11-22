@@ -29,6 +29,8 @@ jobs:
       stores: ${{ inputs.stores }}
       # TabMagnet-Solo の Chrome Web Store アイテム ID
       chrome_item_id: 'lffgddghjafcjpfjdpknhfbonhnkdlmc'
+      # TabMagnet-Solo の Edge 製品 ID（Partner Center、初回提出 2026-11-22）
+      edge_product_id: 'dcae7e5d-7156-4c22-9cd5-bbe93700833d'
       # アイコンは release-package と同じく base の generate-icons で生成する
       generate_icons: true
       # 提出 ZIP は release-package と同じく projects/app から base 側で生成する
