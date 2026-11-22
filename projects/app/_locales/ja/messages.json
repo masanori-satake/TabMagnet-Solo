@@ -261,7 +261,7 @@
     "message": "一般"
   },
   "tabSolo": {
-    "message": "Solo"
+    "message": "Solo/Duo"
   },
   "tabAbout": {
     "message": "About"
@@ -274,6 +274,9 @@
   },
   "categoryDevelopers": {
     "message": "開発者向け"
+  },
+  "categoryEditorExtensions": {
+    "message": "エディタ拡張"
   },
   "sectionCommon": {
     "message": "共通"
