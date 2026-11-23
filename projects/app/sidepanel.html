@@ -607,6 +607,58 @@
       gap: 10px;
       margin-top: 12px;
     }
+/* Solo/Duo ストアアイコン行 */
+.solo-store-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  max-width: 320px;
+  padding: 2px 0;
+  box-sizing: border-box;
+}
+
+.solo-store-name {
+  font-size: 13px;
+  text-align: left;
+}
+
+.solo-store-icons {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.solo-store-icon {
+  display: inline-flex;
+  width: 22px;
+  height: 22px;
+}
+
+.solo-store-icon img {
+  width: 22px;
+  height: 22px;
+  display: block;
+}
+
+a.solo-store-icon {
+  transition: opacity 0.2s ease;
+}
+
+a.solo-store-icon:hover {
+  opacity: 0.8;
+}
+
+.solo-store-icon--unavailable {
+  cursor: default;
+}
+
+.solo-store-icon--unavailable img {
+  filter: grayscale(1);
+  opacity: 0.35;
+}
+
 
     .solo-badge-group a {
       display: inline-flex;
@@ -1132,39 +1184,67 @@
           <div class="solo-category">
             <div class="settings-section-title" data-i18n="categoryProductivity"></div>
             <div class="solo-badge-group">
-              <a href="https://chromewebstore.google.com/detail/quicklog-solo-local-task/kllhfalcincleolgoepnailfjendigdh" target="_blank" rel="noopener noreferrer">
-                <img src="assets/badges/solo/badge-quicklog-solo.svg" alt="QuickLog-Solo">
-              </a>
-              <a href="https://chromewebstore.google.com/detail/flexpaste-solo-smart-clip/egmememialdjhohecnfkimpablkjfabg" target="_blank" rel="noopener noreferrer">
-                <img src="assets/badges/solo/badge-flexpaste-solo.svg" alt="FlexPaste-Solo">
-              </a>
-              <a href="https://chromewebstore.google.com/detail/replace-solo-microsoft-lo/iblfnonogpkajjfjfljngdaclhdinlfb" target="_blank" rel="noopener noreferrer">
-                <img src="assets/badges/solo/badge-replace-solo.svg" alt="Replace-Solo">
-              </a>
-              <a href="https://chromewebstore.google.com/detail/tabmagnet-solo-smart-tab/lffgddghjafcjpfjdpknhfbonhnkdlmc" target="_blank" rel="noopener noreferrer">
-                <img src="assets/badges/solo/badge-tabmagnet-solo.svg" alt="TabMagnet-Solo">
-              </a>
+              <div class="solo-store-row">
+                <span class="solo-store-name">QuickLog-Solo</span>
+                <span class="solo-store-icons">
+                  <a class="solo-store-icon" href="https://chromewebstore.google.com/detail/quicklog-solo-local-task/kllhfalcincleolgoepnailfjendigdh" target="_blank" rel="noopener noreferrer" title="Chrome Web Store" aria-label="QuickLog-Solo - Chrome Web Store"><img src="assets/badges/store/chrome-web-store.svg" alt="Chrome Web Store"></a>
+                  <a class="solo-store-icon" href="https://microsoftedge.microsoft.com/addons/detail/quicklogsolo-local-tas/lglkiddnadnnlkejdmpnfknmmkgklanb" target="_blank" rel="noopener noreferrer" title="Microsoft Edge Add-ons" aria-label="QuickLog-Solo - Microsoft Edge Add-ons"><img src="assets/badges/store/edge-addons.svg" alt="Microsoft Edge Add-ons"></a>
+                </span>
+              </div>
+              <div class="solo-store-row">
+                <span class="solo-store-name">FlexPaste-Solo</span>
+                <span class="solo-store-icons">
+                  <a class="solo-store-icon" href="https://chromewebstore.google.com/detail/flexpaste-solo-smart-clip/egmememialdjhohecnfkimpablkjfabg" target="_blank" rel="noopener noreferrer" title="Chrome Web Store" aria-label="FlexPaste-Solo - Chrome Web Store"><img src="assets/badges/store/chrome-web-store.svg" alt="Chrome Web Store"></a>
+                  <a class="solo-store-icon" href="https://microsoftedge.microsoft.com/addons/detail/fdejlmadnlinkeedpfgagenllglmgmem" target="_blank" rel="noopener noreferrer" title="Microsoft Edge Add-ons" aria-label="FlexPaste-Solo - Microsoft Edge Add-ons"><img src="assets/badges/store/edge-addons.svg" alt="Microsoft Edge Add-ons"></a>
+                </span>
+              </div>
+              <div class="solo-store-row">
+                <span class="solo-store-name">Replace-Solo</span>
+                <span class="solo-store-icons">
+                  <a class="solo-store-icon" href="https://chromewebstore.google.com/detail/replace-solo-microsoft-lo/iblfnonogpkajjfjfljngdaclhdinlfb" target="_blank" rel="noopener noreferrer" title="Chrome Web Store" aria-label="Replace-Solo - Chrome Web Store"><img src="assets/badges/store/chrome-web-store.svg" alt="Chrome Web Store"></a>
+                  <span class="solo-store-icon solo-store-icon--unavailable" title="Microsoft Edge Add-ons: 審査中" aria-label="Replace-Solo - Microsoft Edge Add-ons: 審査中"><img src="assets/badges/store/edge-addons.svg" alt="Microsoft Edge Add-ons"></span>
+                </span>
+              </div>
+              <div class="solo-store-row">
+                <span class="solo-store-name">TabMagnet-Solo</span>
+                <span class="solo-store-icons">
+                  <a class="solo-store-icon" href="https://chromewebstore.google.com/detail/tabmagnet-solo-smart-tab/lffgddghjafcjpfjdpknhfbonhnkdlmc" target="_blank" rel="noopener noreferrer" title="Chrome Web Store" aria-label="TabMagnet-Solo - Chrome Web Store"><img src="assets/badges/store/chrome-web-store.svg" alt="Chrome Web Store"></a>
+                  <span class="solo-store-icon solo-store-icon--unavailable" title="Microsoft Edge Add-ons: 審査中" aria-label="TabMagnet-Solo - Microsoft Edge Add-ons: 審査中"><img src="assets/badges/store/edge-addons.svg" alt="Microsoft Edge Add-ons"></span>
+                </span>
+              </div>
             </div>
           </div>
 
           <div class="solo-category">
             <div class="settings-section-title" data-i18n="categoryMeetingEducation"></div>
             <div class="solo-badge-group">
-              <a href="https://chromewebstore.google.com/detail/omniview-solo-whiteboard/jnkmbcicplfobgllfljekhlaofkdooam" target="_blank" rel="noopener noreferrer">
-                <img src="assets/badges/solo/badge-omniview-solo.svg" alt="OmniView-Solo">
-              </a>
+              <div class="solo-store-row">
+                <span class="solo-store-name">OmniView-Solo</span>
+                <span class="solo-store-icons">
+                  <a class="solo-store-icon" href="https://chromewebstore.google.com/detail/omniview-solo-whiteboard/jnkmbcicplfobgllfljekhlaofkdooam" target="_blank" rel="noopener noreferrer" title="Chrome Web Store" aria-label="OmniView-Solo - Chrome Web Store"><img src="assets/badges/store/chrome-web-store.svg" alt="Chrome Web Store"></a>
+                  <a class="solo-store-icon" href="https://microsoftedge.microsoft.com/addons/detail/fplhoakelfblcamakgnjonebkiicifen" target="_blank" rel="noopener noreferrer" title="Microsoft Edge Add-ons" aria-label="OmniView-Solo - Microsoft Edge Add-ons"><img src="assets/badges/store/edge-addons.svg" alt="Microsoft Edge Add-ons"></a>
+                </span>
+              </div>
             </div>
           </div>
 
           <div class="solo-category">
             <div class="settings-section-title" data-i18n="categoryDevelopers"></div>
             <div class="solo-badge-group">
-              <a href="https://chromewebstore.google.com/detail/issues-solo-jira-issues-s/cehkajdhieihmoghbneckifpkoafmbco" target="_blank" rel="noopener noreferrer">
-                <img src="assets/badges/solo/badge-issues-solo.svg" alt="Issues-Solo">
-              </a>
-              <a href="https://chromewebstore.google.com/detail/actionsboard-solo-github/oofegjdjnldkikigimkadlleaiolionm" target="_blank" rel="noopener noreferrer">
-                <img src="assets/badges/solo/badge-actionsboard-solo.svg" alt="ActionsBoard-Solo">
-              </a>
+              <div class="solo-store-row">
+                <span class="solo-store-name">Issues-Solo</span>
+                <span class="solo-store-icons">
+                  <a class="solo-store-icon" href="https://chromewebstore.google.com/detail/issues-solo-jira-issues-s/cehkajdhieihmoghbneckifpkoafmbco" target="_blank" rel="noopener noreferrer" title="Chrome Web Store" aria-label="Issues-Solo - Chrome Web Store"><img src="assets/badges/store/chrome-web-store.svg" alt="Chrome Web Store"></a>
+                  <a class="solo-store-icon" href="https://microsoftedge.microsoft.com/addons/detail/baedgadlmbiklkkcajkbhkkhadkjipji" target="_blank" rel="noopener noreferrer" title="Microsoft Edge Add-ons" aria-label="Issues-Solo - Microsoft Edge Add-ons"><img src="assets/badges/store/edge-addons.svg" alt="Microsoft Edge Add-ons"></a>
+                </span>
+              </div>
+              <div class="solo-store-row">
+                <span class="solo-store-name">ActionsBoard-Solo</span>
+                <span class="solo-store-icons">
+                  <a class="solo-store-icon" href="https://chromewebstore.google.com/detail/actionsboard-solo-github/oofegjdjnldkikigimkadlleaiolionm" target="_blank" rel="noopener noreferrer" title="Chrome Web Store" aria-label="ActionsBoard-Solo - Chrome Web Store"><img src="assets/badges/store/chrome-web-store.svg" alt="Chrome Web Store"></a>
+                  <span class="solo-store-icon solo-store-icon--unavailable" title="Microsoft Edge Add-ons: 審査中" aria-label="ActionsBoard-Solo - Microsoft Edge Add-ons: 審査中"><img src="assets/badges/store/edge-addons.svg" alt="Microsoft Edge Add-ons"></span>
+                </span>
+              </div>
             </div>
           </div>
 
